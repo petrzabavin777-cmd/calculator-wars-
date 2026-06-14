@@ -4387,7 +4387,20 @@ function renderProfTitle(isOwn=true){
   }
 }
 // Close bubble when clicking outside
-document.addEventListener('click',()=>{if(_titleBubbleOpen)_closeTitleBubble();},{capture:false});
+document.addEventListener('click',(e)=>{
+  if(!_titleBubbleOpen) return;
+  const b=document.getElementById('prof-title-bubble');
+  const el=document.getElementById('prof-active-title');
+  if(b&&(b.contains(e.target)||el?.contains(e.target))) return;
+  _closeTitleBubble();
+},{capture:false});
+document.addEventListener('touchend',(e)=>{
+  if(!_titleBubbleOpen) return;
+  const b=document.getElementById('prof-title-bubble');
+  const el=document.getElementById('prof-active-title');
+  if(b&&(b.contains(e.target)||el?.contains(e.target))) return;
+  _closeTitleBubble();
+},{capture:false});
 // ──────────────────────────────────────────────────────────────────
 function checkDmgRecord(fd){
   Object.entries(MX).forEach(([id,e])=>{
@@ -5420,8 +5433,9 @@ function profOpen(){
   document.getElementById('prof-stat-wins').textContent=st.wins||0;
 
   // 📖 Матрица
-  document.getElementById('prof-stat-mx').textContent=G.known.size+' / '+Object.keys(MX).length;
-  const achievCount=Object.values(MX).filter(e=>e.cat==='Ачивки'&&G.known.has(
+  const knownSet=G?.known||(()=>{try{return new Set(JSON.parse(localStorage.getItem('cw_mx')||'[]'));}catch{return new Set();}})();
+  document.getElementById('prof-stat-mx').textContent=knownSet.size+' / '+Object.keys(MX).length;
+  const achievCount=Object.values(MX).filter(e=>e.cat==='Ачивки'&&knownSet.has(
     Object.keys(MX).find(k=>MX[k]===e)
   )).length;
   const totalAchiev=Object.values(MX).filter(e=>e.cat==='Ачивки').length;
