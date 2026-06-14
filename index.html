@@ -36,33 +36,35 @@ body{background:var(--bg);font-family:'Press Start 2P',monospace;color:var(--tex
 }
 .coin{
   display:inline-block;
-  width:16px;height:16px;
+  width:18px;height:14px;
   image-rendering:pixelated;
   position:relative;flex-shrink:0;
-  animation:coin-spin 1.4s steps(6,end) infinite;
-}
-.coin::before{
-  content:'';
-  position:absolute;inset:0;
+  /* pixel art Windows 11 folder */
   background:
-    /* pixel grid — gold coin face */
-    linear-gradient(#FFE000 0 0) 3px 1px / 10px 1px no-repeat,
-    linear-gradient(#FFE000 0 0) 1px 2px / 14px 1px no-repeat,
-    linear-gradient(#FFE000 0 0) 0px 3px / 16px 2px no-repeat,
-    linear-gradient(#D4A017 0 0) 0px 5px / 16px 6px no-repeat,
-    linear-gradient(#FFE000 0 0) 0px 11px / 16px 2px no-repeat,
-    linear-gradient(#FFE000 0 0) 1px 13px / 14px 1px no-repeat,
-    linear-gradient(#FFE000 0 0) 3px 14px / 10px 1px no-repeat;
-  image-rendering:pixelated;
+    /* tab fill */
+    linear-gradient(#FFD966 0 0) 1px 0/6px 2px no-repeat,
+    /* tab top edge */
+    linear-gradient(#CC9900 0 0) 1px 0/6px 1px no-repeat,
+    /* tab left edge */
+    linear-gradient(#CC9900 0 0) 0px 0/1px 3px no-repeat,
+    /* tab right edge */
+    linear-gradient(#CC9900 0 0) 7px 0/1px 3px no-repeat,
+    /* top body edge / tab connection */
+    linear-gradient(#CC9900 0 0) 0px 2px/18px 1px no-repeat,
+    /* body top highlight */
+    linear-gradient(#FFECAA 0 0) 1px 3px/16px 2px no-repeat,
+    /* body fill */
+    linear-gradient(#FFD352 0 0) 0px 3px/18px 10px no-repeat,
+    /* body bottom shadow */
+    linear-gradient(#B37A00 0 0) 1px 11px/16px 1px no-repeat,
+    /* body left edge */
+    linear-gradient(#CC9900 0 0) 0px 3px/1px 10px no-repeat,
+    /* body right edge */
+    linear-gradient(#CC9900 0 0) 17px 3px/1px 10px no-repeat,
+    /* body bottom edge */
+    linear-gradient(#CC9900 0 0) 0px 13px/18px 1px no-repeat;
 }
-.coin::after{
-  content:'𝑖';
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  font-size:6px;color:#7a4a00;
-  font-family:'Press Start 2P',monospace;
-  font-weight:bold;z-index:1;
-}
+.coin::before,.coin::after{display:none;}
 #coin-count{font-size:10px;color:#FFE000;text-shadow:0 0 6px #FFD70066;}
 
 /* ── PIXEL SIGMA (Σ) ── */
@@ -514,11 +516,36 @@ body{background:var(--bg);font-family:'Press Start 2P',monospace;color:var(--tex
 .me.achiev-card.kn{border-color:#FFD700;background:#111100;}
 .me.achiev-card .men{color:#FFD700;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}
 .me.achiev-card .me-how{font-size:12px;color:#cccc88;font-family:sans-serif;margin-top:7px;line-height:1.7;}
-/* "Открыто!" reward badge */
-.me{position:relative;overflow:visible;}
-.mx-new-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#004400;border:2px solid #44FF44;color:#44FF44;font-family:'Press Start 2P',monospace;font-size:6px;padding:3px 8px;white-space:nowrap;cursor:pointer;z-index:10;animation:mxbounce .5s ease infinite alternate;}
-.mx-new-badge .mx-coin-count{color:#FFE000;margin-left:4px;}
-@keyframes mxbounce{0%{transform:translateX(-50%) translateY(0);}100%{transform:translateX(-50%) translateY(-5px);}}
+/* Matrix pending reward cards */
+.me{position:relative;overflow:hidden;}
+.me.pending-reward{
+  border-color:#44FF44!important;
+  box-shadow:0 0 16px #44FF4488,0 0 4px #44FF4444;
+  cursor:pointer;
+}
+.mx-claim-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(135deg,#003300ee,#006600cc);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  z-index:5;pointer-events:none;
+  transition:opacity .35s ease,transform .35s ease;
+}
+.mx-claim-overlay .mco-label{
+  font-family:'Press Start 2P',monospace;font-size:7px;color:#44FF44;
+  text-shadow:0 0 8px #44FF44;letter-spacing:1px;
+}
+.mx-claim-overlay .mco-sigma{
+  font-family:'Press Start 2P',monospace;font-size:9px;color:#AAFFAA;
+}
+.mx-claim-overlay.dissolve{
+  opacity:0;transform:scale(1.15);
+}
+@keyframes mx-bounce{
+  0%  {transform:translateY(0) scale(1);}
+  30% {transform:translateY(6px) scale(0.96);}
+  100%{transform:translateY(0) scale(1);}
+}
+.me.mx-bouncing{animation:mx-bounce 0.38s cubic-bezier(.22,1,.36,1) forwards;}
 @keyframes coincount-up{0%{transform:scale(1);}40%{transform:scale(1.5);color:#FFE000;}100%{transform:scale(1);}}
 /* flying sigma */
 .hud-fly-sigma{
@@ -1887,8 +1914,7 @@ button, .menu-btn {
       <div>
         <div class="prof-cat-hdr" style="color:#FFD700;border-color:#FFD700">💰 ЭКОНОМИКА</div>
         <div class="prof-stats-grid">
-          <div class="prof-stat"><span style="display:flex;align-items:center;gap:5px;">Монет сейчас<div class="coin" style="width:13px;height:13px;flex-shrink:0;"></div></span><span id="prof-stat-coins" class="prof-stat-val" style="color:#FFE000">—</span></div>
-          <div class="prof-stat"><span style="display:flex;align-items:center;gap:5px;">Потрачено<div class="coin" style="width:13px;height:13px;flex-shrink:0;"></div></span><span id="prof-stat-spent" class="prof-stat-val">—</span></div>
+          <div class="prof-stat"><span style="display:flex;align-items:center;gap:5px;">Потрачено<div class="coin" style="width:13px;height:10px;flex-shrink:0;"></div></span><span id="prof-stat-spent" class="prof-stat-val">—</span></div>
           <div class="prof-stat"><span style="display:flex;align-items:center;gap:5px;">Sigma на счёте<div class="sigma-icon" style="width:13px;height:13px;font-size:8px;flex-shrink:0;">Σ</div></span><span id="prof-stat-sigma" class="prof-stat-val" style="color:#CC88FF">—</span></div>
         </div>
       </div>
@@ -2098,6 +2124,7 @@ button, .menu-btn {
         <button class="atab active" onclick="aTab('players')" ontouchend="aTab('players');event.preventDefault()">👤 ИГРОКИ</button>
         <button class="atab" onclick="aTab('broadcast')" ontouchend="aTab('broadcast');event.preventDefault()">📢 ВСЕМ</button>
         <button class="atab" onclick="aTab('stats')" ontouchend="aTab('stats');event.preventDefault()">📊 СТАТ</button>
+        <button class="atab" onclick="aTab('other')" ontouchend="aTab('other');event.preventDefault()">🔧 ДРУГОЕ</button>
       </div>
 
       <!-- ═══ TAB: PLAYERS ═══ -->
@@ -2258,6 +2285,17 @@ button, .menu-btn {
           </div>
         </div>
 
+        <!-- Give mx to all -->
+        <div class="asec">
+          <div class="asec-title">📖 ЗАПИСЬ МАТРИЦЫ — ВСЕМ ОНЛАЙН</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <select id="admin-global-mx" class="admin-input" style="flex:1;background:#040e04;color:#44FF88;cursor:pointer;min-width:140px;">
+              <option value="">— выбери запись —</option>
+            </select>
+            <button class="admin-btn admin-buff" style="white-space:nowrap;" onclick="adminGlobalMx()" ontouchend="adminGlobalMx();event.preventDefault()">📖 ВЫДАТЬ ВСЕМ</button>
+          </div>
+        </div>
+
         <!-- Events (placeholder) -->
         <div class="asec">
           <div class="asec-title">🎉 ИВЕНТЫ (СКОРО)</div>
@@ -2293,6 +2331,15 @@ button, .menu-btn {
             <input id="admin-dev-remove" class="admin-input" placeholder="PID для удаления" style="width:150px;">
             <button class="admin-btn admin-danger" onclick="adminRemoveDev()" ontouchend="adminRemoveDev();event.preventDefault()">− УДАЛИТЬ</button>
           </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB: OTHER ═══ -->
+      <div class="atab-content" id="atab-other" style="display:none;">
+        <div class="asec">
+          <div class="asec-title">💬 ГЛОБАЛЬНЫЙ ЧАТ</div>
+          <p style="font-family:sans-serif;font-size:11px;color:#556677;margin-bottom:10px;">Удалить все сообщения из общего чата. Это действие нельзя отменить.</p>
+          <button class="admin-btn admin-danger" style="width:100%;" onclick="adminClearChat()" ontouchend="adminClearChat();event.preventDefault()">🗑 ОЧИСТИТЬ ОБЩИЙ ЧАТ</button>
         </div>
       </div>
 
@@ -3923,17 +3970,30 @@ function checkNewMx(id){
 
 function claimMxReward(id, cardEl){
   if(!G.pendingReward.has(id))return;
-  const fromRect=cardEl.getBoundingClientRect();
-  G.pendingReward.delete(id);
-  localStorage.setItem('cw_pr',JSON.stringify([...G.pendingReward]));
-  const sigmas=MX_COINS[id]||MX_COINS[MX[id]?.cat]||0;
-  if(sigmas>0){
-    // fly sigma icons to sigma HUD counter
-    flyCoinsToHud(sigmas, fromRect, true);
-    addSigma(sigmas);
+  if(cardEl.dataset.claiming)return;
+  cardEl.dataset.claiming='1';
+  // Bounce animation
+  cardEl.classList.add('mx-bouncing');
+  cardEl.addEventListener('animationend',function h(){
+    cardEl.classList.remove('mx-bouncing');
+    cardEl.removeEventListener('animationend',h);
+  },{once:true});
+  // Dissolve overlay
+  const ov=cardEl.querySelector('.mx-claim-overlay');
+  if(ov){
+    ov.classList.add('dissolve');
   }
-  renderHud();
-  renderMat();
+  // Award after animation
+  setTimeout(()=>{
+    if(!G.pendingReward.has(id))return;
+    const fromRect=cardEl.getBoundingClientRect();
+    G.pendingReward.delete(id);
+    localStorage.setItem('cw_pr',JSON.stringify([...G.pendingReward]));
+    const sigmas=MX_COINS[id]||MX_COINS[MX[id]?.cat]||0;
+    if(sigmas>0){flyCoinsToHud(sigmas,fromRect,true);addSigma(sigmas);}
+    renderHud();
+    renderMat();
+  },360);
 }
 
 function flyCoinsToHud(count, fromRect, isSigma=false){
@@ -4012,11 +4072,10 @@ function renderMat(){
         const ruTxt=e.runame&&e.runame!==e.name?`<div style="font-size:11px;color:#1a6aff;font-family:sans-serif;font-weight:bold;margin-top:3px;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;">${e.runame}</div>`:'';
         card.innerHTML=`<div class="men">${e.name}</div>${ruTxt}<div class="med">${e.desc}</div>`;
         if(pending){
-          const b=document.createElement('div');
-          b.className='mx-new-badge';
-          b.innerHTML=`Открыто!${coins>0?` <span class="mx-coin-count">+${coins}Σ</span>`:""}`;
-          b.onclick=ev=>{ev.stopPropagation();claimMxReward(e.id,card);};
-          card.appendChild(b);
+          const ov=document.createElement('div');
+          ov.className='mx-claim-overlay';
+          ov.innerHTML=`<div class="mco-label">✦ ОТКРЫТО! ✦</div>${coins>0?`<div class="mco-sigma">+${coins} Σ</div>`:''}`;
+          card.appendChild(ov);
           card.onclick=()=>claimMxReward(e.id,card);
         } else {
           card.onclick=()=>openCard(e.name,e.desc,e.id,e.runame);
@@ -4043,10 +4102,11 @@ function renderMat(){
         const coins=MX_COINS[id]||MX_COINS[e.cat]||7;
         card.innerHTML=`<div class="men">${e.name}</div><div class="med">${e.desc}</div><div class="me-how">📋 Как получить: ${e.how}</div>`;
         if(pending){
-          const b=document.createElement('div');b.className='mx-new-badge';
-          b.innerHTML=`Открыто!${coins>0?` <span class="mx-coin-count">+${coins}Σ</span>`:""}`;
-          b.onclick=ev=>{ev.stopPropagation();claimMxReward(id,card);};
-          card.appendChild(b);card.onclick=()=>claimMxReward(id,card);
+          const ov=document.createElement('div');
+          ov.className='mx-claim-overlay';
+          ov.innerHTML=`<div class="mco-label">✦ ОТКРЫТО! ✦</div>${coins>0?`<div class="mco-sigma">+${coins} Σ</div>`:''}`;
+          card.appendChild(ov);
+          card.onclick=()=>claimMxReward(id,card);
         } else {
           card.onclick=()=>openCard(e.name,e.desc+'\n\n📋 Как получить: '+e.how,id,null);
         }
@@ -4070,11 +4130,12 @@ function renderMat(){
           card.style.cssText+=';border-color:#FF220055;background:#110000;';
           card.innerHTML=`<div class="men" style="color:#FF6644;">${e.name}</div><div class="med">${e.desc}</div>`;
           if(pending){
-            const b=document.createElement('div');b.className='mx-new-badge';
-            b.style.cssText+=';border-color:#FF2200;color:#FF4422;';
-            b.innerHTML=`⚔ Рекорд!${coins>0?` <span class="mx-coin-count">+${coins}Σ</span>`:""}`;
-            b.onclick=ev=>{ev.stopPropagation();claimMxReward(id,card);};
-            card.appendChild(b);card.onclick=()=>claimMxReward(id,card);
+            const ov=document.createElement('div');
+            ov.className='mx-claim-overlay';
+            ov.style.cssText='background:linear-gradient(135deg,#330000ee,#660000cc);';
+            ov.innerHTML=`<div class="mco-label" style="color:#FF6644;text-shadow:0 0 8px #FF4422;">⚔ РЕКОРД! ⚔</div>${coins>0?`<div class="mco-sigma" style="color:#FFAA88;">+${coins} Σ</div>`:''}`;
+            card.appendChild(ov);
+            card.onclick=()=>claimMxReward(id,card);
           } else {
             card.onclick=()=>openCard(e.name,e.desc,id,null);
           }
@@ -4872,7 +4933,6 @@ function profOpen(){
   document.getElementById('prof-stat-achiev').textContent=achievCount+' / '+totalAchiev;
 
   // 💰 Экономика
-  document.getElementById('prof-stat-coins').textContent=G.cur;
   document.getElementById('prof-stat-spent').textContent=(st.coinsSpent||0);
   document.getElementById('prof-stat-sigma').textContent=getSigma().toLocaleString('ru')+' Σ';
 
@@ -4954,7 +5014,7 @@ window.profOpenByPid=async function(pid){
     // Clear stats for other player
     ['prof-stat-dmg','prof-stat-totdmg','prof-stat-kills','prof-stat-selfhits',
      'prof-stat-games','prof-stat-waves','prof-stat-wins','prof-stat-mx',
-     'prof-stat-achiev','prof-stat-coins','prof-stat-spent','prof-stat-sigma',
+     'prof-stat-achiev','prof-stat-spent','prof-stat-sigma',
      'prof-stat-time','prof-stat-first'].forEach(id=>{
       const el=document.getElementById(id);if(el) el.textContent='—';
     });
@@ -5054,19 +5114,16 @@ _supaInitPromise=(async()=>{
       const pid=_supaUser.user_metadata?.pid;
       const avatar=_supaUser.user_metadata?.avatar||null;
       if(pid&&_supa){
+        // Load sigma immediately — independent of upsert
+        _supa.from('profiles').select('sigma').eq('pid',pid).single()
+          .then(({data})=>{
+            if(data?.sigma!=null){saveSigma(data.sigma);renderSigmaHud();}
+          }).catch(()=>{});
+        // Update profile (don't wait for this)
         _supa.from('profiles').upsert(
           {pid,nickname:nick,avatar,last_seen:new Date().toISOString()},
           {onConflict:'pid'}
-        ).then(()=>{
-          // Load sigma from profiles (server is source of truth)
-          _supa.from('profiles').select('sigma').eq('pid',pid).single()
-            .then(({data})=>{
-              if(data?.sigma!=null){
-                saveSigma(data.sigma);
-                renderSigmaHud();
-              }
-            }).catch(()=>{});
-        }).catch(()=>{});
+        ).catch(()=>{});
       }
     }
   }catch(e){console.warn('Supabase init:',e);}
@@ -5820,7 +5877,7 @@ async function cloudLoad(){
   // ── Tab switching ──
   window.aTab=function(tab){
     document.querySelectorAll('.atab').forEach((b,i)=>{
-      const tabs=['players','broadcast','stats'];
+      const tabs=['players','broadcast','stats','other'];
       b.classList.toggle('active',tabs[i]===tab);
     });
     document.querySelectorAll('.atab-content').forEach(c=>c.style.display='none');
@@ -5828,7 +5885,7 @@ async function cloudLoad(){
     if(el) el.style.display='flex';
     if(tab==='stats') loadAdminStats();
     if(tab==='players') loadAdminPlayers();
-    if(tab==='broadcast') loadDevList();
+    if(tab==='broadcast'){ loadDevList(); _populateAdminMxSelect(); }
   };
 
   window.adminOpen=async function(){
@@ -6042,16 +6099,71 @@ async function cloudLoad(){
 
   // ── Give matrix entry ──
   async function adminGiveMx(mxId,name){
-    if(!_adminGuard()||!_adminTargetPid) return;
+    if(!_adminGuard()||!_adminTargetPid){alert('Сначала выбери игрока');return;}
+    if(!mxId){alert('Выбери запись матрицы');return;}
     try{
-      await _supa.from('admin_actions').insert({
-        target_pid:_adminTargetPid,
-        action:'unlock_mx',
-        payload:{mxId},
-        created_by:CREATOR_PID
+      await _supa.from('broadcast').insert({
+        msg:JSON.stringify({to_pid:_adminTargetPid,mxId}),
+        from_pid:CREATOR_PID,
+        msg_type:'mx_give',
+        created_at:new Date().toISOString()
       });
-      alert(`Запись "${name}" будет разблокирована игроку`);
+      alert(`Запись "${name||mxId}" отправлена игроку`);
     }catch(e){alert('Ошибка: '+e.message);}
+  }
+
+  // ── Give matrix entry to all online ──
+  window.adminGlobalMx=async function(){
+    if(!_adminGuard()) return;
+    const mxId=document.getElementById('admin-global-mx')?.value;
+    if(!mxId){alert('Выбери запись матрицы');return;}
+    const name=MX[mxId]?.name||mxId;
+    try{
+      const{data:profs,error}=await _supa.from('profiles').select('pid,last_seen');
+      if(error) throw error;
+      const online=(profs||[]).filter(p=>p.last_seen&&(Date.now()-new Date(p.last_seen).getTime())<5*60*1000);
+      if(!online.length){alert('Нет игроков онлайн');return;}
+      if(!confirm(`Выдать запись "${name}" ${online.length} игрокам онлайн?`)) return;
+      await _supa.from('broadcast').insert({
+        msg:JSON.stringify({to_pid:'ALL',mxId}),
+        from_pid:CREATOR_PID,
+        msg_type:'mx_give',
+        created_at:new Date().toISOString()
+      });
+      alert(`✅ Запись "${name}" выдана ${online.length} игрокам онлайн`);
+    }catch(e){alert('Ошибка: '+e.message);}
+  };
+
+  // ── Clear global chat ──
+  window.adminClearChat=async function(){
+    if(!_adminGuard()) return;
+    if(!confirm('Очистить весь общий чат? Это необратимо.')) return;
+    try{
+      await _supa.from('messages').delete().eq('room','general');
+      alert('Общий чат очищен');
+    }catch(e){alert('Ошибка: '+e.message);}
+  };
+
+  // ── Populate MX select in admin panel ──
+  function _populateAdminMxSelect(){
+    const sel=document.getElementById('admin-global-mx');
+    if(!sel||sel.dataset.filled) return;
+    sel.dataset.filled='1';
+    const cats={};
+    Object.entries(MX).forEach(([id,e])=>{
+      if(!cats[e.cat]) cats[e.cat]=[];
+      cats[e.cat].push({id,name:e.name});
+    });
+    Object.entries(cats).forEach(([cat,items])=>{
+      const og=document.createElement('optgroup');
+      og.label=cat;
+      items.forEach(({id,name})=>{
+        const opt=document.createElement('option');
+        opt.value=id;opt.textContent=name;
+        og.appendChild(opt);
+      });
+      sel.appendChild(og);
+    });
   }
 
   // ── Custom ID ──
@@ -6280,6 +6392,31 @@ async function cloudLoad(){
       payload=>{
         const row=payload.new;
         if(!row?.msg) return;
+        // Matrix entry gift
+        if(row.msg_type==='mx_give'){
+          try{
+            const d=JSON.parse(row.msg);
+            const myPid=_supaUser?.user_metadata?.pid;
+            if(d.to_pid&&d.to_pid!=='ALL'&&d.to_pid!==myPid) return;
+            const mxId=d.mxId;
+            if(!mxId) return;
+            const mxEntry=MX[mxId];
+            if(!mxEntry) return;
+            // Unlock entry
+            const isForAll=d.to_pid==='ALL';
+            if(!G.mx.has(mxId)){
+              G.mx.add(mxId);
+              G.pendingReward.add(mxId);
+              saveMx();
+              renderMat();
+              const notifText=isForAll
+                ? `Создатель выдал всем онлайн: «${mxEntry.name}» в Матрице!`
+                : `Создатель выдал вам запись «${mxEntry.name}» в Матрице!`;
+              showBroadcastMsg(notifText,'buff');
+            }
+          }catch(e){}
+          return;
+        }
         // Personal sigma gift — only apply to the target player
         if(row.msg_type==='sigma_direct'){
           try{
