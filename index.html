@@ -2507,12 +2507,12 @@ button, .menu-btn {
   <div id="shop-box">
     <div id="shop-balance-plate"><div class="coin"></div><span id="shop-bal-num">0</span></div>
     <h2>МАГАЗИН</h2>
-    <div id="shop-hp-bar" style="display:none;width:100%;box-sizing:border-box;background:#0a1a0a;border:2px solid #226622;padding:6px 12px;align-items:center;gap:10px;margin-bottom:6px;">
-      <span style="font-family:'Press Start 2P',monospace;font-size:6px;color:#44FF88;white-space:nowrap;">❤ HP</span>
-      <div style="flex:1;height:9px;background:#0d1a0d;border:1px solid #226622;">
+    <div id="shop-hp-bar" style="display:none;width:100%;box-sizing:border-box;background:#0a1a0a;border:2px solid #226622;padding:6px 12px 6px 12px;align-items:center;gap:8px;margin-bottom:6px;padding-right:130px;">
+      <span style="font-family:'Press Start 2P',monospace;font-size:6px;color:#44FF88;white-space:nowrap;flex-shrink:0;">❤ HP</span>
+      <div style="flex:1;height:9px;background:#0d1a0d;border:1px solid #226622;min-width:40px;">
         <div id="shop-hp-fill" style="height:100%;background:#22AA44;transition:width .3s;"></div>
       </div>
-      <span id="shop-hp-txt" style="font-family:'Press Start 2P',monospace;font-size:6px;color:#fff;white-space:nowrap;"></span>
+      <span id="shop-hp-txt" style="font-family:'Press Start 2P',monospace;font-size:6px;color:#fff;white-space:nowrap;flex-shrink:0;"></span>
     </div>
     <div id="shop-heal-note"></div>
     <div id="shop-turn-warn">⚠ ПОКУПКА ПОТРАТИТ ВАШ ХОД!</div>
@@ -3419,6 +3419,9 @@ function enemyDefeated(){
   shake(12);flash('#FFFF00',.5);
   spawnTxt('ПОБЕДА!','#44FF00',.45,.4);
   addLog(`${e.name} побеждён! +5`);G.cur+=5;e.dead=true;
+  // Check after marking dead — if all gone, lock out any concurrent timers immediately
+  const allDead=G.enemies.every(en=>en.dead);
+  if(allDead) window._gameEndShown=true;
   const _st=getStats();_st.totalKills=(_st.totalKills||0)+1;saveStats(_st);
   checkNewMx(e.mxId);
   // search ALL enemies, not just forward — boss can die before minions
