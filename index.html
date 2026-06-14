@@ -5451,6 +5451,25 @@ function profOpen(){
 
   document.getElementById('prof-ov').classList.add('on');
 
+  // Sync stats snapshot to profiles.stats_json so other players see current data
+  (async()=>{
+    if(!_supa||!_supaUser) return;
+    const pid=_supaUser.user_metadata?.pid;
+    if(!pid) return;
+    try{
+      const st2=getStats();
+      const mx2=JSON.parse(localStorage.getItem('cw_mx')||'[]');
+      const statsJson={
+        maxDmg:st2.maxDmg||0, totalDmg:st2.totalDmg||0,
+        totalKills:st2.totalKills||0, selfHits:st2.selfHits||0,
+        gamesPlayed:st2.gamesPlayed||0, wavesCleared:st2.wavesCleared||0,
+        wins:st2.wins||0, coinsSpent:st2.coinsSpent||0,
+        playtime:st2.playtime||0, mxCount:mx2.length,
+      };
+      await _supa.from('profiles').update({stats_json:statsJson}).eq('pid',pid);
+    }catch{}
+  })();
+
   // Load friend count (own profile)
   const myPid2=_supaUser?.user_metadata?.pid;
   const fcEl=document.getElementById('prof-friend-count');
