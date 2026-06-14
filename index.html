@@ -2173,7 +2173,10 @@ button, .menu-btn {
 
           <!-- Matrix entries — revoke -->
           <div class="asec">
-            <div class="asec-title" style="color:#FF7744;">🗑 ЗАБРАТЬ ЗАПИСЬ МАТРИЦЫ</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+              <div class="asec-title" style="color:#FF7744;margin-bottom:0;">🗑 ЗАБРАТЬ ЗАПИСЬ МАТРИЦЫ</div>
+              <button class="admin-btn" style="font-size:6px;padding:4px 8px;" onclick="adminRefreshRevoke()" ontouchend="adminRefreshRevoke();event.preventDefault()">↻ ОБНОВИТЬ</button>
+            </div>
             <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:#446644;margin-bottom:6px;" id="apc-mx-revoke-hint">выбери игрока чтобы увидеть его записи</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;" id="apc-mx-revoke-btns"></div>
           </div>
@@ -4000,6 +4003,12 @@ function claimMxReward(id, cardEl){
     if(sigmas>0){flyCoinsToHud(sigmas,fromRect,true);addSigma(sigmas);}
     renderHud();
     renderMat();
+    // Auto-open card info after claiming
+    const e=MX[id];
+    if(e){
+      const body=e.desc+(e.how?'\n\n📋 Как получить: '+e.how:'');
+      setTimeout(()=>openCard(e.name,body,id,e.runame||null),100);
+    }
   },360);
 }
 
@@ -5129,7 +5138,16 @@ _supaInitPromise=(async()=>{
         // Load sigma immediately — independent of upsert
         _supa.from('profiles').select('sigma').eq('pid',pid).single()
           .then(({data})=>{
-            if(data?.sigma!=null){saveSigma(data.sigma);renderSigmaHud();}
+            if(data?.sigma!=null){
+              // Take max so locally-earned sigma is never overwritten by stale DB value
+              const dbVal=parseInt(data.sigma)||0;
+              const localVal=getSigma();
+              if(dbVal>localVal){saveSigma(dbVal);renderSigmaHud();}
+              else if(localVal>dbVal){
+                // Local is ahead — sync DB to local
+                _supa.from('profiles').update({sigma:localVal}).eq('pid',pid).catch(()=>{});
+              }
+            }
           }).catch(()=>{});
         // Update profile (don't wait for this)
         _supa.from('profiles').upsert(
@@ -6126,6 +6144,27 @@ async function cloudLoad(){
   };
 
   // ── Revoke matrix entry ──
+  window.adminRefreshRevoke=function(){
+    if(!_adminTargetPid){alert('Сначала выбери игрока');return;}
+    const revokeWrap=document.getElementById('apc-mx-revoke-btns');
+    const revokeHint=document.getElementById('apc-mx-revoke-hint');
+    if(!revokeWrap||typeof MX==='undefined') return;
+    revokeWrap.innerHTML='';
+    if(revokeHint) revokeHint.textContent='загрузка...';
+    // Load player's unlocked entries via broadcast table history isn't reliable —
+    // show all entries; player client handles the actual check
+    Object.entries(MX).forEach(([id,entry])=>{
+      const btn=document.createElement('button');
+      btn.className='apc-mx-btn apc-mx-revoke-btn';
+      btn.dataset.mxid=id;
+      btn.style.cssText='color:#FF7744;border-color:#662200;background:#1a0500;';
+      btn.textContent=(entry.name||id).slice(0,14);
+      btn.onclick=()=>adminRevokeMx(id,entry.name||id);
+      revokeWrap.appendChild(btn);
+    });
+    if(revokeHint) revokeHint.textContent=`игрок: ${_adminTargetPid} — нажми чтобы забрать`;
+  };
+
   async function adminRevokeMx(mxId,name){
     if(!_adminGuard()||!_adminTargetPid){alert('Сначала выбери игрока');return;}
     if(!confirm(`Забрать запись "${name||mxId}" у игрока ${_adminTargetPid}?`)) return;
@@ -6497,12 +6536,7 @@ async function cloudLoad(){
             if(d.to_pid&&d.to_pid!==myPid) return;
             const amt=d.amount||0;
             if(amt>0){
-              // Admin already updated DB — just reload from DB for guaranteed sync
-              if(_supa&&myPid){
-                _supa.from('profiles').select('sigma').eq('pid',myPid).single()
-                  .then(({data})=>{if(data?.sigma!=null){saveSigma(data.sigma);renderSigmaHud();}})
-                  .catch(()=>{addSigma(amt);});
-              }else{addSigma(amt);}
+              addSigma(amt);
               showBroadcastMsg('+'+amt+' Σ начислено от создателя!','sigma');
             }
           }catch(e){}
