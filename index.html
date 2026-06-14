@@ -5956,7 +5956,10 @@ async function cloudSave(){
       wins:statsSnap.wins||0, coinsSpent:statsSnap.coinsSpent||0,
       playtime:statsSnap.playtime||0, mxCount:mxArr.length,
     };
-    if(pid) await _supa.from('profiles').upsert({pid,nickname:nick,avatar,last_seen:new Date().toISOString(),stats_json:statsJson},{onConflict:'pid'});
+    const activeTitle=titleActive||null;
+    const titleColorObj=titleColors&&titleColors!=='{}'?JSON.parse(titleColors):null;
+    const activeTitleColor=activeTitle&&titleColorObj?titleColorObj[activeTitle]||null:null;
+    if(pid) await _supa.from('profiles').upsert({pid,nickname:nick,avatar,last_seen:new Date().toISOString(),stats_json:statsJson,active_title:activeTitle||null,title_color:activeTitleColor?JSON.stringify(activeTitleColor):null},{onConflict:'pid'});
   }catch(e){console.warn('Cloud save:',e);}
 }
 
