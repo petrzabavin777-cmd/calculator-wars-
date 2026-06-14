@@ -4084,9 +4084,11 @@ function setActiveTitle(id){
       const cname=customs[id]?.name||TITLES[id]?.name||null;
       if(cname) col=Object.assign(col||{},{name:cname});
     }
+    const tname=TITLES[id]?.name||(()=>{try{return JSON.parse(localStorage.getItem('cw_custom_titles')||'{}')[id]?.name||null;}catch{return null;}})();
     _supa.from('profiles').update({
       active_title:id||null,
-      title_color:col?JSON.stringify(col):null
+      title_color:col?JSON.stringify(col):null,
+      title_name:tname||null
     }).eq('pid',myPid).then(null,()=>{});
   }
 }
@@ -4124,15 +4126,14 @@ function mkTitleTag(id,colorOverride){
   return el;
 }
 // Build title tag from raw DB data (for other players)
-function mkTitleTagRaw(titleId,titleColorJson){
+function mkTitleTagRaw(titleId,titleColorJson,titleName){
   if(!titleId) return null;
   let col=null;
   try{if(titleColorJson) col=typeof titleColorJson==='string'?JSON.parse(titleColorJson):titleColorJson;}catch{}
-  // If title not in local TITLES (custom from other player), build tag directly from color data
   if(!TITLES[titleId]){
     const el=document.createElement('span');
     el.className='player-title-tag';
-    el.textContent=col?.name||titleId;
+    el.textContent=titleName||col?.name||TITLES[titleId]?.name||'Кастомный';
     if(col){
       if(col.type==='rainbow') el.classList.add('rainbow');
       else if(col.type==='gradient'){el.classList.add('gradient');el.style.setProperty('--tc1',col.c1);el.style.setProperty('--tc2',col.c2);}
@@ -5533,7 +5534,7 @@ window.profOpenByPid=async function(pid){
     if(titleEl){
       titleEl.innerHTML='';titleEl.onclick=null;titleEl.ontouchend=null;
       if(data.active_title&&(TITLES[data.active_title]||true)){
-        try{const tag=mkTitleTagRaw(data.active_title,data.title_color);if(tag)titleEl.appendChild(tag);}
+        try{const tag=mkTitleTagRaw(data.active_title,data.title_color,data.title_name);if(tag)titleEl.appendChild(tag);}
         catch{titleEl.innerHTML='<span class="player-title-tag no-title">нет титула</span>';}
       } else {
         titleEl.innerHTML='<span class="player-title-tag no-title">нет титула</span>';
@@ -5633,7 +5634,7 @@ function _subProfView(pid){
       if(!titleEl) return;
       titleEl.innerHTML='';
       if(d.active_title){
-        try{const tg=mkTitleTagRaw(d.active_title,d.title_color);if(tg)titleEl.appendChild(tg);}catch{}
+        try{const tg=mkTitleTagRaw(d.active_title,d.title_color,d.title_name);if(tg)titleEl.appendChild(tg);}catch{}
       } else {
         titleEl.innerHTML='<span class="player-title-tag no-title">нет титула</span>';
       }
@@ -5970,7 +5971,8 @@ async function cloudSave(){
       const cname=customs[activeTitle]?.name||TITLES[activeTitle]?.name||null;
       if(cname) activeTitleColor=Object.assign(activeTitleColor||{},{ name:cname });
     }
-    if(pid) await _supa.from('profiles').upsert({pid,nickname:nick,avatar,last_seen:new Date().toISOString(),stats_json:statsJson,active_title:activeTitle||null,title_color:activeTitleColor?JSON.stringify(activeTitleColor):null},{onConflict:'pid'});
+    const activeTitleName=activeTitle?(TITLES[activeTitle]?.name||(()=>{try{return JSON.parse(localStorage.getItem('cw_custom_titles')||'{}')[activeTitle]?.name||null;}catch{return null;}})())||null:null;
+    if(pid) await _supa.from('profiles').upsert({pid,nickname:nick,avatar,last_seen:new Date().toISOString(),stats_json:statsJson,active_title:activeTitle||null,title_color:activeTitleColor?JSON.stringify(activeTitleColor):null,title_name:activeTitleName||null},{onConflict:'pid'});
   }catch(e){console.error('CLOUDSAVE ERROR:',e?.message||e?.code,JSON.stringify(e));}
 }
 
@@ -6282,7 +6284,7 @@ async function cloudLoad(){
     }
     // Title tag
     if(p.active_title){
-      try{const tg=mkTitleTagRaw(p.active_title,p.title_color);if(tg){tg.style.fontSize='5px';tg.style.padding='2px 6px';nickWrap.appendChild(tg);}}catch{}
+      try{const tg=mkTitleTagRaw(p.active_title,p.title_color,p.title_name);if(tg){tg.style.fontSize='5px';tg.style.padding='2px 6px';nickWrap.appendChild(tg);}}catch{}
     }
     const stxt=document.createElement('div');stxt.className='player-status-txt '+(online?'online':'offline');
     stxt.textContent=online?'онлайн':'офлайн';
@@ -6637,11 +6639,11 @@ async function cloudLoad(){
         <div class="apc-online" style="color:${online?'#44FF88':'#335566'}">${online?'● ОНЛАЙН':'○ ОФЛАЙН'}</div>
       </div>`;
     if(p.verified){const vb=document.getElementById('apc-ver-badge');if(vb)vb.appendChild(_mkVerifiedBadge(16));}
-    (function _apcInjectTitle(tid,tcol){
+    (function _apcInjectTitle(tid,tcol,tname){
       const tw=document.getElementById('apc-title-wrap');if(!tw)return;
       tw.innerHTML='';
-      if(tid){try{const tg=mkTitleTagRaw(tid,tcol);if(tg)tw.appendChild(tg);}catch{}}
-    })(p.active_title,p.title_color);
+      if(tid){try{const tg=mkTitleTagRaw(tid,tcol,tname);if(tg)tw.appendChild(tg);}catch{}}
+    })(p.active_title,p.title_color,p.title_name);
     document.getElementById('apc-online-actions').style.display=online?'':'none';
     // Show verified status
     const statusEl=document.getElementById('apc-verified-status');
@@ -6649,14 +6651,14 @@ async function cloudLoad(){
       statusEl.textContent='загрузка...';
       statusEl.style.color='#335566';
       if(_supa){
-        _supa.from('profiles').select('verified,active_title,title_color').eq('pid',p.pid).single()
+        _supa.from('profiles').select('verified,active_title,title_color,title_name').eq('pid',p.pid).single()
           .then(({data})=>{
             const v=!!(data?.verified);
             statusEl.textContent=v?'● ВЕРИФИЦИРОВАН':'○ НЕТ ГАЛОЧКИ';
             statusEl.style.color=v?'#1177DD':'#335566';
             if(v&&!p.verified){const vb=document.getElementById('apc-ver-badge');if(vb&&!vb.children.length)vb.appendChild(_mkVerifiedBadge(16));}
             if(!p.active_title&&data?.active_title){
-              const tw=document.getElementById('apc-title-wrap');if(tw){tw.innerHTML='';try{const tg=mkTitleTagRaw(data.active_title,data.title_color);if(tg)tw.appendChild(tg);}catch{}}
+              const tw=document.getElementById('apc-title-wrap');if(tw){tw.innerHTML='';try{const tg=mkTitleTagRaw(data.active_title,data.title_color,data.title_name);if(tg)tw.appendChild(tg);}catch{}}
             }
           }).catch(()=>{statusEl.textContent='ошибка';});
       }
@@ -8129,7 +8131,7 @@ window.chatOpen=async function(room){
         if(bw&&_verCache[peer.pid]) bw.appendChild(_mkVerifiedBadge(14));
         const tc=_titleCache[peer.pid];
         if(tw&&tc?.titleId&&(TITLES[tc.titleId]||tc.titleId)){
-          try{const tg=mkTitleTagRaw(tc.titleId,tc.titleColor);if(tg) tw.appendChild(tg);}catch{}
+          try{const tg=mkTitleTagRaw(tc.titleId,tc.titleColor,tc.titleName);if(tg) tw.appendChild(tg);}catch{}
         }
       });
     }
@@ -8210,12 +8212,12 @@ async function _prefetchProfiles(pids){
   const missing=pids.filter(p=>_profCache[p]==null||_titleCache[p]===undefined);
   if(!missing.length) return;
   try{
-    const{data}=await _supa.from('profiles').select('pid,avatar,verified,active_title,title_color').in('pid',missing);
+    const{data}=await _supa.from('profiles').select('pid,avatar,verified,active_title,title_color,title_name').in('pid',missing);
     (data||[]).forEach(d=>{
       _profCache[d.pid]=d;
       _avCache[d.pid]=d.avatar||null;
       _verCache[d.pid]=!!d.verified;
-      _titleCache[d.pid]={titleId:d.active_title||null,titleColor:d.title_color||null};
+      _titleCache[d.pid]={titleId:d.active_title||null,titleColor:d.title_color||null,titleName:d.title_name||null};
     });
     missing.forEach(p=>{if(!_profCache[p])_profCache[p]={};if(!_titleCache[p])_titleCache[p]={titleId:null,titleColor:null};});
   }catch{}
@@ -8272,7 +8274,7 @@ function _mkMsgRow(m, continued){
     if(_isVerifiedSync(m.sender_pid)) header.appendChild(_mkVerifiedBadge());
     const _tc=_titleCache[m.sender_pid];
     if(_tc?.titleId&&TITLES[_tc.titleId]){
-      try{const tg=mkTitleTagRaw(_tc.titleId,_tc.titleColor);if(tg){tg.style.fontSize='5px';tg.style.padding='2px 5px';header.appendChild(tg);}}catch{}
+      try{const tg=mkTitleTagRaw(_tc.titleId,_tc.titleColor,_tc.titleName);if(tg){tg.style.fontSize='5px';tg.style.padding='2px 5px';header.appendChild(tg);}}catch{}
     }
 
     const time=document.createElement('span');time.className='msg-time-hdr';
