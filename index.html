@@ -5710,6 +5710,7 @@ _supaInitPromise=(async()=>{
     if(session?.user){
       _supaUser=session.user;
       await cloudLoad();
+      cloudSave();
       const nick=_supaUser.user_metadata?.nickname||_supaUser.email?.split('@')[0]||'?';
       hudShowUser(nick);
       // Sync to profiles table so admin can find this player
