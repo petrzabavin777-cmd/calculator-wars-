@@ -4128,7 +4128,7 @@ function mkTitleTagRaw(titleId,titleColorJson){
   if(!TITLES[titleId]){
     const el=document.createElement('span');
     el.className='player-title-tag';
-    el.textContent=titleId; // fallback — just show id
+    el.textContent=col?.name||titleId;
     if(col){
       if(col.type==='rainbow') el.classList.add('rainbow');
       else if(col.type==='gradient'){el.classList.add('gradient');el.style.setProperty('--tc1',col.c1);el.style.setProperty('--tc2',col.c2);}
@@ -5959,7 +5959,13 @@ async function cloudSave(){
     };
     const activeTitle=titleActive||null;
     const titleColorObj=titleColors&&titleColors!=='{}'?JSON.parse(titleColors):null;
-    const activeTitleColor=activeTitle&&titleColorObj?titleColorObj[activeTitle]||null:null;
+    let activeTitleColor=activeTitle&&titleColorObj?titleColorObj[activeTitle]||null:null;
+    // For custom titles (tc_*), embed name so other players can display it
+    if(activeTitle&&activeTitle.startsWith('tc_')){
+      const customs=JSON.parse(localStorage.getItem('cw_custom_titles')||'{}');
+      const cname=customs[activeTitle]?.name||TITLES[activeTitle]?.name||null;
+      if(cname) activeTitleColor=Object.assign(activeTitleColor||{},{ name:cname });
+    }
     if(pid) await _supa.from('profiles').upsert({pid,nickname:nick,avatar,last_seen:new Date().toISOString(),stats_json:statsJson,active_title:activeTitle||null,title_color:activeTitleColor?JSON.stringify(activeTitleColor):null},{onConflict:'pid'});
   }catch(e){console.error('CLOUDSAVE ERROR:',e?.message||e?.code,JSON.stringify(e));}
 }
