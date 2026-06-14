@@ -4083,7 +4083,7 @@ function setActiveTitle(id){
     _supa.from('profiles').update({
       active_title:id||null,
       title_color:col?JSON.stringify(col):null
-    }).eq('pid',myPid).catch(()=>{});
+    }).eq('pid',myPid).then(null,()=>{});
   }
 }
 function getTitleColors(id){
@@ -5727,7 +5727,7 @@ _supaInitPromise=(async()=>{
               if(dbVal>localVal){saveSigma(dbVal);renderSigmaHud();}
               else if(localVal>dbVal){
                 // Local is ahead — sync DB to local
-                _supa.from('profiles').update({sigma:localVal}).eq('pid',pid).catch(()=>{});
+                _supa.from('profiles').update({sigma:localVal}).eq('pid',pid).then(null,()=>{});
               }
             }
           }).catch(()=>{});
@@ -5735,7 +5735,7 @@ _supaInitPromise=(async()=>{
         _supa.from('profiles').upsert(
           {pid,nickname:nick,avatar,last_seen:new Date().toISOString()},
           {onConflict:'pid'}
-        ).catch(()=>{});
+        ).then(null,()=>{});
       }
     }
   }catch(e){console.warn('Supabase init:',e);}
@@ -5961,7 +5961,7 @@ async function cloudSave(){
     const titleColorObj=titleColors&&titleColors!=='{}'?JSON.parse(titleColors):null;
     const activeTitleColor=activeTitle&&titleColorObj?titleColorObj[activeTitle]||null:null;
     if(pid) await _supa.from('profiles').upsert({pid,nickname:nick,avatar,last_seen:new Date().toISOString(),stats_json:statsJson,active_title:activeTitle||null,title_color:activeTitleColor?JSON.stringify(activeTitleColor):null},{onConflict:'pid'});
-  }catch(e){console.warn('Cloud save:',e);}
+  }catch(e){console.error('CLOUDSAVE ERROR:',e?.message||e?.code,JSON.stringify(e));}
 }
 
 async function cloudLoad(){
@@ -7471,7 +7471,7 @@ function addSigma(amount){
   // Sync to cloud
   if(_supa&&_supaUser){
     const pid=_supaUser.user_metadata?.pid;
-    if(pid) _supa.from('profiles').update({sigma:next}).eq('pid',pid).catch(()=>{});
+    if(pid) _supa.from('profiles').update({sigma:next}).eq('pid',pid).then(null,()=>{});
   }
   setTimeout(()=>checkTitles(),100);
   return next-prev; // actually added
