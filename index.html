@@ -811,7 +811,7 @@ body{background:var(--bg);font-family:'Press Start 2P',monospace;color:var(--tex
 /* ── Profile overlay ── */
 #prof-ov{position:fixed;inset:0;background:#00000099;z-index:9700;display:none;align-items:center;justify-content:center;}
 #prof-ov.on{display:flex;}
-#prof-box{background:#030d1a;border:4px solid var(--blue);box-shadow:6px 6px 0 #000a20,0 0 30px #0055aa55;width:min(92vw,780px);padding:28px 32px 22px;display:flex;flex-direction:column;gap:14px;align-items:center;}
+#prof-box{background:#030d1a;border:4px solid var(--blue);box-shadow:6px 6px 0 #000a20,0 0 30px #0055aa55;width:min(92vw,780px);padding:28px 32px 22px;display:flex;flex-direction:column;gap:14px;align-items:center;max-height:calc(100vh - 32px);overflow-y:auto;}
 #prof-title{font-size:9px;color:var(--lcd);letter-spacing:2px;}
 #prof-avatar-wrap{position:relative;width:96px;height:96px;cursor:pointer;}
 #prof-avatar{width:96px;height:96px;border:3px solid var(--blue);background:#0a1e30;object-fit:cover;display:block;}
@@ -1560,12 +1560,23 @@ button, .menu-btn {
   background:#030d1a;flex-shrink:0;
 }
 #chat-back-btn{display:none;font-family:'Press Start 2P',monospace;font-size:8px;padding:6px 10px;background:#0a1e30;color:#88BBDD;border:2px solid #1a4a70;cursor:pointer;touch-action:manipulation;margin-right:4px;}
-#chat-peer-av{width:32px;height:32px;border:2px solid #1a4a70;object-fit:cover;image-rendering:pixelated;flex-shrink:0;}
+#chat-peer-av{width:42px;height:42px;border:2px solid #1a4a70;object-fit:cover;image-rendering:pixelated;flex-shrink:0;cursor:pointer;}
 #chat-peer-info{flex:1;}
 #chat-peer-name{font-family:'Press Start 2P',monospace;font-size:8px;color:#fff;}
-#chat-peer-status{font-family:'Press Start 2P',monospace;font-size:6px;margin-top:2px;}
+#chat-peer-title-wrap{margin-top:2px;min-height:16px;}
+#chat-peer-status{font-family:'Press Start 2P',monospace;font-size:5px;margin-top:3px;color:#335566;}
 #chat-peer-status.online{color:#44FF88;}
 #chat-peer-status.offline{color:#335566;}
+/* Title bubble popup in profile */
+#prof-title-bubble{position:absolute;z-index:10100;background:#010a14;border:2px solid #CC88FF;padding:10px 12px;box-shadow:4px 4px 0 #3a0055;min-width:220px;max-width:300px;display:none;flex-direction:column;gap:6px;}
+#prof-title-bubble.on{display:flex;}
+#prof-title-bubble-arrow{width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-bottom:7px solid #CC88FF;position:absolute;top:-7px;left:20px;}
+.ptb-none-btn,.ptb-title-btn{font-family:'Press Start 2P',monospace;font-size:5px;padding:4px 8px;background:#040e04;border:1px solid #1a4a1a;color:#44AA44;cursor:pointer;touch-action:manipulation;text-align:left;width:100%;}
+.ptb-none-btn:hover,.ptb-title-btn:hover,.ptb-none-btn.active,.ptb-title-btn.active{background:#082008;border-color:#44FF88;color:#44FF88;}
+.ptb-color-row{display:flex;gap:5px;flex-wrap:wrap;padding:4px 0 0;}
+.ptb-color-dot{width:16px;height:16px;border:2px solid #1a3a55;cursor:pointer;flex-shrink:0;touch-action:manipulation;}
+.ptb-color-dot.active{border-color:#fff;transform:scale(1.2);}
+.ptb-color-dot.rainbow-dot{background:linear-gradient(135deg,#FF4444,#FFD700,#44FF88,#00DDFF,#8844FF,#FF44AA);}
 
 /* Messages area */
 #chat-messages{
@@ -1899,7 +1910,13 @@ button, .menu-btn {
     </div>
     <input id="prof-avatar-input" type="file" accept="image/*" onchange="profUploadAvatar(event)">
     <div id="prof-nick"></div>
-    <div id="prof-active-title" style="margin-top:2px;min-height:18px;"></div>
+    <div style="position:relative;margin-top:3px;">
+      <div id="prof-active-title" style="min-height:18px;cursor:pointer;" title="Нажми чтобы сменить титул"></div>
+      <div id="prof-title-bubble">
+        <div id="prof-title-bubble-arrow"></div>
+        <div id="prof-title-bubble-inner"></div>
+      </div>
+    </div>
     <div id="prof-social">
       <div class="prof-friend-count" id="prof-friend-count">👥 — друзей</div>
       <button class="prof-social-btn chat" id="prof-chat-btn" style="display:none;" onclick="profGoChat()">💬 НАПИСАТЬ</button>
@@ -1949,10 +1966,6 @@ button, .menu-btn {
           <div class="prof-stat"><span>Первый запуск</span><span id="prof-stat-first" class="prof-stat-val">—</span></div>
         </div>
       </div>
-    </div>
-    <div id="prof-title-section" style="width:100%;display:none;flex-direction:column;gap:6px;">
-      <div class="prof-cat-hdr" style="color:#CC88FF;border-color:#CC88FF">🏅 МОИ ТИТУЛЫ</div>
-      <div id="title-settings"></div>
     </div>
     <button id="prof-change-btn" onclick="document.getElementById('prof-avatar-input').click()">📷 ИЗМЕНИТЬ АВАТАР</button>
     <button id="prof-close-btn" onclick="profClose()">✕ ЗАКРЫТЬ</button>
@@ -4044,8 +4057,15 @@ function showAchievToast(name,color){
   },4000);
 }
 // ── Title system functions ────────────────────────────────────────
+// Safe accessor — works even when G is null (menu/profile before game start)
+function _getTitles(){
+  if(G&&G.titles) return G.titles;
+  try{return new Set(JSON.parse(localStorage.getItem('cw_titles')||'[]'));}catch{return new Set();}
+}
 function saveTitles(){
-  localStorage.setItem('cw_titles',JSON.stringify([...G.titles]));
+  const ts=_getTitles();
+  localStorage.setItem('cw_titles',JSON.stringify([...ts]));
+  if(G&&G.titles!==ts) G.titles=ts; // keep in sync
 }
 function getActiveTitle(){
   return localStorage.getItem('cw_title_active')||null;
@@ -4053,8 +4073,10 @@ function getActiveTitle(){
 function setActiveTitle(id){
   if(id) localStorage.setItem('cw_title_active',id);
   else localStorage.removeItem('cw_title_active');
-  // Sync to profiles so other players can see it
+  // Invalidate own entry in title cache so chat header reflects change immediately
   const myPid=_supaUser?.user_metadata?.pid;
+  if(myPid&&typeof _titleCache!=='undefined') _titleCache[myPid]={titleId:id||null,titleColor:id?JSON.stringify(getTitleColors(id)):null};
+  // Sync to profiles so other players can see it
   if(_supa&&myPid){
     const td=TITLES[id];
     const col=getTitleColors(id);
@@ -4099,15 +4121,28 @@ function mkTitleTag(id,colorOverride){
 }
 // Build title tag from raw DB data (for other players)
 function mkTitleTagRaw(titleId,titleColorJson){
-  if(!titleId||!TITLES[titleId]) return null;
+  if(!titleId) return null;
   let col=null;
   try{if(titleColorJson) col=typeof titleColorJson==='string'?JSON.parse(titleColorJson):titleColorJson;}catch{}
+  // If title not in local TITLES (custom from other player), build tag directly from color data
+  if(!TITLES[titleId]){
+    const el=document.createElement('span');
+    el.className='player-title-tag';
+    el.textContent=titleId; // fallback — just show id
+    if(col){
+      if(col.type==='rainbow') el.classList.add('rainbow');
+      else if(col.type==='gradient'){el.classList.add('gradient');el.style.setProperty('--tc1',col.c1);el.style.setProperty('--tc2',col.c2);}
+      else {el.style.color=col.c1||'#CC88FF';el.style.borderColor=(col.c1||'#CC88FF')+'55';}
+    } else {el.style.color='#CC88FF';el.style.borderColor='#CC88FF55';}
+    return el;
+  }
   return mkTitleTag(titleId,col);
 }
 function unlockTitle(id){
   if(!id||!TITLES[id]||TITLES[id].adminOnly) return;
-  if(G.titles.has(id)) return;
-  G.titles.add(id);
+  if(_getTitles().has(id)) return;
+  _getTitles().add(id);
+  if(G&&G.titles) G.titles.add(id);
   saveTitles();
   showTitleToast(id);
   const t=TITLES[id];
@@ -4173,7 +4208,7 @@ function checkNewTitleMx(id){
 function renderTitleSettings(container){
   container.innerHTML='';
   const active=getActiveTitle();
-  const all=[...G.titles].filter(id=>TITLES[id]);
+  const all=[..._getTitles()].filter(id=>TITLES[id]);
   if(!all.length){
     container.innerHTML='<div style="font-family:\'Press Start 2P\',monospace;font-size:6px;color:#335566;padding:4px 0;">нет титулов — заработай или получи от создателя</div>';
     return;
@@ -4183,7 +4218,7 @@ function renderTitleSettings(container){
   const noneBtn=document.createElement('button');
   noneBtn.className='ts-title-btn'+(active===null?' active':'');
   noneBtn.textContent='— без титула —';
-  noneBtn.onclick=()=>{setActiveTitle(null);renderTitleSettings(container);renderProfTitle();};
+  _cardOn(noneBtn,()=>{setActiveTitle(null);renderTitleSettings(container);renderProfTitle();});
   row.appendChild(noneBtn);
   all.forEach(id=>{
     const t=TITLES[id];
@@ -4192,7 +4227,7 @@ function renderTitleSettings(container){
     btn.style.color=t.color==='rainbow'?'#FF88CC':t.color;
     btn.style.borderColor=(t.color==='rainbow'?'#FF88CC':t.color)+'55';
     btn.textContent=t.name;
-    btn.onclick=()=>{setActiveTitle(id);renderTitleSettings(container);renderProfTitle();};
+    _cardOn(btn,()=>{setActiveTitle(id);renderTitleSettings(container);renderProfTitle();});
     row.appendChild(btn);
   });
   container.appendChild(row);
@@ -4224,27 +4259,135 @@ function renderTitleSettings(container){
       if(o.bg) dot.style.background=o.bg;
       const isCur=cur?(cur.type===o.type&&(o.type==='rainbow'||cur.c1===o.c1)):(o.type==='rainbow'&&TITLES[active].color==='rainbow');
       if(isCur) dot.classList.add('active');
-      dot.onclick=()=>{
+      _cardOn(dot,()=>{
         if(o.type==='rainbow') saveTitleColor(active,{type:'rainbow'});
         else if(o.type==='gradient') saveTitleColor(active,{type:'gradient',c1:o.c1,c2:o.c2});
         else saveTitleColor(active,{type:'solid',c1:o.c1});
         renderTitleSettings(container);renderProfTitle();
-      };
+      });
       colorRow.appendChild(dot);
     });
     container.appendChild(colorRow);
   }
 }
-function renderProfTitle(){
+// ── Title bubble (own profile) ──────────────────────────────────────
+let _titleBubbleOpen=false;
+function _closeTitleBubble(){
+  const b=document.getElementById('prof-title-bubble');
+  if(b) b.classList.remove('on');
+  _titleBubbleOpen=false;
+}
+function _openTitleBubble(){
+  const b=document.getElementById('prof-title-bubble');
+  const inner=document.getElementById('prof-title-bubble-inner');
+  if(!b||!inner) return;
+  // Close on outside click
+  if(_titleBubbleOpen){_closeTitleBubble();return;}
+  _titleBubbleOpen=true;
+  inner.innerHTML='';
+  const active=getActiveTitle();
+  const all=[..._getTitles()].filter(id=>TITLES[id]);
+
+  // "none" button
+  const noneBtn=document.createElement('button');
+  noneBtn.className='ptb-none-btn'+(active===null?' active':'');
+  noneBtn.textContent='— без титула —';
+  _cardOn(noneBtn,()=>{setActiveTitle(null);renderProfTitle();_openTitleBubble();});
+  inner.appendChild(noneBtn);
+
+  if(!all.length){
+    const empty=document.createElement('div');
+    empty.style.cssText='font-family:"Press Start 2P",monospace;font-size:5px;color:#335566;padding:4px 0;';
+    empty.textContent='нет титулов';
+    inner.appendChild(empty);
+  }
+
+  all.forEach(id=>{
+    const t=TITLES[id];
+    const btn=document.createElement('button');
+    btn.className='ptb-title-btn'+(active===id?' active':'');
+    btn.style.color=t.color==='rainbow'?'#FF88CC':t.color;
+    btn.style.borderColor=(t.color==='rainbow'?'#FF88CC':t.color)+'55';
+    btn.textContent=t.name;
+    _cardOn(btn,()=>{setActiveTitle(id);renderProfTitle();_renderColorDotsInBubble(inner,id);
+      // Re-mark active buttons
+      inner.querySelectorAll('.ptb-title-btn,.ptb-none-btn').forEach(b2=>{
+        b2.classList.toggle('active',b2===btn||(b2===noneBtn&&id===null));
+      });
+    });
+    inner.appendChild(btn);
+  });
+
+  // Color dots for current active if canColor
+  if(active&&TITLES[active]?.canColor) _renderColorDotsInBubble(inner,active);
+
+  b.classList.add('on');
+}
+function _renderColorDotsInBubble(inner,id){
+  inner.querySelector('.ptb-color-row')?.remove();
+  const t=TITLES[id]; if(!t?.canColor) return;
+  const cur=getTitleColors(id);
+  const opts=[
+    {type:'rainbow',cls:'rainbow-dot',bg:''},
+    {type:'solid',c1:'#1177DD',bg:'#1177DD'},{type:'solid',c1:'#44FF88',bg:'#44FF88'},
+    {type:'solid',c1:'#CC44FF',bg:'#CC44FF'},{type:'solid',c1:'#FFD700',bg:'#FFD700'},
+    {type:'solid',c1:'#FF44AA',bg:'#FF44AA'},{type:'solid',c1:'#FFFFFF',bg:'#FFFFFF'},
+    {type:'gradient',c1:'#FF4400',c2:'#FFD700',bg:'linear-gradient(90deg,#FF4400,#FFD700)'},
+    {type:'gradient',c1:'#00DDFF',c2:'#0044FF',bg:'linear-gradient(90deg,#00DDFF,#0044FF)'},
+    {type:'gradient',c1:'#FF00AA',c2:'#FF8800',bg:'linear-gradient(90deg,#FF00AA,#FF8800)'},
+    {type:'gradient',c1:'#44FF88',c2:'#00DDFF',bg:'linear-gradient(90deg,#44FF88,#00DDFF)'},
+  ];
+  const colorRow=document.createElement('div');colorRow.className='ptb-color-row';
+  opts.forEach(o=>{
+    const dot=document.createElement('div');
+    dot.className='ptb-color-dot'+(o.cls?' '+o.cls:'');
+    if(o.bg) dot.style.background=o.bg;
+    const isCur=cur?(cur.type===o.type&&(o.type==='rainbow'||cur.c1===o.c1)):(o.type==='rainbow'&&t.color==='rainbow');
+    if(isCur) dot.classList.add('active');
+    _cardOn(dot,()=>{
+      if(o.type==='rainbow') saveTitleColor(id,{type:'rainbow'});
+      else if(o.type==='gradient') saveTitleColor(id,{type:'gradient',c1:o.c1,c2:o.c2});
+      else saveTitleColor(id,{type:'solid',c1:o.c1});
+      colorRow.querySelectorAll('.ptb-color-dot').forEach(d2=>d2.classList.remove('active'));
+      dot.classList.add('active');
+      renderProfTitle();
+    });
+    colorRow.appendChild(dot);
+  });
+  inner.appendChild(colorRow);
+}
+function renderProfTitle(isOwn=true){
   const el=document.getElementById('prof-active-title');
   if(!el) return;
   el.innerHTML='';
+  el.onclick=null;
   const active=getActiveTitle();
-  if(active&&G.titles.has(active)){
-    const tag=mkTitleTag(active);
-    if(tag) el.appendChild(tag);
+  if(isOwn){
+    if(active&&_getTitles().has(active)){
+      const tag=mkTitleTag(active);
+      if(tag) el.appendChild(tag);
+    } else {
+      const noTag=document.createElement('span');
+      noTag.className='player-title-tag no-title';noTag.textContent='нет титула';
+      el.appendChild(noTag);
+    }
+    // Make clickable to open bubble
+    el.onclick=(e)=>{e.stopPropagation();_openTitleBubble();};
+    el.ontouchend=(e)=>{e.preventDefault();e.stopPropagation();_openTitleBubble();};
+  } else {
+    // Other player — non-clickable, just display
+    if(active&&TITLES[active]){
+      const tag=mkTitleTagRaw(active,null);
+      if(tag) el.appendChild(tag);
+    } else {
+      const noTag=document.createElement('span');
+      noTag.className='player-title-tag no-title';noTag.textContent='нет титула';
+      el.appendChild(noTag);
+    }
   }
 }
+// Close bubble when clicking outside
+document.addEventListener('click',()=>{if(_titleBubbleOpen)_closeTitleBubble();},{capture:false});
 // ──────────────────────────────────────────────────────────────────
 function checkDmgRecord(fd){
   Object.entries(MX).forEach(([id,e])=>{
@@ -4474,7 +4617,7 @@ function renderMat(){
     const tg=document.createElement('div');tg.className='mg';
     titleEntries.forEach(([id,t])=>{
       const mxId='title_'+id;
-      const unlocked=G.titles.has(id);
+      const unlocked=_getTitles().has(id);
       const card=document.createElement('div');
       card.className='me '+(unlocked?'kn':'un');
       if(unlocked){
@@ -4491,7 +4634,7 @@ function renderMat(){
     c.appendChild(tg);
   }
   const totalTitles=Object.keys(TITLES).length;
-  const unlockedTitles=[...G.titles].filter(id=>TITLES[id]).length;
+  const unlockedTitles=[..._getTitles()].filter(id=>TITLES[id]).length;
   document.getElementById('mat-cnt').textContent=`Открыто: ${G.known.size} / ${Object.keys(MX).length} · Титулов: ${unlockedTitles} / ${totalTitles}`;
 }
 function openCard(title,body,mxId,runame){
@@ -5298,12 +5441,9 @@ function profOpen(){
       d.getDate()+' '+['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'][d.getMonth()]+' '+d.getFullYear();
   }
 
-  // Title display + settings (own profile)
-  renderProfTitle();
-  const titleSection=document.getElementById('prof-title-section');
-  const titleSettingsEl=document.getElementById('title-settings');
-  if(titleSection){titleSection.style.display='flex';}
-  if(titleSettingsEl) renderTitleSettings(titleSettingsEl);
+  // Title display (own profile — clickable bubble)
+  _closeTitleBubble();
+  renderProfTitle(true);
   // Restore avatar edit
   document.getElementById('prof-avatar-edit').style.display='';
   document.getElementById('prof-avatar-wrap').onclick=()=>document.getElementById('prof-avatar-input').click();
@@ -5335,6 +5475,8 @@ window.profOpenByPid=async function(pid){
   try{
     const{data}=await _supa.from('profiles').select('*').eq('pid',pid).single();
     if(!data) return;
+    // Subscribe to realtime changes for this profile
+    _subProfView(pid);
     const nickEl=document.getElementById('prof-nick');
     nickEl.textContent=data.nickname||'???';
     // Verified badge
@@ -5344,19 +5486,18 @@ window.profOpenByPid=async function(pid){
     // PID
     const pidEl=document.getElementById('prof-pid');
     if(pidEl) pidEl.textContent='# '+pid;
-    // Hide avatar edit, title settings
+    // Hide avatar edit, title bubble
     document.getElementById('prof-avatar-edit').style.display='none';
     document.getElementById('prof-avatar-wrap').onclick=null;
     document.getElementById('prof-change-btn').style.display='none';
-    const titleSection=document.getElementById('prof-title-section');
-    if(titleSection) titleSection.style.display='none';
-    // Show other player's title
+    _closeTitleBubble();
+    // Show other player's title (non-clickable)
     const titleEl=document.getElementById('prof-active-title');
     if(titleEl){
-      titleEl.innerHTML='';
-      if(data.active_title&&TITLES[data.active_title]){
-        const tag=mkTitleTagRaw(data.active_title,data.title_color);
-        if(tag) titleEl.appendChild(tag);
+      titleEl.innerHTML='';titleEl.onclick=null;titleEl.ontouchend=null;
+      if(data.active_title&&(TITLES[data.active_title]||true)){
+        try{const tag=mkTitleTagRaw(data.active_title,data.title_color);if(tag)titleEl.appendChild(tag);}
+        catch{titleEl.innerHTML='<span class="player-title-tag no-title">нет титула</span>';}
       } else {
         titleEl.innerHTML='<span class="player-title-tag no-title">нет титула</span>';
       }
@@ -5387,13 +5528,35 @@ window.profOpenByPid=async function(pid){
         if(chatBtnEl) chatBtnEl.style.display='none';
       }
     }
-    // Clear stats for other player
-    ['prof-stat-dmg','prof-stat-totdmg','prof-stat-kills','prof-stat-selfhits',
-     'prof-stat-games','prof-stat-waves','prof-stat-wins','prof-stat-mx',
-     'prof-stat-achiev','prof-stat-spent','prof-stat-sigma',
-     'prof-stat-time','prof-stat-first'].forEach(id=>{
-      const el=document.getElementById(id);if(el) el.textContent='—';
-    });
+    // Stats from profiles.stats_json (written by cloudSave — no extra query needed)
+    const st=data.stats_json||{};
+    const dmg=st.maxDmg||0;
+    const dmgEl=document.getElementById('prof-stat-dmg');
+    if(dmgEl){
+      dmgEl.textContent=dmg>0?dmg.toLocaleString('ru-RU'):'—';
+      if(dmg>=1000000)dmgEl.style.color='#00EEBB';
+      else if(dmg>=100000)dmgEl.style.color='#CC00FF';
+      else if(dmg>=1000)dmgEl.style.color='#FF4400';
+      else dmgEl.style.color='#FFD700';
+    }
+    const td=document.getElementById('prof-stat-totdmg');if(td)td.textContent=(st.totalDmg||0)>0?(st.totalDmg).toLocaleString('ru-RU'):'—';
+    const kl=document.getElementById('prof-stat-kills');if(kl)kl.textContent=st.totalKills||0;
+    const sh=document.getElementById('prof-stat-selfhits');if(sh)sh.textContent=st.selfHits||0;
+    const gp=document.getElementById('prof-stat-games');if(gp)gp.textContent=st.gamesPlayed||0;
+    const wv=document.getElementById('prof-stat-waves');if(wv)wv.textContent=st.wavesCleared||0;
+    const wn=document.getElementById('prof-stat-wins');if(wn)wn.textContent=st.wins||0;
+    const mxEl=document.getElementById('prof-stat-mx');if(mxEl)mxEl.textContent=(st.mxCount||0)+' / '+Object.keys(MX).length;
+    const sp=document.getElementById('prof-stat-spent');if(sp)sp.textContent=st.coinsSpent||0;
+    const secs=st.playtime||0;const _h=Math.floor(secs/3600),_m=Math.floor((secs%3600)/60);
+    const tm=document.getElementById('prof-stat-time');if(tm)tm.textContent=_h>0?`${_h}ч ${_m}м`:`${_m}м`;
+    const sigmaEl=document.getElementById('prof-stat-sigma');
+    if(sigmaEl){sigmaEl.style.color='#CC88FF';sigmaEl.textContent=data.sigma!=null?(parseInt(data.sigma)||0).toLocaleString('ru')+' Σ':'—';}
+    const firstEl=document.getElementById('prof-stat-first');
+    if(firstEl&&data.created_at){
+      const d2=new Date(data.created_at);
+      firstEl.style.color='';
+      firstEl.textContent=d2.getDate()+' '+['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'][d2.getMonth()]+' '+d2.getFullYear();
+    }
     document.getElementById('prof-ov').classList.add('on');
   }catch(e){console.warn('profOpenByPid:',e);}
 };
@@ -5413,6 +5576,35 @@ window.profAddFriend=function(){
   sendFriendRequest(pid,nick,btn);
 };
 
+let _profViewSub=null;
+function _unsubProfView(){
+  if(_profViewSub){try{_supa?.removeChannel(_profViewSub);}catch{}  _profViewSub=null;}
+}
+function _subProfView(pid){
+  _unsubProfView();
+  if(!_supa||!pid) return;
+  // No filter — filter in callback (pid=eq.X requires REPLICA IDENTITY FULL on the table)
+  _profViewSub=_supa.channel('prof-view-'+pid)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'profiles'},payload=>{
+      const d=payload.new;
+      if(!d||d.pid!==pid) return;
+      // Update caches
+      _titleCache[pid]={titleId:d.active_title||null,titleColor:d.title_color||null};
+      // Update title display if profile still open
+      if(!document.getElementById('prof-ov')?.classList.contains('on')) return;
+      const titleEl=document.getElementById('prof-active-title');
+      if(!titleEl) return;
+      titleEl.innerHTML='';
+      if(d.active_title){
+        try{const tg=mkTitleTagRaw(d.active_title,d.title_color);if(tg)titleEl.appendChild(tg);}catch{}
+      } else {
+        titleEl.innerHTML='<span class="player-title-tag no-title">нет титула</span>';
+      }
+      // Also update sigma if shown
+      const sigmaEl=document.getElementById('prof-stat-sigma');
+      if(sigmaEl&&d.sigma!=null) sigmaEl.textContent=(parseInt(d.sigma)||0).toLocaleString('ru')+' Σ';
+    }).subscribe();
+}
 function profClose(){
   document.getElementById('prof-ov').classList.remove('on');
   document.getElementById('prof-avatar-edit').style.display='';
@@ -5420,6 +5612,7 @@ function profClose(){
   document.getElementById('prof-change-btn').style.display='';
   document.getElementById('prof-chat-btn').style.display='none';
   document.getElementById('prof-add-btn').style.display='none';
+  _unsubProfView();
 }
 
 function profOvClick(e){
@@ -5715,12 +5908,22 @@ async function cloudSave(){
     const titles=localStorage.getItem('cw_titles')||'[]';
     const titleActive=localStorage.getItem('cw_title_active')||'';
     const titleColors=localStorage.getItem('cw_title_colors')||'{}';
-    await _supa.from('saves').upsert({user_id:_supaUser.id,mx,stats,titles,title_active:titleActive,title_colors:titleColors,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+    const pid=_supaUser.user_metadata?.pid||null;
+    await _supa.from('saves').upsert({user_id:_supaUser.id,pid,mx,stats,titles,title_active:titleActive,title_colors:titleColors,updated_at:new Date().toISOString()},{onConflict:'user_id'});
     // Update last_seen in profiles
-    const pid=_supaUser.user_metadata?.pid;
     const nick=_supaUser.user_metadata?.nickname;
     const avatar=_supaUser.user_metadata?.avatar||null;
-    if(pid) await _supa.from('profiles').upsert({pid,nickname:nick,avatar,last_seen:new Date().toISOString()},{onConflict:'pid'});
+    // Build public stats snapshot for other players to read
+    const statsSnap=JSON.parse(stats||'{}');
+    const mxArr=JSON.parse(mx||'[]');
+    const statsJson={
+      maxDmg:statsSnap.maxDmg||0, totalDmg:statsSnap.totalDmg||0,
+      totalKills:statsSnap.totalKills||0, selfHits:statsSnap.selfHits||0,
+      gamesPlayed:statsSnap.gamesPlayed||0, wavesCleared:statsSnap.wavesCleared||0,
+      wins:statsSnap.wins||0, coinsSpent:statsSnap.coinsSpent||0,
+      playtime:statsSnap.playtime||0, mxCount:mxArr.length,
+    };
+    if(pid) await _supa.from('profiles').upsert({pid,nickname:nick,avatar,last_seen:new Date().toISOString(),stats_json:statsJson},{onConflict:'pid'});
   }catch(e){console.warn('Cloud save:',e);}
 }
 
@@ -5729,7 +5932,16 @@ async function cloudLoad(){
   try{
     const {data}=await _supa.from('saves').select('mx,stats,titles,title_active,title_colors').eq('user_id',_supaUser.id).single();
     if(data?.mx)localStorage.setItem('cw_mx',data.mx);
-    if(data?.stats)localStorage.setItem('cw_stats',data.stats);
+    if(data?.stats){
+      try{
+        const cs=JSON.parse(data.stats);
+        const ls=JSON.parse(localStorage.getItem('cw_stats')||'{}');
+        const merged={};
+        ['maxDmg','totalDmg','totalKills','selfHits','gamesPlayed','wavesCleared','wins','coinsSpent','playtime','burnCount','freezeCount','modUses','chaosUses','richardWins'].forEach(k=>{merged[k]=Math.max(cs[k]||0,ls[k]||0);});
+        Object.keys(cs).forEach(k=>{if(merged[k]===undefined)merged[k]=cs[k];});
+        localStorage.setItem('cw_stats',JSON.stringify(merged));
+      }catch{localStorage.setItem('cw_stats',data.stats);}
+    }
     if(data?.titles)localStorage.setItem('cw_titles',data.titles);
     if(data?.title_active)localStorage.setItem('cw_title_active',data.title_active);
     if(data?.title_colors)localStorage.setItem('cw_title_colors',data.title_colors);
@@ -6015,11 +6227,15 @@ async function cloudLoad(){
     const nickWrap=document.createElement('div');nickWrap.style.cssText='display:flex;align-items:center;gap:4px;';
     const nick=document.createElement('div');nick.className='player-nick';nick.textContent=p.nickname||'???';
     nickWrap.appendChild(nick);
-    // Check verified async
-    if(_supa&&p.pid){
+    // Verified badge + title (data already has both from profiles.select('*'))
+    if(p.verified) nickWrap.appendChild(_mkVerifiedBadge(14));
+    else if(_supa&&p.pid&&p.verified===undefined){
       _supa.from('profiles').select('verified').eq('pid',p.pid).single()
-        .then(({data})=>{if(data?.verified) nickWrap.appendChild(_mkVerifiedBadge(14));})
-        .catch(()=>{});
+        .then(({data})=>{if(data?.verified) nickWrap.appendChild(_mkVerifiedBadge(14));}).catch(()=>{});
+    }
+    // Title tag
+    if(p.active_title){
+      try{const tg=mkTitleTagRaw(p.active_title,p.title_color);if(tg){tg.style.fontSize='5px';tg.style.padding='2px 6px';nickWrap.appendChild(tg);}}catch{}
     }
     const stxt=document.createElement('div');stxt.className='player-status-txt '+(online?'online':'offline');
     stxt.textContent=online?'онлайн':'офлайн';
@@ -6303,7 +6519,7 @@ async function cloudLoad(){
     tbl.innerHTML='<div class="admin-loading">загрузка игроков...</div>';
     try{
       const{data,error}=await _supa.from('profiles')
-        .select('nickname,pid,avatar,last_seen,created_at')
+        .select('nickname,pid,avatar,last_seen,created_at,verified,active_title,title_color')
         .order('created_at',{ascending:false});
       if(error) throw error;
       _allPlayers=data||[];
@@ -6315,7 +6531,11 @@ async function cloudLoad(){
         const avWrap=document.createElement('div');avWrap.className='player-av-wrap';
         avWrap.appendChild(mkAvEl(p.avatar,32));
         avWrap.appendChild(mkStatusDot(isOnline(p.last_seen)));
-        const nick=document.createElement('div');nick.className='admin-nick';nick.textContent=p.nickname||'???';
+        const nickWrap=document.createElement('div');nickWrap.style.cssText='display:flex;align-items:center;gap:4px;min-width:0;';
+        const nickTxt=document.createElement('div');nickTxt.className='admin-nick';nickTxt.textContent=p.nickname||'???';
+        nickWrap.appendChild(nickTxt);
+        if(p.verified) nickWrap.appendChild(_mkVerifiedBadge(12));
+        const nick=nickWrap;
         const pid=document.createElement('div');pid.className='admin-pid';pid.textContent='#'+p.pid;
         const reg=document.createElement('div');reg.className='admin-reg';
         reg.textContent=p.created_at?new Date(p.created_at).toLocaleDateString('ru-RU'):'';
@@ -6356,14 +6576,25 @@ async function cloudLoad(){
     card.style.display='';
     card.scrollIntoView({behavior:'smooth'});
     const online=isOnline(p.last_seen);
-    document.getElementById('apc-info').innerHTML=`
+    const _apcInfo=document.getElementById('apc-info');
+    _apcInfo.innerHTML=`
       <img class="apc-av" src="${p.avatar||''}">
       <div class="apc-details">
-        <div class="apc-nick">${p.nickname||'???'}</div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <div class="apc-nick">${p.nickname||'???'}</div>
+          <span id="apc-ver-badge"></span>
+        </div>
+        <div id="apc-title-wrap" style="margin-top:3px;min-height:16px;"></div>
         <div class="apc-pid copyable" onclick="navigator.clipboard.writeText('${p.pid}').then(()=>{this.textContent='ID: ${p.pid}  ✓ скопировано';setTimeout(()=>{this.textContent='ID: ${p.pid}';this.classList.add('copyable');},1500);})" title="Нажми чтобы скопировать">ID: ${p.pid}</div>
         <div class="apc-pid">Рег: ${p.created_at?new Date(p.created_at).toLocaleDateString('ru-RU'):'—'}</div>
         <div class="apc-online" style="color:${online?'#44FF88':'#335566'}">${online?'● ОНЛАЙН':'○ ОФЛАЙН'}</div>
       </div>`;
+    if(p.verified){const vb=document.getElementById('apc-ver-badge');if(vb)vb.appendChild(_mkVerifiedBadge(16));}
+    (function _apcInjectTitle(tid,tcol){
+      const tw=document.getElementById('apc-title-wrap');if(!tw)return;
+      tw.innerHTML='';
+      if(tid){try{const tg=mkTitleTagRaw(tid,tcol);if(tg)tw.appendChild(tg);}catch{}}
+    })(p.active_title,p.title_color);
     document.getElementById('apc-online-actions').style.display=online?'':'none';
     // Show verified status
     const statusEl=document.getElementById('apc-verified-status');
@@ -6371,11 +6602,15 @@ async function cloudLoad(){
       statusEl.textContent='загрузка...';
       statusEl.style.color='#335566';
       if(_supa){
-        _supa.from('profiles').select('verified').eq('pid',p.pid).single()
+        _supa.from('profiles').select('verified,active_title,title_color').eq('pid',p.pid).single()
           .then(({data})=>{
             const v=!!(data?.verified);
             statusEl.textContent=v?'● ВЕРИФИЦИРОВАН':'○ НЕТ ГАЛОЧКИ';
             statusEl.style.color=v?'#1177DD':'#335566';
+            if(v&&!p.verified){const vb=document.getElementById('apc-ver-badge');if(vb&&!vb.children.length)vb.appendChild(_mkVerifiedBadge(16));}
+            if(!p.active_title&&data?.active_title){
+              const tw=document.getElementById('apc-title-wrap');if(tw){tw.innerHTML='';try{const tg=mkTitleTagRaw(data.active_title,data.title_color);if(tg)tw.appendChild(tg);}catch{}}
+            }
           }).catch(()=>{statusEl.textContent='ошибка';});
       }
     }
@@ -6963,13 +7198,15 @@ async function cloudLoad(){
             if(d.to_pid&&d.to_pid!=='ALL'&&d.to_pid!==myPid) return;
             const tid=d.titleId;
             if(!tid||!TITLES[tid]) return;
-            if(!G.titles.has(tid)){
-              G.titles.add(tid);saveTitles();cloudSave();
+            if(!_getTitles().has(tid)){
+              _getTitles().add(tid);if(G&&G.titles)G.titles.add(tid);saveTitles();cloudSave();
               showTitleToast(tid);
               const t=TITLES[tid];
               if(t.sigma>0) addSigma(t.sigma);
               checkNewTitleMx(tid);
               if(document.getElementById('mat-panel')?.classList.contains('open')) renderMat();
+              if(document.getElementById('prof-ov')?.classList.contains('on')) renderProfTitle(true);
+              setTimeout(()=>showBroadcastMsg('Загляни в профиль — там можно экипировать титул!','info'),1800);
             }
           }catch(e){}
           return;
@@ -6982,11 +7219,12 @@ async function cloudLoad(){
             if(d.to_pid&&d.to_pid!==myPid) return;
             const tid=d.titleId;
             if(!tid) return;
-            if(G.titles.has(tid)){
-              G.titles.delete(tid);saveTitles();cloudSave();
+            if(_getTitles().has(tid)){
+              _getTitles().delete(tid);if(G&&G.titles)G.titles.delete(tid);saveTitles();cloudSave();
               if(getActiveTitle()===tid) setActiveTitle(null);
               showBroadcastMsg(`У вас забрали титул: «${TITLES[tid]?.name||tid}»`,'mx_revoke');
               if(document.getElementById('mat-panel')?.classList.contains('open')) renderMat();
+              if(document.getElementById('prof-ov')?.classList.contains('on')) renderProfTitle(true);
             }
           }catch(e){}
           return;
@@ -7004,13 +7242,15 @@ async function cloudLoad(){
             localStorage.setItem('cw_custom_titles',JSON.stringify(customs));
             // Add to TITLES runtime object so mkTitleTag works
             TITLES[tid]={name,cat:'Кастомные',sigma:0,color:d.colorCfg?.c1||'#CC88FF',canColor:!!d.canColor,adminOnly:true,desc:'Кастомный титул от создателя.'};
-            if(!G.titles.has(tid)){
-              G.titles.add(tid);saveTitles();cloudSave();
+            if(!_getTitles().has(tid)){
+              _getTitles().add(tid);if(G&&G.titles)G.titles.add(tid);saveTitles();cloudSave();
             }
             // Apply color if provided
             if(d.colorCfg) saveTitleColor(tid,d.colorCfg);
             showTitleToast(tid);
             if(document.getElementById('mat-panel')?.classList.contains('open')) renderMat();
+            if(document.getElementById('prof-ov')?.classList.contains('on')) renderProfTitle(true);
+            setTimeout(()=>showBroadcastMsg('Загляни в профиль — там можно экипировать титул!','info'),1800);
           }catch(e){}
           return;
         }
@@ -7621,7 +7861,11 @@ function _skullSpawnZeros(){
         <button id="chat-back-btn" onclick="chatBackToList()" ontouchend="chatBackToList();event.preventDefault()">◀</button>
         <img id="chat-peer-av" src="" alt="">
         <div id="chat-peer-info">
-          <div id="chat-peer-name">—</div>
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+            <div id="chat-peer-name">—</div>
+            <div id="chat-peer-badge-wrap" style="display:flex;align-items:center;gap:4px;"></div>
+          </div>
+          <div id="chat-peer-title-wrap" style="margin-top:2px;"></div>
           <div id="chat-peer-status">офлайн</div>
         </div>
       </div>
@@ -7757,11 +8001,21 @@ function _renderDmList(){
         <div class="chat-item-online ${online?'on':'off'}"></div>
       </div>
       <div class="chat-item-info">
-        <div class="chat-item-name">${p.nickname||p.pid}</div>
+        <div class="chat-item-name" style="display:flex;align-items:center;gap:4px;">
+          <span>${p.nickname||p.pid}</span>
+          <span class="chat-item-ver-${p.pid}"></span>
+        </div>
         <div class="chat-item-preview" id="chat-preview-${p.pid}">...</div>
       </div>
       <div class="chat-item-time" id="chat-time-${p.pid}"></div>`;
     wrap.appendChild(item);
+    // Inject verified badge async
+    if(_supa&&p.pid){
+      _prefetchProfiles([p.pid]).then(()=>{
+        const slot=item.querySelector('.chat-item-ver-'+p.pid);
+        if(slot&&_verCache[p.pid]) slot.appendChild(_mkVerifiedBadge(12));
+      });
+    }
   });
 }
 
@@ -7784,6 +8038,12 @@ window.chatOpen=async function(room){
   document.getElementById('chat-messages').style.display='flex';
   document.getElementById('chat-input-area').style.display='flex';
   document.getElementById('chat-emoji-panel').classList.remove('on');
+  // Always reset badge/title wraps
+  const _bw=document.getElementById('chat-peer-badge-wrap');
+  const _tw=document.getElementById('chat-peer-title-wrap');
+  if(_bw) _bw.innerHTML='';
+  if(_tw) _tw.innerHTML='';
+  document.getElementById('chat-peer-av').onclick=null;
   if(room==='general'){
     document.getElementById('chat-peer-av').src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%230d2a0d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='18'%3E🌍%3C/text%3E%3C/svg%3E";
     document.getElementById('chat-peer-name').textContent='ОБЩИЙ ЧАТ';
@@ -7796,7 +8056,35 @@ window.chatOpen=async function(room){
       document.getElementById('chat-peer-name').textContent=peer.nickname||peer.pid;
       const online=typeof isOnline==='function'?isOnline(peer.last_seen):false;
       const st=document.getElementById('chat-peer-status');
-      st.textContent=online?'онлайн':'офлайн';st.className=online?'online':'offline';st.style.color='';
+      // Last seen
+      if(!online&&peer.last_seen){
+        const diff=Date.now()-new Date(peer.last_seen).getTime();
+        const mins=Math.floor(diff/60000);
+        const hrs=Math.floor(mins/60);
+        const days=Math.floor(hrs/24);
+        let ago=days>0?`${days}д назад`:hrs>0?`${hrs}ч назад`:mins>1?`${mins}мин назад`:'только что';
+        st.textContent='был(а) '+ago;
+      } else {
+        st.textContent=online?'онлайн':'офлайн';
+      }
+      st.className=online?'online':'offline';st.style.color='';
+      // Badge wrap: verified + title
+      const bw=document.getElementById('chat-peer-badge-wrap');
+      const tw=document.getElementById('chat-peer-title-wrap');
+      if(bw) bw.innerHTML='';
+      if(tw) tw.innerHTML='';
+      // Click avatar → open profile
+      const peerPid=peer.pid;
+      document.getElementById('chat-peer-av').onclick=()=>{ if(window.profOpenByPid) profOpenByPid(peerPid); };
+      // Force-clear title cache for peer so we always get fresh data
+      delete _titleCache[peer.pid];
+      _prefetchProfiles([peer.pid]).then(()=>{
+        if(bw&&_verCache[peer.pid]) bw.appendChild(_mkVerifiedBadge(14));
+        const tc=_titleCache[peer.pid];
+        if(tw&&tc?.titleId&&(TITLES[tc.titleId]||tc.titleId)){
+          try{const tg=mkTitleTagRaw(tc.titleId,tc.titleColor);if(tg) tw.appendChild(tg);}catch{}
+        }
+      });
     }
   }
   await _chatLoadMessages(room);
@@ -7866,21 +8154,23 @@ function _mkVerifiedBadge(size=16){
 const _avCache={};
 const _verCache={};
 const _profCache={};
+const _titleCache={}; // pid -> {titleId, titleColor}
 
 // Batch-load profiles for a list of PIDs — single query
 async function _prefetchProfiles(pids){
   if(!_supa||!pids.length) return;
-  const missing=pids.filter(p=>_profCache[p]==null);
+  // Re-fetch if title cache is missing (even if prof cache hit — old entries lack active_title)
+  const missing=pids.filter(p=>_profCache[p]==null||_titleCache[p]===undefined);
   if(!missing.length) return;
   try{
-    const{data}=await _supa.from('profiles').select('pid,avatar,verified').in('pid',missing);
+    const{data}=await _supa.from('profiles').select('pid,avatar,verified,active_title,title_color').in('pid',missing);
     (data||[]).forEach(d=>{
       _profCache[d.pid]=d;
       _avCache[d.pid]=d.avatar||null;
       _verCache[d.pid]=!!d.verified;
+      _titleCache[d.pid]={titleId:d.active_title||null,titleColor:d.title_color||null};
     });
-    // mark as fetched even if not found
-    missing.forEach(p=>{if(_profCache[p]==null)_profCache[p]={};});
+    missing.forEach(p=>{if(!_profCache[p])_profCache[p]={};if(!_titleCache[p])_titleCache[p]={titleId:null,titleColor:null};});
   }catch{}
 }
 
@@ -7933,6 +8223,10 @@ function _mkMsgRow(m, continued){
     header.appendChild(nick);
 
     if(_isVerifiedSync(m.sender_pid)) header.appendChild(_mkVerifiedBadge());
+    const _tc=_titleCache[m.sender_pid];
+    if(_tc?.titleId&&TITLES[_tc.titleId]){
+      try{const tg=mkTitleTagRaw(_tc.titleId,_tc.titleColor);if(tg){tg.style.fontSize='5px';tg.style.padding='2px 5px';header.appendChild(tg);}}catch{}
+    }
 
     const time=document.createElement('span');time.className='msg-time-hdr';
     time.textContent=_fmtTime(m.created_at);
