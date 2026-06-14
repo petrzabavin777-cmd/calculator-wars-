@@ -5406,25 +5406,6 @@ async function cloudLoad(){
     const sigmaDisp=document.getElementById('menu-sigma-display');
     if(sigmaDisp) sigmaDisp.style.display='flex';
     renderSigmaHud();
-    // Real-time sigma updates from admin via Realtime Broadcast
-    (function(){
-      const myPid=_supaUser?.user_metadata?.pid;
-      if(!myPid||!_supa) return;
-      window._sigmaBroadcastChannel=_supa.channel('sigma-give-'+myPid);
-      window._sigmaBroadcastChannel
-        .on('broadcast',{event:'sigma_give'},function(payload){
-          try{
-            const amt=payload?.payload?.amount;
-            if(!amt||amt<=0) return;
-            const prev=getSigma();
-            saveSigma(prev+amt);
-            renderSigmaHud();
-            if(typeof showBroadcastMsg==='function')
-              showBroadcastMsg('+'+amt+' Σ начислено от создателя!','sigma');
-          }catch(e){}
-        })
-        .subscribe();
-    })();
     // Hide normal button block, show greeting block
     document.getElementById('menu-btns').style.display='none';
     document.getElementById('greeting-ov').classList.add('on');
@@ -5976,9 +5957,12 @@ async function cloudLoad(){
       const newSigma=currentSigma+amt;
       const{error:e2}=await _supa.from('profiles').update({sigma:newSigma}).eq('pid',_adminTargetPid);
       if(e2) throw e2;
-      // Send realtime broadcast directly to the player's channel
-      await _supa.channel('sigma-give-'+_adminTargetPid).send({
-        type:'broadcast',event:'sigma_give',payload:{amount:amt}
+      // Notify player via broadcast table (already subscribed via subscribeBroadcast)
+      await _supa.from('broadcast').insert({
+        msg:JSON.stringify({to_pid:_adminTargetPid,amount:amt}),
+        from_pid:CREATOR_PID,
+        msg_type:'sigma_direct',
+        created_at:new Date().toISOString()
       });
       alert(`✅ +${amt} Σ выдано!\nИгрок ${_adminTargetPid}: ${currentSigma} → ${newSigma} Σ`);
     }catch(e){alert('Ошибка: '+e.message);}
@@ -6282,6 +6266,21 @@ async function cloudLoad(){
       payload=>{
         const row=payload.new;
         if(!row?.msg) return;
+        // Personal sigma gift — only apply to the target player
+        if(row.msg_type==='sigma_direct'){
+          try{
+            const d=JSON.parse(row.msg);
+            const myPid=_supaUser?.user_metadata?.pid;
+            if(d.to_pid&&d.to_pid!==myPid) return;
+            const amt=d.amount||0;
+            if(amt>0){
+              saveSigma(getSigma()+amt);
+              renderSigmaHud();
+              showBroadcastMsg('+'+amt+' Σ начислено от создателя!','sigma');
+            }
+          }catch(e){}
+          return;
+        }
         showBroadcastMsg(row.msg, row.msg_type||'info');
       }
     ).subscribe();
