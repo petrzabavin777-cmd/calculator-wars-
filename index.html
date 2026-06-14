@@ -5356,9 +5356,10 @@ async function cloudSave(){
   if(!_supa||!_supaUser)return;
   try{
     const mx=localStorage.getItem('cw_mx')||'[]';
-    const pr=localStorage.getItem('cw_pr')||'[]';
     const stats=localStorage.getItem('cw_stats')||'{}';
-    await _supa.from('saves').upsert({user_id:_supaUser.id,mx,pr,stats,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+    // pr (pendingReward) intentionally NOT saved to cloud — it's a one-time UI state;
+    // saving it caused sigma to be re-awarded on every login after restore
+    await _supa.from('saves').upsert({user_id:_supaUser.id,mx,stats,updated_at:new Date().toISOString()},{onConflict:'user_id'});
     // Update last_seen in profiles
     const pid=_supaUser.user_metadata?.pid;
     const nick=_supaUser.user_metadata?.nickname;
@@ -5370,9 +5371,8 @@ async function cloudSave(){
 async function cloudLoad(){
   if(!_supa||!_supaUser)return;
   try{
-    const {data}=await _supa.from('saves').select('mx,pr,stats').eq('user_id',_supaUser.id).single();
+    const {data}=await _supa.from('saves').select('mx,stats').eq('user_id',_supaUser.id).single();
     if(data?.mx)localStorage.setItem('cw_mx',data.mx);
-    if(data?.pr)localStorage.setItem('cw_pr',data.pr);
     if(data?.stats)localStorage.setItem('cw_stats',data.stats);
   }catch(e){console.warn('Cloud load:',e);}
 }
@@ -6491,9 +6491,8 @@ async function cloudLoad(){
             const isForAll=d.to_pid==='ALL';
             if(!G.known.has(mxId)){
               G.known.add(mxId);
-              G.pendingReward.add(mxId);
+              // No pendingReward — admin gift opens card directly, no claim needed
               localStorage.setItem('cw_mx',JSON.stringify([...G.known]));
-              localStorage.setItem('cw_pr',JSON.stringify([...G.pendingReward]));
               cloudSave();
               G.newMx++;
               const badge=document.getElementById('mat-badge');
@@ -6503,6 +6502,9 @@ async function cloudLoad(){
                 ? `Создатель выдал всем: «${mxEntry.name}»`
                 : `Создатель выдал вам: «${mxEntry.name}»`;
               showBroadcastMsg(notifText,'mx_give');
+              // Open card info directly
+              const body=mxEntry.desc+(mxEntry.how?'\n\n📋 Как получить: '+mxEntry.how:'');
+              setTimeout(()=>openCard(mxEntry.name,body,mxId,mxEntry.runame||null),400);
             }
           }catch(e){}
           return;
