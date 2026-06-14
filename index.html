@@ -2165,10 +2165,17 @@ button, .menu-btn {
             </div>
           </div>
 
-          <!-- Matrix entries -->
+          <!-- Matrix entries — give -->
           <div class="asec">
             <div class="asec-title">📖 ВЫДАТЬ ЗАПИСЬ В МАТРИЦЕ</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;" id="apc-mx-btns"></div>
+          </div>
+
+          <!-- Matrix entries — revoke -->
+          <div class="asec">
+            <div class="asec-title" style="color:#FF7744;">🗑 ЗАБРАТЬ ЗАПИСЬ МАТРИЦЫ</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:#446644;margin-bottom:6px;" id="apc-mx-revoke-hint">выбери игрока чтобы увидеть его записи</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="apc-mx-revoke-btns"></div>
           </div>
 
           <!-- Custom ID -->
@@ -5988,7 +5995,7 @@ async function cloudLoad(){
           }).catch(()=>{statusEl.textContent='ошибка';});
       }
     }
-    // Matrix buttons
+    // Matrix give buttons
     const mxWrap=document.getElementById('apc-mx-btns');
     mxWrap.innerHTML='';
     if(typeof MX!=='undefined') Object.entries(MX).forEach(([id,entry])=>{
@@ -5998,6 +6005,22 @@ async function cloudLoad(){
       btn.onclick=()=>adminGiveMx(id,entry.name||id);
       mxWrap.appendChild(btn);
     });
+    // Matrix revoke buttons — show all entries, broadcast will only affect player if they have it
+    const revokeWrap=document.getElementById('apc-mx-revoke-btns');
+    const revokeHint=document.getElementById('apc-mx-revoke-hint');
+    if(revokeWrap&&typeof MX!=='undefined'){
+      revokeWrap.innerHTML='';
+      if(revokeHint) revokeHint.textContent='нажми чтобы забрать (если у игрока нет — ничего не произойдет)';
+      Object.entries(MX).forEach(([id,entry])=>{
+        const btn=document.createElement('button');
+        btn.className='apc-mx-btn apc-mx-revoke-btn';
+        btn.dataset.mxid=id;
+        btn.style.cssText='color:#FF7744;border-color:#662200;background:#1a0500;';
+        btn.textContent=(entry.name||id).slice(0,14);
+        btn.onclick=()=>adminRevokeMx(id,entry.name||id);
+        revokeWrap.appendChild(btn);
+      });
+    }
   }
 
   // ── Give coins ──
@@ -6096,6 +6119,25 @@ async function cloudLoad(){
       alert('Отправлено');
     }catch(e){alert('Ошибка: '+e.message);}
   };
+
+  // ── Revoke matrix entry ──
+  async function adminRevokeMx(mxId,name){
+    if(!_adminGuard()||!_adminTargetPid){alert('Сначала выбери игрока');return;}
+    if(!confirm(`Забрать запись "${name||mxId}" у игрока ${_adminTargetPid}?`)) return;
+    try{
+      await _supa.from('broadcast').insert({
+        msg:JSON.stringify({to_pid:_adminTargetPid,mxId}),
+        from_pid:CREATOR_PID,
+        msg_type:'mx_revoke',
+        created_at:new Date().toISOString()
+      });
+      // Refresh revoke buttons (entry will disappear for online player in real time)
+      const btn=document.querySelector(`.apc-mx-revoke-btn[data-mxid="${mxId}"]`);
+      if(btn) btn.remove();
+      const hint=document.getElementById('apc-mx-revoke-hint');
+      if(hint) hint.textContent=`Забрали: ${name||mxId}`;
+    }catch(e){alert('Ошибка: '+e.message);}
+  }
 
   // ── Give matrix entry ──
   async function adminGiveMx(mxId,name){
@@ -6402,17 +6444,42 @@ async function cloudLoad(){
             if(!mxId) return;
             const mxEntry=MX[mxId];
             if(!mxEntry) return;
-            // Unlock entry
             const isForAll=d.to_pid==='ALL';
-            if(!G.mx.has(mxId)){
-              G.mx.add(mxId);
+            if(!G.known.has(mxId)){
+              G.known.add(mxId);
               G.pendingReward.add(mxId);
-              saveMx();
-              renderMat();
+              localStorage.setItem('cw_mx',JSON.stringify([...G.known]));
+              localStorage.setItem('cw_pr',JSON.stringify([...G.pendingReward]));
+              cloudSave();
+              G.newMx++;
+              const badge=document.getElementById('mat-badge');
+              if(badge){badge.textContent=G.newMx;badge.classList.add('on');}
+              if(document.getElementById('mat-panel')?.classList.contains('open')) renderMat();
               const notifText=isForAll
-                ? `Создатель выдал всем онлайн: «${mxEntry.name}» в Матрице!`
-                : `Создатель выдал вам запись «${mxEntry.name}» в Матрице!`;
-              showBroadcastMsg(notifText,'buff');
+                ? `Создатель выдал всем: «${mxEntry.name}»`
+                : `Создатель выдал вам: «${mxEntry.name}»`;
+              showBroadcastMsg(notifText,'mx_give');
+            }
+          }catch(e){}
+          return;
+        }
+        // Matrix entry revoke
+        if(row.msg_type==='mx_revoke'){
+          try{
+            const d=JSON.parse(row.msg);
+            const myPid=_supaUser?.user_metadata?.pid;
+            if(d.to_pid&&d.to_pid!==myPid) return;
+            const mxId=d.mxId;
+            if(!mxId) return;
+            const mxEntry=MX[mxId];
+            if(G.known.has(mxId)){
+              G.known.delete(mxId);
+              G.pendingReward.delete(mxId);
+              localStorage.setItem('cw_mx',JSON.stringify([...G.known]));
+              localStorage.setItem('cw_pr',JSON.stringify([...G.pendingReward]));
+              cloudSave();
+              if(document.getElementById('mat-panel')?.classList.contains('open')) renderMat();
+              showBroadcastMsg(`У вас забрали запись: «${mxEntry?.name||mxId}»`,'mx_revoke');
             }
           }catch(e){}
           return;
@@ -6440,10 +6507,12 @@ async function cloudLoad(){
   function showBroadcastMsg(msg, type='info'){
     // colors by type
     const styles={
-      sigma: {border:'#CC88FF',glow:'#AA44FF44',icon:'Σ',iconBg:'#6600BB',iconColor:'#fff'},
-      buff:  {border:'#44FF88',glow:'#44FF8844',icon:'⬆',iconBg:'#0d2a0d',iconColor:'#44FF88'},
-      debuff:{border:'#FF7744',glow:'#FF440044',icon:'⬇',iconBg:'#2a0d00',iconColor:'#FF7744'},
-      info:  {border:'#1177DD',glow:'#1177DD44',icon:'!',iconBg:'#001133',iconColor:'#88BBFF'},
+      sigma:    {border:'#CC88FF',glow:'#AA44FF44',icon:'S',iconBg:'#6600BB',iconColor:'#fff'},
+      buff:     {border:'#44FF88',glow:'#44FF8844',icon:'+',iconBg:'#0d2a0d',iconColor:'#44FF88'},
+      debuff:   {border:'#FF7744',glow:'#FF440044',icon:'-',iconBg:'#2a0d00',iconColor:'#FF7744'},
+      info:     {border:'#1177DD',glow:'#1177DD44',icon:'!',iconBg:'#001133',iconColor:'#88BBFF'},
+      mx_give:  {border:'#44FF88',glow:'#44FF8844',icon:'M',iconBg:'#042a12',iconColor:'#44FF88'},
+      mx_revoke:{border:'#FF7744',glow:'#FF440044',icon:'M',iconBg:'#2a0800',iconColor:'#FF7744'},
     };
     const s=styles[type]||styles.info;
 
