@@ -4078,8 +4078,12 @@ function setActiveTitle(id){
   if(myPid&&typeof _titleCache!=='undefined') _titleCache[myPid]={titleId:id||null,titleColor:id?JSON.stringify(getTitleColors(id)):null};
   // Sync to profiles so other players can see it
   if(_supa&&myPid){
-    const td=TITLES[id];
-    const col=getTitleColors(id);
+    let col=getTitleColors(id);
+    if(id&&id.startsWith('tc_')){
+      const customs=JSON.parse(localStorage.getItem('cw_custom_titles')||'{}');
+      const cname=customs[id]?.name||TITLES[id]?.name||null;
+      if(cname) col=Object.assign(col||{},{name:cname});
+    }
     _supa.from('profiles').update({
       active_title:id||null,
       title_color:col?JSON.stringify(col):null
