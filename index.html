@@ -4058,6 +4058,11 @@ function toggleMat(){
   }
 }
 function closeMat(){document.getElementById('mat-panel').classList.remove('open');}
+// Attach click+touchend to a card so mobile taps work
+function _cardOn(card,fn){
+  card.onclick=fn;
+  card.addEventListener('touchend',function(e){e.preventDefault();e.stopPropagation();fn();},{passive:false});
+}
 function renderMat(){
   const c=document.getElementById('mat-content');c.innerHTML='';
   const cats={};
@@ -4083,9 +4088,9 @@ function renderMat(){
           ov.className='mx-claim-overlay';
           ov.innerHTML=`<div class="mco-label">✦ ОТКРЫТО! ✦</div>${coins>0?`<div class="mco-sigma">+${coins} Σ</div>`:''}`;
           card.appendChild(ov);
-          card.onclick=()=>claimMxReward(e.id,card);
+          _cardOn(card,()=>claimMxReward(e.id,card));
         } else {
-          card.onclick=()=>openCard(e.name,e.desc,e.id,e.runame);
+          _cardOn(card,()=>openCard(e.name,e.desc,e.id,e.runame));
         }
       } else {
         card.innerHTML=`<div class="mq"><span class="mq-icon">?</span></div>`;
@@ -4113,9 +4118,9 @@ function renderMat(){
           ov.className='mx-claim-overlay';
           ov.innerHTML=`<div class="mco-label">✦ ОТКРЫТО! ✦</div>${coins>0?`<div class="mco-sigma">+${coins} Σ</div>`:''}`;
           card.appendChild(ov);
-          card.onclick=()=>claimMxReward(id,card);
+          _cardOn(card,()=>claimMxReward(id,card));
         } else {
-          card.onclick=()=>openCard(e.name,e.desc+'\n\n📋 Как получить: '+e.how,id,null);
+          _cardOn(card,()=>openCard(e.name,e.desc+'\n\n📋 Как получить: '+e.how,id,null));
         }
       } else {
         card.innerHTML=`<div class="mq"><span class="mq-icon" style="color:#FFD70044;">🏆</span></div>`;
@@ -4142,9 +4147,9 @@ function renderMat(){
             ov.style.cssText='background:linear-gradient(135deg,#330000ee,#660000cc);';
             ov.innerHTML=`<div class="mco-label" style="color:#FF6644;text-shadow:0 0 8px #FF4422;">⚔ РЕКОРД! ⚔</div>${coins>0?`<div class="mco-sigma" style="color:#FFAA88;">+${coins} Σ</div>`:''}`;
             card.appendChild(ov);
-            card.onclick=()=>claimMxReward(id,card);
+            _cardOn(card,()=>claimMxReward(id,card));
           } else {
-            card.onclick=()=>openCard(e.name,e.desc,id,null);
+            _cardOn(card,()=>openCard(e.name,e.desc,id,null));
           }
         } else {
           card.innerHTML=`<div class="mq"><span class="mq-icon" style="color:#FF220033;">⚔</span></div>`;
@@ -6492,7 +6497,12 @@ async function cloudLoad(){
             if(d.to_pid&&d.to_pid!==myPid) return;
             const amt=d.amount||0;
             if(amt>0){
-              addSigma(amt);
+              // Admin already updated DB — just reload from DB for guaranteed sync
+              if(_supa&&myPid){
+                _supa.from('profiles').select('sigma').eq('pid',myPid).single()
+                  .then(({data})=>{if(data?.sigma!=null){saveSigma(data.sigma);renderSigmaHud();}})
+                  .catch(()=>{addSigma(amt);});
+              }else{addSigma(amt);}
               showBroadcastMsg('+'+amt+' Σ начислено от создателя!','sigma');
             }
           }catch(e){}
