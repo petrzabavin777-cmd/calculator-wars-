@@ -347,6 +347,29 @@ body{background:var(--bg);font-family:'Press Start 2P',monospace;color:var(--tex
 .achiev-toast-item{background:#000;border:3px solid #FFD700;padding:10px 14px;pointer-events:all;box-shadow:4px 4px 0 #5a3a00;width:260px;opacity:0;}
 .ati-label{font-size:7px;color:#aaa;margin-bottom:5px;letter-spacing:.5px;}
 .ati-name{font-size:10px;color:#FFD700;line-height:1.4;}
+/* ── Titles ── */
+@keyframes rainbow-title{0%{color:#FF4444}14%{color:#FF8800}28%{color:#FFD700}42%{color:#44FF88}57%{color:#00DDFF}71%{color:#8844FF}85%{color:#FF44AA}100%{color:#FF4444}}
+@keyframes rainbow-grad{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+.player-title-tag{display:inline-block;font-family:'Press Start 2P',monospace;font-size:7px;letter-spacing:.5px;padding:3px 8px;border:1px solid currentColor;image-rendering:pixelated;line-height:1.4;white-space:nowrap;}
+.player-title-tag.rainbow{animation:rainbow-title 2s linear infinite;border-color:currentColor;}
+.player-title-tag.gradient{background:linear-gradient(90deg,var(--tc1,#FF4444),var(--tc2,#8844FF),var(--tc1,#FF4444));background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:rainbow-grad 3s linear infinite;border-image:linear-gradient(90deg,var(--tc1,#FF4444),var(--tc2,#8844FF)) 1;}
+.player-title-tag.no-title{color:#334455;border-color:#1a2e40;font-size:6px;}
+/* Title toast */
+.title-toast-item{background:#000;border:3px solid #FFD700;padding:10px 14px;pointer-events:all;box-shadow:4px 4px 0 #3a1a55;width:260px;opacity:0;}
+.tti-label{font-family:'Press Start 2P',monospace;font-size:7px;color:#CC88FF;margin-bottom:5px;letter-spacing:.5px;}
+.tti-name{font-family:'Press Start 2P',monospace;font-size:9px;line-height:1.5;}
+/* Title settings panel inside profile */
+#title-settings{background:#010a14;border:1px solid #1a3a55;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+.ts-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ts-title-btn{font-family:'Press Start 2P',monospace;font-size:6px;padding:4px 8px;background:#040e04;border:1px solid #1a4a1a;color:#44AA44;cursor:pointer;touch-action:manipulation;}
+.ts-title-btn:hover,.ts-title-btn.active{background:#082008;border-color:#44FF88;color:#44FF88;}
+.ts-color-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px;}
+.ts-color-dot{width:18px;height:18px;border:2px solid #1a3a55;cursor:pointer;flex-shrink:0;touch-action:manipulation;}
+.ts-color-dot.active{border-color:#fff;transform:scale(1.2);}
+.ts-color-dot.rainbow-dot{background:linear-gradient(135deg,#FF4444,#FFD700,#44FF88,#00DDFF,#8844FF,#FF44AA);}
+/* Admin title btns */
+.apc-title-btn{font-family:'Press Start 2P',monospace;font-size:6px;padding:5px 8px;background:#040e04;color:#CC88FF;border:1px solid #442266;cursor:pointer;touch-action:manipulation;}
+.apc-title-btn:hover{background:#120020;border-color:#CC88FF;}
 /* div0 death vignette */
 #div0-vignette{position:fixed;inset:0;z-index:9900;pointer-events:none;opacity:0;transition:opacity .5s ease;background:radial-gradient(ellipse at center,transparent 10%,#88000066 50%,#DD0000bb 75%,#FF0000ee 100%);}
 #div0-vignette.on{opacity:1;}
@@ -1876,6 +1899,7 @@ button, .menu-btn {
     </div>
     <input id="prof-avatar-input" type="file" accept="image/*" onchange="profUploadAvatar(event)">
     <div id="prof-nick"></div>
+    <div id="prof-active-title" style="margin-top:2px;min-height:18px;"></div>
     <div id="prof-social">
       <div class="prof-friend-count" id="prof-friend-count">👥 — друзей</div>
       <button class="prof-social-btn chat" id="prof-chat-btn" style="display:none;" onclick="profGoChat()">💬 НАПИСАТЬ</button>
@@ -1925,6 +1949,10 @@ button, .menu-btn {
           <div class="prof-stat"><span>Первый запуск</span><span id="prof-stat-first" class="prof-stat-val">—</span></div>
         </div>
       </div>
+    </div>
+    <div id="prof-title-section" style="width:100%;display:none;flex-direction:column;gap:6px;">
+      <div class="prof-cat-hdr" style="color:#CC88FF;border-color:#CC88FF">🏅 МОИ ТИТУЛЫ</div>
+      <div id="title-settings"></div>
     </div>
     <button id="prof-change-btn" onclick="document.getElementById('prof-avatar-input').click()">📷 ИЗМЕНИТЬ АВАТАР</button>
     <button id="prof-close-btn" onclick="profClose()">✕ ЗАКРЫТЬ</button>
@@ -2190,15 +2218,42 @@ button, .menu-btn {
             </div>
           </div>
 
-          <!-- Titles (placeholder) -->
+          <!-- Titles — give to player -->
           <div class="asec">
-            <div class="asec-title">🏅 ТИТУЛ (СКОРО)</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <button class="admin-btn admin-disabled">⚔ ВОИН</button>
-              <button class="admin-btn admin-disabled">🧮 МАТЕМАТИК</button>
-              <button class="admin-btn admin-disabled">👑 ЛЕГЕНДА</button>
-              <button class="admin-btn admin-disabled">💀 ПРИЗРАК</button>
+            <div class="asec-title">🏅 ВЫДАТЬ ТИТУЛ</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="apc-title-btns"></div>
+          </div>
+          <!-- Titles — custom -->
+          <div class="asec">
+            <div class="asec-title" style="color:#CC88FF;">✦ КАСТОМНЫЙ ТИТУЛ</div>
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+              <input id="apc-custom-title-text" class="admin-input" placeholder="Текст титула" maxlength="20" style="flex:1;min-width:120px;">
+              <select id="apc-custom-title-color" class="admin-input" style="flex:1;background:#040e04;color:#CC88FF;min-width:100px;">
+                <option value="solid:#CC88FF">Фиолет</option>
+                <option value="solid:#1177DD">Синий</option>
+                <option value="solid:#44FF88">Зелёный</option>
+                <option value="solid:#FFD700">Золото</option>
+                <option value="solid:#FF4400">Красный</option>
+                <option value="solid:#FF44AA">Розовый</option>
+                <option value="solid:#FFFFFF">Белый</option>
+                <option value="rainbow">Радужный</option>
+                <option value="gradient:#FF4400:#FFD700">Огонь</option>
+                <option value="gradient:#00DDFF:#0044FF">Море</option>
+                <option value="gradient:#FF00AA:#FF8800">Закат</option>
+              </select>
             </div>
+            <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
+              <label style="font-family:'Press Start 2P',monospace;font-size:6px;color:#446644;display:flex;align-items:center;gap:5px;cursor:pointer;">
+                <input type="checkbox" id="apc-custom-can-color" style="accent-color:#CC88FF;"> игрок может менять цвет
+              </label>
+            </div>
+            <button class="admin-btn" style="color:#CC88FF;border-color:#6600BB;background:#0a0020;margin-top:6px;" onclick="adminGiveCustomTitle()" ontouchend="adminGiveCustomTitle();event.preventDefault()">✦ ВЫДАТЬ КАСТОМНЫЙ</button>
+          </div>
+          <!-- Titles — revoke -->
+          <div class="asec">
+            <div class="asec-title" style="color:#FF7744;">🗑 ЗАБРАТЬ ТИТУЛ</div>
+            <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:#446644;margin-bottom:6px;" id="apc-title-revoke-hint">выбери игрока</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="apc-title-revoke-btns"></div>
           </div>
 
           <!-- Online actions (shown only if player online) -->
@@ -2303,6 +2358,17 @@ button, .menu-btn {
               <option value="">— выбери запись —</option>
             </select>
             <button class="admin-btn admin-buff" style="white-space:nowrap;" onclick="adminGlobalMx()" ontouchend="adminGlobalMx();event.preventDefault()">📖 ВЫДАТЬ ВСЕМ</button>
+          </div>
+        </div>
+
+        <!-- Global title give -->
+        <div class="asec">
+          <div class="asec-title">🏅 ТИТУЛ — ВСЕМ ОНЛАЙН</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <select id="admin-global-title" class="admin-input" style="flex:1;background:#040e04;color:#CC88FF;cursor:pointer;min-width:140px;">
+              <option value="">— выбери титул —</option>
+            </select>
+            <button class="admin-btn" style="color:#CC88FF;border-color:#6600BB;background:#0a0020;white-space:nowrap;" onclick="adminGlobalTitle()" ontouchend="adminGlobalTitle();event.preventDefault()">🏅 ВЫДАТЬ ВСЕМ</button>
           </div>
         </div>
 
@@ -2705,6 +2771,34 @@ const MX_ICONS={
   dmg_10m:()=>mkDmgIcon('10М','#FFFFFF'),
   dmg_100m:()=>mkDmgIcon('∞','#FF0000'),
 };
+// ── Titles system ──────────────────────────────────────────────────
+const TITLES={
+  // 10 regular titles — unlockable by players
+  t_novice:   {name:'Новобранец', cat:'Обычные', sigma:1,  color:'#88BBFF', desc:'Первый шаг сделан. Ричард тоже когда-то начинал. Только он так и не продвинулся дальше.', how:'Заверши первый бой.'},
+  t_fighter:  {name:'Боец',       cat:'Обычные', sigma:2,  color:'#44FF88', desc:'Пять побед. Математика уважает тех, кто не сдаётся. Или просто боится.', how:'Одержи 5 побед.'},
+  t_pyro:     {name:'Пиромант',   cat:'Обычные', sigma:3,  color:'#FF6600', desc:'Огонь — лучший аргумент. Особенно когда перед тобой число с тремя нулями.', how:'Сожги врагов 20 раз (накопи 20 стаков горения суммарно).'},
+  t_frost:    {name:'Ледяной',    cat:'Обычные', sigma:3,  color:'#00DDFF', desc:'Заморозить врага — это не жестокость. Это математическая пауза. Пауза пронизывающего холода.', how:'Заморозь врагов 10 раз.'},
+  t_shadow:   {name:'Тёмный',     cat:'Обычные', sigma:4,  color:'#9944FF', desc:'Ты освоил тьму. % в твоих руках — не остаток, а приговор.', how:'Используй оператор % 15 раз.'},
+  t_gambler:  {name:'Хаотик',     cat:'Обычные', sigma:5,  color:'#FF00AA', desc:'Ты играешь с хаосом как с другом. Хаос пока терпит.', how:'Используй оператор ^ 10 раз.'},
+  t_scholar:  {name:'Знаток',     cat:'Обычные', sigma:5,  color:'#00EEBB', desc:'Ты открыл половину матрицы. Вторая половина смотрит на тебя с тихой завистью.', how:'Открой 15 записей в Матрице.'},
+  t_rich:     {name:'Богатый',    cat:'Обычные', sigma:6,  color:'#FFD700', desc:'Сигмы накопились. Ричард смотрит с завистью — у него вместо сигм только бутерброды.', how:'Набери 50 Σ на счёте.'},
+  t_richard:  {name:'Победитель', cat:'Обычные', sigma:8,  color:'#FF4400', desc:'Ты победил Ричарда. Он ушёл доедать бутерброд и делать вид, что так и задумано.', how:'Победи финального босса — Ричарда Уоттерсона.'},
+  t_absolute: {name:'Абсолютный', cat:'Обычные', sigma:15, color:'#FFFFFF', desc:'Матрица заполнена. Ты знаешь всё что знает калькулятор. Это пугает всех, включая калькулятор.', how:'Открой все записи в Матрице.'},
+  // Professional titles — admin-given only
+  tp_alpha:   {name:'Альфа-тестер', cat:'Профессия', sigma:0, color:'rainbow', canColor:true, adminOnly:true, desc:'Был здесь до начала. Видел баги которые не пережили.'},
+  tp_tester:  {name:'Тестер',       cat:'Профессия', sigma:0, color:'#1177DD', canColor:true, adminOnly:true, desc:'Ломает игру профессионально и с любовью.'},
+  tp_gd:      {name:'Геймдизайнер', cat:'Профессия', sigma:0, color:'#CC44FF', canColor:true, adminOnly:true, desc:'Придумывает правила. Иногда сам в них запутывается.'},
+  tp_art:     {name:'Художник',     cat:'Профессия', sigma:0, color:'#FF44AA', canColor:true, adminOnly:true, desc:'Делает пиксели красивее чем они заслуживают.'},
+  tp_dev:     {name:'Разработчик',  cat:'Профессия', sigma:0, color:'#FFD700', canColor:true, adminOnly:true, desc:'Это его вина. И его заслуга. Одновременно.'},
+  tp_mod:     {name:'Модератор',    cat:'Профессия', sigma:0, color:'#44FF88', canColor:true, adminOnly:true, desc:'Следит за порядком. Порядок боится.'},
+};
+// Sigma coins for titles in Matrix
+// Load saved custom titles into TITLES runtime object
+try{const _ct=JSON.parse(localStorage.getItem('cw_custom_titles')||'{}');Object.entries(_ct).forEach(([id,t])=>{TITLES[id]=t;});}catch{}
+const TITLE_COINS={};
+Object.entries(TITLES).forEach(([id,t])=>{TITLE_COINS[id]=t.sigma;});
+// ────────────────────────────────────────────────────────────────────
+
 const MX_COINS={
   'Цифры':0,'Операторы':0,'Эффекты':0,'Зачарования':0,'Враги':0,'Пасхалки':1,'Ачивки':1,'Рекорды':1,
   achiev_67:1,achiev_777:1,achiev_zdg:1,achiev_div0:1,
@@ -3034,6 +3128,7 @@ function initG(){
     fumStr:0,
     known:new Set(JSON.parse(localStorage.getItem('cw_mx')||'[]')),
     pendingReward:new Set(JSON.parse(localStorage.getItem('cw_pr')||'[]')),
+    titles:new Set(JSON.parse(localStorage.getItem('cw_titles')||'[]')),
     event:getCfg().active_event||null,
     newMx:0,
   };
@@ -3378,10 +3473,11 @@ function doAttack(){
     addLog('Ноль урона.');
   }
 
-  if(opsUsed.includes('+')){G.eSts.burn=(G.eSts.burn||0)+1;addLog('Горение +1');checkNewMx('sx_burn');checkNewMx('op+');}
-  if(opsUsed.includes('-')){if(Math.random()<.25){G.eSts.freeze=1;addLog('Заморозка!');checkNewMx('sx_freeze');}checkNewMx('op-');}
+  if(opsUsed.includes('+')){G.eSts.burn=(G.eSts.burn||0)+1;addLog('Горение +1');checkNewMx('sx_burn');checkNewMx('op+');const _sb=getStats();_sb.burnCount=(_sb.burnCount||0)+1;saveStats(_sb);}
+  if(opsUsed.includes('-')){if(Math.random()<.25){G.eSts.freeze=1;addLog('Заморозка!');checkNewMx('sx_freeze');const _sf=getStats();_sf.freezeCount=(_sf.freezeCount||0)+1;saveStats(_sf);}checkNewMx('op-');}
   if(opsUsed.includes('/')){const h=Math.min(6,Math.floor(Math.abs(raw)/8));if(h>0){G.php=Math.min(G.maxPhp,G.php+h);addLog(`+${h} HP`);}checkNewMx('op/');}
-  if(opsUsed.includes('%')){G.eSts.curse=1;addLog('Curse!');checkNewMx('sx_curse');checkNewMx('op%');}
+  if(opsUsed.includes('%')){G.eSts.curse=1;addLog('Curse!');checkNewMx('sx_curse');checkNewMx('op%');const _sm=getStats();_sm.modUses=(_sm.modUses||0)+1;saveStats(_sm);}
+  if(opsUsed.includes('^')){const _sc=getStats();_sc.chaosUses=(_sc.chaosUses||0)+1;saveStats(_sc);}
   if(opsUsed.includes('*')&&raw%2===0){addLog('Молния: чётное!');checkNewMx('op*');}
   G.cur++;
   if(uniq.length>=3){G.cur+=2;addLog('КОМБО! +2');}
@@ -3947,6 +4043,209 @@ function showAchievToast(name,color){
     setTimeout(()=>item.remove(),370);
   },4000);
 }
+// ── Title system functions ────────────────────────────────────────
+function saveTitles(){
+  localStorage.setItem('cw_titles',JSON.stringify([...G.titles]));
+}
+function getActiveTitle(){
+  return localStorage.getItem('cw_title_active')||null;
+}
+function setActiveTitle(id){
+  if(id) localStorage.setItem('cw_title_active',id);
+  else localStorage.removeItem('cw_title_active');
+  // Sync to profiles so other players can see it
+  const myPid=_supaUser?.user_metadata?.pid;
+  if(_supa&&myPid){
+    const td=TITLES[id];
+    const col=getTitleColors(id);
+    _supa.from('profiles').update({
+      active_title:id||null,
+      title_color:col?JSON.stringify(col):null
+    }).eq('pid',myPid).catch(()=>{});
+  }
+}
+function getTitleColors(id){
+  try{
+    const m=JSON.parse(localStorage.getItem('cw_title_colors')||'{}');
+    return m[id]||null;
+  }catch{return null;}
+}
+function saveTitleColor(id,cfg){
+  try{
+    const m=JSON.parse(localStorage.getItem('cw_title_colors')||'{}');
+    if(cfg) m[id]=cfg; else delete m[id];
+    localStorage.setItem('cw_title_colors',JSON.stringify(m));
+  }catch{}
+  setActiveTitle(getActiveTitle()); // re-sync to DB
+}
+// Build the HTML element for a title tag
+function mkTitleTag(id,colorOverride){
+  const t=TITLES[id];
+  if(!t) return null;
+  const el=document.createElement('span');
+  el.className='player-title-tag';
+  el.textContent=t.name;
+  const col=colorOverride||getTitleColors(id);
+  if(col){
+    if(col.type==='rainbow'){el.classList.add('rainbow');}
+    else if(col.type==='gradient'){
+      el.classList.add('gradient');
+      el.style.setProperty('--tc1',col.c1);
+      el.style.setProperty('--tc2',col.c2);
+    } else {el.style.color=col.c1||t.color;}
+  } else if(t.color==='rainbow'){el.classList.add('rainbow');}
+  else {el.style.color=t.color;el.style.borderColor=t.color+'55';}
+  return el;
+}
+// Build title tag from raw DB data (for other players)
+function mkTitleTagRaw(titleId,titleColorJson){
+  if(!titleId||!TITLES[titleId]) return null;
+  let col=null;
+  try{if(titleColorJson) col=typeof titleColorJson==='string'?JSON.parse(titleColorJson):titleColorJson;}catch{}
+  return mkTitleTag(titleId,col);
+}
+function unlockTitle(id){
+  if(!id||!TITLES[id]||TITLES[id].adminOnly) return;
+  if(G.titles.has(id)) return;
+  G.titles.add(id);
+  saveTitles();
+  showTitleToast(id);
+  const t=TITLES[id];
+  if(t.sigma>0) addSigma(t.sigma);
+  // Add to matrix
+  checkNewTitleMx(id);
+}
+function checkTitles(){
+  if(!G) return;
+  const st=getStats();
+  if(st.wins>=1) unlockTitle('t_novice');
+  if(st.wins>=5) unlockTitle('t_fighter');
+  if((st.burnCount||0)>=20) unlockTitle('t_pyro');
+  if((st.freezeCount||0)>=10) unlockTitle('t_frost');
+  if((st.modUses||0)>=15) unlockTitle('t_shadow');
+  if((st.chaosUses||0)>=10) unlockTitle('t_gambler');
+  if(G.known.size>=15) unlockTitle('t_scholar');
+  if(getSigma()>=50) unlockTitle('t_rich');
+  if(st.richardWins>=1) unlockTitle('t_richard');
+  if(G.known.size>=Object.keys(MX).length) unlockTitle('t_absolute');
+}
+function showTitleToast(id){
+  const t=TITLES[id];if(!t) return;
+  const container=document.getElementById('achiev-toasts');
+  const existing=[...container.children];
+  const before=existing.map(el=>el.getBoundingClientRect().top);
+  const item=document.createElement('div');
+  item.className='title-toast-item';
+  const tColor=t.color==='rainbow'?'#FF88CC':t.color;
+  item.style.cssText=`transform:translateX(320px);opacity:0;transition:none;border-color:${tColor};box-shadow:4px 4px 0 ${tColor}44;`;
+  const tag=mkTitleTag(id);
+  const tagHtml=tag?tag.outerHTML:'';
+  item.innerHTML=`<div class="tti-label">✦ НОВЫЙ ТИТУЛ</div><div class="tti-name" style="margin-bottom:6px;">${tagHtml}</div><div style="font-family:'Press Start 2P',monospace;font-size:5px;color:#335566;">${t.sigma>0?'+'+t.sigma+' Σ за получение':''}</div>`;
+  container.insertBefore(item,container.firstChild);
+  const after=existing.map(el=>el.getBoundingClientRect().top);
+  existing.forEach((el,i)=>{
+    const delta=before[i]-after[i];if(!delta)return;
+    el.style.transition='none';el.style.transform='translateY('+delta+'px)';
+    setTimeout(()=>{el.style.transition='transform .4s cubic-bezier(.22,1,.36,1)';el.style.transform='translateY(0)';},20);
+  });
+  setTimeout(()=>{
+    item.style.transition='transform .5s cubic-bezier(.22,1,.36,1),opacity .35s ease';
+    item.style.transform='translateX(0)';item.style.opacity='1';
+  },20);
+  setTimeout(()=>{
+    item.style.transition='transform .35s ease-in,opacity .3s ease';
+    item.style.transform='translateX(320px)';item.style.opacity='0';
+    setTimeout(()=>item.remove(),370);
+  },4500);
+}
+// Matrix entry for title
+function checkNewTitleMx(id){
+  const mxId='title_'+id;
+  if(G.known.has(mxId)) return;
+  G.known.add(mxId);
+  localStorage.setItem('cw_mx',JSON.stringify([...G.known]));
+  cloudSave();
+  G.newMx++;
+  const badge=document.getElementById('mat-badge');
+  if(badge){badge.textContent=G.newMx;badge.classList.add('on');}
+}
+// Render title selector inside own profile
+function renderTitleSettings(container){
+  container.innerHTML='';
+  const active=getActiveTitle();
+  const all=[...G.titles].filter(id=>TITLES[id]);
+  if(!all.length){
+    container.innerHTML='<div style="font-family:\'Press Start 2P\',monospace;font-size:6px;color:#335566;padding:4px 0;">нет титулов — заработай или получи от создателя</div>';
+    return;
+  }
+  const row=document.createElement('div');row.className='ts-row';
+  // "none" option
+  const noneBtn=document.createElement('button');
+  noneBtn.className='ts-title-btn'+(active===null?' active':'');
+  noneBtn.textContent='— без титула —';
+  noneBtn.onclick=()=>{setActiveTitle(null);renderTitleSettings(container);renderProfTitle();};
+  row.appendChild(noneBtn);
+  all.forEach(id=>{
+    const t=TITLES[id];
+    const btn=document.createElement('button');
+    btn.className='ts-title-btn'+(active===id?' active':'');
+    btn.style.color=t.color==='rainbow'?'#FF88CC':t.color;
+    btn.style.borderColor=(t.color==='rainbow'?'#FF88CC':t.color)+'55';
+    btn.textContent=t.name;
+    btn.onclick=()=>{setActiveTitle(id);renderTitleSettings(container);renderProfTitle();};
+    row.appendChild(btn);
+  });
+  container.appendChild(row);
+  // Color options for active professional title
+  if(active&&TITLES[active]?.canColor){
+    const colorRow=document.createElement('div');colorRow.className='ts-color-row';
+    const cur=getTitleColors(active);
+    const opts=[
+      {type:'rainbow',label:'Радужный',cls:'rainbow-dot',bg:''},
+      {type:'solid',label:'Синий',c1:'#1177DD',bg:'#1177DD'},
+      {type:'solid',label:'Зелёный',c1:'#44FF88',bg:'#44FF88'},
+      {type:'solid',label:'Фиолет',c1:'#CC44FF',bg:'#CC44FF'},
+      {type:'solid',label:'Золото',c1:'#FFD700',bg:'#FFD700'},
+      {type:'solid',label:'Розовый',c1:'#FF44AA',bg:'#FF44AA'},
+      {type:'solid',label:'Белый',c1:'#FFFFFF',bg:'#FFFFFF'},
+      {type:'gradient',label:'Огонь',c1:'#FF4400',c2:'#FFD700',bg:'linear-gradient(90deg,#FF4400,#FFD700)'},
+      {type:'gradient',label:'Море',c1:'#00DDFF',c2:'#0044FF',bg:'linear-gradient(90deg,#00DDFF,#0044FF)'},
+      {type:'gradient',label:'Закат',c1:'#FF00AA',c2:'#FF8800',bg:'linear-gradient(90deg,#FF00AA,#FF8800)'},
+      {type:'gradient',label:'Матрица',c1:'#44FF88',c2:'#00DDFF',bg:'linear-gradient(90deg,#44FF88,#00DDFF)'},
+    ];
+    const lbl=document.createElement('div');
+    lbl.style.cssText='font-family:\'Press Start 2P\',monospace;font-size:5px;color:#446644;width:100%;margin-bottom:2px;';
+    lbl.textContent='Цвет титула:';
+    colorRow.appendChild(lbl);
+    opts.forEach(o=>{
+      const dot=document.createElement('div');
+      dot.className='ts-color-dot'+(o.cls?' '+o.cls:'');
+      dot.title=o.label;
+      if(o.bg) dot.style.background=o.bg;
+      const isCur=cur?(cur.type===o.type&&(o.type==='rainbow'||cur.c1===o.c1)):(o.type==='rainbow'&&TITLES[active].color==='rainbow');
+      if(isCur) dot.classList.add('active');
+      dot.onclick=()=>{
+        if(o.type==='rainbow') saveTitleColor(active,{type:'rainbow'});
+        else if(o.type==='gradient') saveTitleColor(active,{type:'gradient',c1:o.c1,c2:o.c2});
+        else saveTitleColor(active,{type:'solid',c1:o.c1});
+        renderTitleSettings(container);renderProfTitle();
+      };
+      colorRow.appendChild(dot);
+    });
+    container.appendChild(colorRow);
+  }
+}
+function renderProfTitle(){
+  const el=document.getElementById('prof-active-title');
+  if(!el) return;
+  el.innerHTML='';
+  const active=getActiveTitle();
+  if(active&&G.titles.has(active)){
+    const tag=mkTitleTag(active);
+    if(tag) el.appendChild(tag);
+  }
+}
+// ──────────────────────────────────────────────────────────────────
 function checkDmgRecord(fd){
   Object.entries(MX).forEach(([id,e])=>{
     if(e.cat!=='Рекорды')return;
@@ -4168,7 +4467,32 @@ function renderMat(){
       c.appendChild(rg);
     }
   }
-  document.getElementById('mat-cnt').textContent=`Открыто: ${G.known.size} / ${Object.keys(MX).length}`;
+  // ── Titles section ──
+  const titleEntries=Object.entries(TITLES);
+  if(titleEntries.length){
+    const th=document.createElement('div');th.className='mc';th.textContent='🏅 ТИТУЛЫ';c.appendChild(th);
+    const tg=document.createElement('div');tg.className='mg';
+    titleEntries.forEach(([id,t])=>{
+      const mxId='title_'+id;
+      const unlocked=G.titles.has(id);
+      const card=document.createElement('div');
+      card.className='me '+(unlocked?'kn':'un');
+      if(unlocked){
+        const tag=mkTitleTag(id);
+        const tagHtml=tag?tag.outerHTML:'';
+        const sigmaHtml=t.sigma>0?`<span style="font-family:'Press Start 2P',monospace;font-size:6px;color:#CC88FF;">+${t.sigma} Σ</span>`:'';
+        card.innerHTML=`<div style="margin-bottom:4px;">${tagHtml}${t.adminOnly?'<span style="font-family:\'Press Start 2P\',monospace;font-size:5px;color:#9944FF;margin-left:6px;">★</span>':''}</div><div class="med">${t.desc}</div>${t.how?`<div class="me-how" style="font-size:9px;color:#446644;margin-top:4px;">📋 ${t.how}</div>`:''}<div style="text-align:right;margin-top:4px;">${sigmaHtml}</div>`;
+        _cardOn(card,()=>openCard(t.name,t.desc+(t.how?'\n\n📋 '+t.how:''),mxId,null));
+      } else {
+        card.innerHTML=`<div class="mq"><span class="mq-icon" style="color:#44224466;">🏅</span></div>`;
+      }
+      tg.appendChild(card);
+    });
+    c.appendChild(tg);
+  }
+  const totalTitles=Object.keys(TITLES).length;
+  const unlockedTitles=[...G.titles].filter(id=>TITLES[id]).length;
+  document.getElementById('mat-cnt').textContent=`Открыто: ${G.known.size} / ${Object.keys(MX).length} · Титулов: ${unlockedTitles} / ${totalTitles}`;
 }
 function openCard(title,body,mxId,runame){
   const ov=document.getElementById('card-ov');
@@ -4222,7 +4546,14 @@ function showEnd(msg,good){
   if(window._gameEndShown) return;
   window._gameEndShown=true;
   G.active=false;
-  if(good){const _sw=getStats();_sw.wins=(_sw.wins||0)+1;saveStats(_sw);cloudSave();}
+  if(good){
+    const _sw=getStats();
+    _sw.wins=(_sw.wins||0)+1;
+    if(wave>=WAVE_DEFS.length-1) _sw.richardWins=(_sw.richardWins||0)+1;
+    saveStats(_sw);
+    cloudSave();
+    setTimeout(()=>checkTitles(),300);
+  }
   const coinsEarned=G.cur||0;
   const wave=G.wave||0;
   const _showGameOver=()=>{
@@ -4967,6 +5298,17 @@ function profOpen(){
       d.getDate()+' '+['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'][d.getMonth()]+' '+d.getFullYear();
   }
 
+  // Title display + settings (own profile)
+  renderProfTitle();
+  const titleSection=document.getElementById('prof-title-section');
+  const titleSettingsEl=document.getElementById('title-settings');
+  if(titleSection){titleSection.style.display='flex';}
+  if(titleSettingsEl) renderTitleSettings(titleSettingsEl);
+  // Restore avatar edit
+  document.getElementById('prof-avatar-edit').style.display='';
+  document.getElementById('prof-avatar-wrap').onclick=()=>document.getElementById('prof-avatar-input').click();
+  document.getElementById('prof-change-btn').style.display='';
+
   document.getElementById('prof-ov').classList.add('on');
 
   // Load friend count (own profile)
@@ -5002,10 +5344,23 @@ window.profOpenByPid=async function(pid){
     // PID
     const pidEl=document.getElementById('prof-pid');
     if(pidEl) pidEl.textContent='# '+pid;
-    // Hide avatar edit
+    // Hide avatar edit, title settings
     document.getElementById('prof-avatar-edit').style.display='none';
     document.getElementById('prof-avatar-wrap').onclick=null;
     document.getElementById('prof-change-btn').style.display='none';
+    const titleSection=document.getElementById('prof-title-section');
+    if(titleSection) titleSection.style.display='none';
+    // Show other player's title
+    const titleEl=document.getElementById('prof-active-title');
+    if(titleEl){
+      titleEl.innerHTML='';
+      if(data.active_title&&TITLES[data.active_title]){
+        const tag=mkTitleTagRaw(data.active_title,data.title_color);
+        if(tag) titleEl.appendChild(tag);
+      } else {
+        titleEl.innerHTML='<span class="player-title-tag no-title">нет титула</span>';
+      }
+    }
 
     // Friend count
     const fcEl=document.getElementById('prof-friend-count');
@@ -5357,9 +5712,10 @@ async function cloudSave(){
   try{
     const mx=localStorage.getItem('cw_mx')||'[]';
     const stats=localStorage.getItem('cw_stats')||'{}';
-    // pr (pendingReward) intentionally NOT saved to cloud — it's a one-time UI state;
-    // saving it caused sigma to be re-awarded on every login after restore
-    await _supa.from('saves').upsert({user_id:_supaUser.id,mx,stats,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+    const titles=localStorage.getItem('cw_titles')||'[]';
+    const titleActive=localStorage.getItem('cw_title_active')||'';
+    const titleColors=localStorage.getItem('cw_title_colors')||'{}';
+    await _supa.from('saves').upsert({user_id:_supaUser.id,mx,stats,titles,title_active:titleActive,title_colors:titleColors,updated_at:new Date().toISOString()},{onConflict:'user_id'});
     // Update last_seen in profiles
     const pid=_supaUser.user_metadata?.pid;
     const nick=_supaUser.user_metadata?.nickname;
@@ -5371,9 +5727,14 @@ async function cloudSave(){
 async function cloudLoad(){
   if(!_supa||!_supaUser)return;
   try{
-    const {data}=await _supa.from('saves').select('mx,stats').eq('user_id',_supaUser.id).single();
+    const {data}=await _supa.from('saves').select('mx,stats,titles,title_active,title_colors').eq('user_id',_supaUser.id).single();
     if(data?.mx)localStorage.setItem('cw_mx',data.mx);
     if(data?.stats)localStorage.setItem('cw_stats',data.stats);
+    if(data?.titles)localStorage.setItem('cw_titles',data.titles);
+    if(data?.title_active)localStorage.setItem('cw_title_active',data.title_active);
+    if(data?.title_colors)localStorage.setItem('cw_title_colors',data.title_colors);
+    // Sync G.titles from loaded data
+    if(data?.titles&&G){try{G.titles=new Set(JSON.parse(data.titles));}catch{}}
   }catch(e){console.warn('Cloud load:',e);}
 }
 
@@ -5915,7 +6276,7 @@ async function cloudLoad(){
     if(el) el.style.display='flex';
     if(tab==='stats') loadAdminStats();
     if(tab==='players') loadAdminPlayers();
-    if(tab==='broadcast'){ loadDevList(); _populateAdminMxSelect(); }
+    if(tab==='broadcast'){ loadDevList(); _populateAdminMxSelect(); _populateAdminTitleSelects(); }
   };
 
   window.adminOpen=async function(){
@@ -6044,6 +6405,10 @@ async function cloudLoad(){
         revokeWrap.appendChild(btn);
       });
     }
+    // Title buttons (reset so they re-render for new player)
+    const titleBtns=document.getElementById('apc-title-btns');
+    if(titleBtns){titleBtns.innerHTML='';delete titleBtns.dataset.filled;}
+    _populateAdminTitleSelects();
   }
 
   // ── Give coins ──
@@ -6231,6 +6596,118 @@ async function cloudLoad(){
   };
 
   // ── Populate MX select in admin panel ──
+  // ── Title admin functions ─────────────────────────────────────────
+  function _populateAdminTitleSelects(){
+    // Player panel buttons
+    const btnWrap=document.getElementById('apc-title-btns');
+    if(btnWrap&&!btnWrap.dataset.filled){
+      btnWrap.dataset.filled='1';
+      Object.entries(TITLES).forEach(([id,t])=>{
+        const btn=document.createElement('button');
+        btn.className='apc-title-btn';
+        btn.textContent=t.name+(t.adminOnly?' ★':'');
+        const tColor=t.color==='rainbow'?'#FF88CC':t.color;
+        btn.style.color=tColor;btn.style.borderColor=tColor+'55';
+        btn.onclick=()=>adminGiveTitle(id,t.name);
+        btnWrap.appendChild(btn);
+      });
+    }
+    // Revoke buttons
+    const revokeWrap=document.getElementById('apc-title-revoke-btns');
+    const revokeHint=document.getElementById('apc-title-revoke-hint');
+    if(revokeWrap&&typeof TITLES!=='undefined'){
+      revokeWrap.innerHTML='';
+      if(revokeHint) revokeHint.textContent=`игрок: ${_adminTargetPid||'?'} — нажми чтобы забрать`;
+      Object.entries(TITLES).forEach(([id,t])=>{
+        const btn=document.createElement('button');
+        btn.className='apc-title-btn';
+        btn.style.cssText='color:#FF7744;border-color:#662200;background:#1a0500;';
+        btn.textContent=t.name;
+        btn.onclick=()=>adminRevokeTitle(id,t.name);
+        revokeWrap.appendChild(btn);
+      });
+    }
+    // Global select
+    const gsel=document.getElementById('admin-global-title');
+    if(gsel&&!gsel.dataset.filled){
+      gsel.dataset.filled='1';
+      Object.entries(TITLES).forEach(([id,t])=>{
+        const opt=document.createElement('option');
+        opt.value=id;opt.textContent=t.name+(t.adminOnly?' ★':'');
+        gsel.appendChild(opt);
+      });
+    }
+  }
+
+  async function adminGiveTitle(titleId,name){
+    if(!_adminGuard()||!_adminTargetPid){alert('Сначала выбери игрока');return;}
+    try{
+      await _supa.from('broadcast').insert({
+        msg:JSON.stringify({to_pid:_adminTargetPid,titleId}),
+        from_pid:CREATOR_PID,msg_type:'title_give',
+        created_at:new Date().toISOString()
+      });
+      alert(`✅ Титул "${name}" выдан игроку ${_adminTargetPid}`);
+    }catch(e){alert('Ошибка: '+e.message);}
+  }
+
+  async function adminRevokeTitle(titleId,name){
+    if(!_adminGuard()||!_adminTargetPid){alert('Сначала выбери игрока');return;}
+    if(!confirm(`Забрать титул "${name}" у игрока ${_adminTargetPid}?`)) return;
+    try{
+      await _supa.from('broadcast').insert({
+        msg:JSON.stringify({to_pid:_adminTargetPid,titleId}),
+        from_pid:CREATOR_PID,msg_type:'title_revoke',
+        created_at:new Date().toISOString()
+      });
+      alert(`Титул "${name}" отозван у игрока ${_adminTargetPid}`);
+    }catch(e){alert('Ошибка: '+e.message);}
+  }
+
+  window.adminGiveCustomTitle=async function(){
+    if(!_adminGuard()||!_adminTargetPid){alert('Сначала выбери игрока');return;}
+    const text=(document.getElementById('apc-custom-title-text')?.value||'').trim();
+    if(!text){alert('Введи текст титула');return;}
+    const colorVal=document.getElementById('apc-custom-title-color')?.value||'solid:#CC88FF';
+    const canColor=document.getElementById('apc-custom-can-color')?.checked||false;
+    let colorCfg;
+    if(colorVal==='rainbow'){colorCfg={type:'rainbow'};}
+    else if(colorVal.startsWith('gradient:')){
+      const[,c1,c2]=colorVal.split(':');colorCfg={type:'gradient',c1,c2};
+    } else {
+      const[,c1]=colorVal.split(':');colorCfg={type:'solid',c1};
+    }
+    const customId='tc_'+Date.now();
+    try{
+      await _supa.from('broadcast').insert({
+        msg:JSON.stringify({to_pid:_adminTargetPid,titleId:customId,titleName:text,colorCfg,canColor}),
+        from_pid:CREATOR_PID,msg_type:'title_custom',
+        created_at:new Date().toISOString()
+      });
+      alert(`✅ Кастомный титул "${text}" выдан`);
+    }catch(e){alert('Ошибка: '+e.message);}
+  };
+
+  window.adminGlobalTitle=async function(){
+    if(!_adminGuard()) return;
+    const titleId=document.getElementById('admin-global-title')?.value;
+    if(!titleId){alert('Выбери титул');return;}
+    const name=TITLES[titleId]?.name||titleId;
+    try{
+      const{data:profs}=await _supa.from('profiles').select('pid,last_seen');
+      const online=(profs||[]).filter(p=>p.last_seen&&(Date.now()-new Date(p.last_seen).getTime())<5*60*1000);
+      if(!online.length){alert('Нет игроков онлайн');return;}
+      if(!confirm(`Выдать титул "${name}" ${online.length} игрокам онлайн?`)) return;
+      await _supa.from('broadcast').insert({
+        msg:JSON.stringify({to_pid:'ALL',titleId}),
+        from_pid:CREATOR_PID,msg_type:'title_give',
+        created_at:new Date().toISOString()
+      });
+      alert(`✅ Титул "${name}" выдан ${online.length} игрокам онлайн`);
+    }catch(e){alert('Ошибка: '+e.message);}
+  };
+  // ─────────────────────────────────────────────────────────────────
+
   function _populateAdminMxSelect(){
     const sel=document.getElementById('admin-global-mx');
     if(!sel||sel.dataset.filled) return;
@@ -6478,6 +6955,65 @@ async function cloudLoad(){
       payload=>{
         const row=payload.new;
         if(!row?.msg) return;
+        // Title give
+        if(row.msg_type==='title_give'){
+          try{
+            const d=JSON.parse(row.msg);
+            const myPid=_supaUser?.user_metadata?.pid;
+            if(d.to_pid&&d.to_pid!=='ALL'&&d.to_pid!==myPid) return;
+            const tid=d.titleId;
+            if(!tid||!TITLES[tid]) return;
+            if(!G.titles.has(tid)){
+              G.titles.add(tid);saveTitles();cloudSave();
+              showTitleToast(tid);
+              const t=TITLES[tid];
+              if(t.sigma>0) addSigma(t.sigma);
+              checkNewTitleMx(tid);
+              if(document.getElementById('mat-panel')?.classList.contains('open')) renderMat();
+            }
+          }catch(e){}
+          return;
+        }
+        // Title revoke
+        if(row.msg_type==='title_revoke'){
+          try{
+            const d=JSON.parse(row.msg);
+            const myPid=_supaUser?.user_metadata?.pid;
+            if(d.to_pid&&d.to_pid!==myPid) return;
+            const tid=d.titleId;
+            if(!tid) return;
+            if(G.titles.has(tid)){
+              G.titles.delete(tid);saveTitles();cloudSave();
+              if(getActiveTitle()===tid) setActiveTitle(null);
+              showBroadcastMsg(`У вас забрали титул: «${TITLES[tid]?.name||tid}»`,'mx_revoke');
+              if(document.getElementById('mat-panel')?.classList.contains('open')) renderMat();
+            }
+          }catch(e){}
+          return;
+        }
+        // Custom title give
+        if(row.msg_type==='title_custom'){
+          try{
+            const d=JSON.parse(row.msg);
+            const myPid=_supaUser?.user_metadata?.pid;
+            if(d.to_pid&&d.to_pid!==myPid) return;
+            const tid=d.titleId;const name=d.titleName||'Кастомный';
+            // Store custom title in localStorage as a pseudo-TITLES entry
+            const customs=JSON.parse(localStorage.getItem('cw_custom_titles')||'{}');
+            customs[tid]={name,colorCfg:d.colorCfg,canColor:!!d.canColor};
+            localStorage.setItem('cw_custom_titles',JSON.stringify(customs));
+            // Add to TITLES runtime object so mkTitleTag works
+            TITLES[tid]={name,cat:'Кастомные',sigma:0,color:d.colorCfg?.c1||'#CC88FF',canColor:!!d.canColor,adminOnly:true,desc:'Кастомный титул от создателя.'};
+            if(!G.titles.has(tid)){
+              G.titles.add(tid);saveTitles();cloudSave();
+            }
+            // Apply color if provided
+            if(d.colorCfg) saveTitleColor(tid,d.colorCfg);
+            showTitleToast(tid);
+            if(document.getElementById('mat-panel')?.classList.contains('open')) renderMat();
+          }catch(e){}
+          return;
+        }
         // Matrix entry gift
         if(row.msg_type==='mx_give'){
           try{
@@ -6660,6 +7196,7 @@ function addSigma(amount){
     const pid=_supaUser.user_metadata?.pid;
     if(pid) _supa.from('profiles').update({sigma:next}).eq('pid',pid).catch(()=>{});
   }
+  setTimeout(()=>checkTitles(),100);
   return next-prev; // actually added
 }
 function renderSigmaHud(){
