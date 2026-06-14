@@ -2506,14 +2506,14 @@ button, .menu-btn {
 <div id="shop-ov">
   <div id="shop-box">
     <div id="shop-balance-plate"><div class="coin"></div><span id="shop-bal-num">0</span></div>
-    <div id="shop-hp-bar" style="display:none;position:absolute;top:58px;right:18px;background:#0a1a0a;border:2px solid #226622;padding:5px 10px;align-items:center;gap:8px;z-index:5;">
-      <span style="font-family:'Press Start 2P',monospace;font-size:6px;color:#44FF88;">HP</span>
-      <div style="width:70px;height:8px;background:#0d1a0d;border:1px solid #226622;">
+    <h2>МАГАЗИН</h2>
+    <div id="shop-hp-bar" style="display:none;width:100%;box-sizing:border-box;background:#0a1a0a;border:2px solid #226622;padding:6px 12px;align-items:center;gap:10px;margin-bottom:6px;">
+      <span style="font-family:'Press Start 2P',monospace;font-size:6px;color:#44FF88;white-space:nowrap;">❤ HP</span>
+      <div style="flex:1;height:9px;background:#0d1a0d;border:1px solid #226622;">
         <div id="shop-hp-fill" style="height:100%;background:#22AA44;transition:width .3s;"></div>
       </div>
       <span id="shop-hp-txt" style="font-family:'Press Start 2P',monospace;font-size:6px;color:#fff;white-space:nowrap;"></span>
     </div>
-    <h2>МАГАЗИН</h2>
     <div id="shop-heal-note"></div>
     <div id="shop-turn-warn">⚠ ПОКУПКА ПОТРАТИТ ВАШ ХОД!</div>
     <div id="shop-items"></div>
@@ -3727,6 +3727,17 @@ function openShop(){
   document.getElementById('btn-shop-close').classList.remove('on');
   _renderShopItems();
   document.getElementById('shop-balance-plate').classList.remove('on','out');
+  // Show HP bar
+  const hpBar=document.getElementById('shop-hp-bar');
+  const hpFill=document.getElementById('shop-hp-fill');
+  const hpTxt=document.getElementById('shop-hp-txt');
+  if(hpBar&&G){
+    hpBar.style.display='flex';
+    const pct=Math.max(0,Math.min(100,Math.round(G.php/G.maxPhp*100)));
+    hpFill.style.width=pct+'%';
+    hpFill.style.background=pct>50?'#22AA44':pct>25?'#DDAA00':'#DD2233';
+    hpTxt.textContent=G.php+' / '+G.maxPhp;
+  }
   document.getElementById('shop-ov').classList.add('on');
   setTimeout(()=>_animateShopCoins(false),120);
 }
