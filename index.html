@@ -744,9 +744,10 @@ body{background:var(--bg);font-family:'Press Start 2P',monospace;color:var(--tex
     padding:8px 6px;
     max-width:100vw;
   }
+  /* dialogue + action log go ABOVE the (tall) calculator so they're actually visible */
   #enemy-col{order:1;}
-  #calc-col {order:2;}
-  #mid-col  {order:3;}
+  #mid-col  {order:2;}
+  #calc-col {order:3;}
 
   /* ── HUD ── */
   #hud{padding:6px 10px;gap:6px;flex-wrap:wrap;}
@@ -789,7 +790,7 @@ body{background:var(--bg);font-family:'Press Start 2P',monospace;color:var(--tex
   #dlg-text{font-size:7px;line-height:1.9;min-height:40px;}
   #dlg-speaker{font-size:6px;}
   .dlg-btn{font-size:6px;padding:7px 8px;}
-  #log{height:50px;font-size:6px;padding:6px;}
+  #log{height:78px;font-size:7px;padding:6px;}
   #pstatus{font-size:6px;}
 
   /* ── Matrix panel: full width ── */
@@ -2009,6 +2010,50 @@ button, .menu-btn {
 .inf-mode #submit-btn{background:#220044;border-color:#8800cc;color:#ff99ff;}
 .inf-mode #submit-btn:hover{background:#330066;}
 .inf-mode #wave-info{color:#663388;}
+/* lighter, more readable enemy HP & armor in infinite mode */
+.inf-mode .ec-hptxt{color:#f3ecff;}
+.inf-mode .hpbar-inner{background:#c9a4ff;}
+.inf-mode .hpbar-inner.y{background:#ffd98a;}
+.inf-mode .hpbar-inner.r{background:#ff9aa6;}
+.inf-mode .ec-armor{color:#d9c6ff;font-size:11px;}
+/* readable, animated "next move" telegraph */
+.ec-next{font-size:8px;line-height:1.5;}
+.ec-next b{color:#fff;font-weight:normal;}
+.inf-mode .ec-next{color:#e7b3ff;}
+@keyframes nextFlip{0%{transform:rotateX(85deg);opacity:0;}55%{transform:rotateX(-14deg);opacity:1;}100%{transform:rotateX(0);}}
+.ec-next-flip{animation:nextFlip .5s cubic-bezier(.3,1.5,.5,1) both;transform-origin:center bottom;display:inline-block;}
+/* grey-pixel transition overlay */
+#px-wipe{position:fixed;inset:0;width:100vw;height:100vh;z-index:9900;display:none;pointer-events:none;}
+/* enemy attack impact (shockwave + kicked-up dust) */
+.impact-ring{position:fixed;width:14px;height:14px;margin:-7px 0 0 -7px;border:3px solid #ffd24d;border-radius:50%;pointer-events:none;z-index:60;animation:impRing .5s ease-out forwards;}
+@keyframes impRing{0%{transform:scale(.3);opacity:.9;}100%{transform:scale(3.6);opacity:0;}}
+.impact-dust{position:fixed;width:5px;height:5px;margin:-2px 0 0 -2px;background:#ffcf6a;border-radius:1px;pointer-events:none;z-index:60;animation:impDust .55s ease-out forwards;}
+@keyframes impDust{0%{transform:translate(0,0) scale(1);opacity:1;}100%{transform:translate(var(--dx),var(--dy)) scale(.3);opacity:0;}}
+/* infinite-mode shop skin */
+#shop-ov.inf #shop-box{background:linear-gradient(160deg,#0c0124,#15012e);border-color:#9b30ff;box-shadow:6px 6px 0 #1a0033,0 0 34px #6a18c244;}
+#shop-ov.inf #shop-box h2{color:#d8a6ff;text-shadow:0 0 10px #9b30ff66;}
+#shop-ov.inf #shop-balance-plate{background:#10002a;border-color:#b14dff;box-shadow:3px 3px 0 #2a0050;}
+#shop-ov.inf #shop-bal-num{color:#ff9af0;}
+#shop-ov.inf #shop-heal-note{color:#b07cff;}
+#shop-ov.inf .si{background:#0e0226;border-color:#3c1066;}
+#shop-ov.inf .si:hover{border-color:#9b30ff;box-shadow:0 0 12px #9b30ff55;}
+#shop-ov.inf .si-name{color:#ecd2ff;}
+#shop-ov.inf .si-desc{color:#9a78c8;}
+#shop-ov.inf .si-pr{color:#ffb0f2;}
+#shop-ov.inf .bbuy{background:#3a0f66;border-color:#9b30ff;color:#f0d4ff;}
+#shop-ov.inf .bbuy:hover{background:#4d1488;}
+#shop-ov.inf .bbuy[disabled]{opacity:.4;filter:grayscale(.4);}
+#shop-ov.inf #shop-hp-bar{background:#0e0226 !important;border-color:#3c1066 !important;}
+/* dialogue-bonus panel (separate table for the choice-bonus feature) */
+#dlg-bonus{display:none;margin-top:8px;background:#07140c;border:2px solid #1f4a2f;padding:8px 11px;box-shadow:3px 3px 0 #02180a;}
+#dlg-bonus.on{display:block;animation:dbIn .35s ease both;}
+@keyframes dbIn{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.db-title{font-family:'Press Start 2P',monospace;font-size:7px;color:#7CFF9B;margin-bottom:6px;}
+.db-row{font-family:'Press Start 2P',monospace;font-size:7px;color:#cfe8d8;line-height:2.0;}
+.dlg-done{font-family:'Press Start 2P',monospace;font-size:7px;color:#5a6b7a;opacity:.8;padding:4px 0;}
+.inf-mode #dlg-bonus{background:#0c0124;border-color:#5a2a88;box-shadow:3px 3px 0 #12002a;}
+.inf-mode .db-title{color:#d8a6ff;}
+.inf-mode .db-row{color:#bb9aef;}
 
 /* ══ EXIT CONFIRM OVERLAY ══ */
 #exit-confirm-ov{
@@ -2835,6 +2880,7 @@ button, .menu-btn {
       <div id="dlg-text"></div>
       <div id="dlg-choices"></div>
     </div>
+    <div id="dlg-bonus"></div>
     <div id="pstatus"></div>
     <div id="log"></div>
   </div>
@@ -2929,6 +2975,9 @@ button, .menu-btn {
     <div id="upd-body"></div>
   </div>
 </div>
+
+<!-- Grey-pixel transition overlay (enter/exit infinite mode) -->
+<canvas id="px-wipe"></canvas>
 
 <!-- Skull reset button -->
 <button id="skull-btn" onclick="skullOpen()" title="Сброс матрицы">💀</button>
@@ -3283,13 +3332,13 @@ const _INF_B64={
   'plus-red':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAfCAYAAACLSL/LAAADuUlEQVRYCe1WzUtUURQ/41iOmh9ljR81iZkYgYJkqwoEw2jZUmhRtIvAgrD+hIqIVm3CWrYIwkUbK0GoqMWkZBTKIJVm6vgV6Lxmcsbp/s7zPN97M2/mzdQiwgP33XPPPffc3/3dc88M0ZZsMbDFwH/CwI2ypqT9KLCls9v93IwL3TiZfWTja41HiSYoeX0l5ME87GzDwGTHMB/JCRg272lo433ea9tS9ouux2k8Wkzs83kTdIqjC0OBC58UF2ze7Ptp2IVFMQg4u13m3fQ5MWYOWFS1i3pIsaeYERYxD8AAhvYnkhdjrXuLab3lCDE4dbXozSJsArATa052iZMXsPWmVl4vfWxxSeJxH6uos4ztA4DKBBr+OV+llogTvX5BFcdOGvsJY8vhsG5bmlR9GbGv4aW/XAx72zvJ8DXNm1VXjAntKA33Jz/w+oLQKKFBHoy/47bT7+cxPsHVT4YOBTGudl9xBQr+GRkTQDghBfXnz3VrUiW8Vy8bfeEQnR4aoMZDfkK56K5qoKqPT2hiLEyPOk5hDwPU7MsBHsvn7L7DRN/SlxVHYADFgFQU5FIvom2Ag4rr+z47A9WQS7MjrAf2txg2xMBDmX3+lG0LiZgxt9tbZOh2JS0wAYWAFF0jOakwhyC3goPEJ1Z6TaCUGero6qSbFKehZ4Nsgx/AazP9VOKxbhXRSimi5p1Y458TBBABKNkQtq8rhVRaEiE5XV1NLTOI/MJrXFyLUf/yJJ2feCUhuH/YeJzaCg9QfVmctKRq6wm2Iw5Yk3i3x96y/W5yzoLFegxLaOtAgvH1gQW1mbBwwd9EfQqIWboq62h+VT9YfRmRRjow8RFAGNtBwZYCjJNbJSQmT1To9Qq6nFByBGOAC2wvpalfEQIQu+zZEVXgfPohCrwGayVKh6QDJDHSlguAQ3s8rV+PBBJQsvhgbYBVgEMrSVTKlKVncOoqkVduJS0w82KcGlcGUJywG8El16S4gjXN+8NYKtcsBhwOBwXL98aDGdnCmqzA4IR8QGCAFEGuyQMAqGwiYKTP5p+SY+YFnAPjwaT055r0ospXol6qNjNldrfkkPklmp0y5ZXZLyMwOEog7kMjlr/TF5vbOblRTiBgFWVBSkOzr5yGNetrZEcXn6zAzDEE5GVPdfJOxxmeCvA/i3Kz21/RcwKGHQXUm9A8A6gv9tGCZ1Hp1TzGR/6PDS/lxxZiWKotDJlEQI1Of7G5bYIimkspC3iNwrZtoeMwJ2CIAnCO0RwmcgXlEObfMP8GvV6y8pzrty0AAAAASUVORK5CYII=',
   'plus-yel':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAfCAYAAACLSL/LAAADZ0lEQVRYCe2WP4gTQRTGXw4FoygoKqgQC4s0WhxbmMPK4rCJ2ohBsAjYWtpZW14jwUIQrhHBP+BBsFGwUIhNuEaEFDZXeIVBTy0iBC5+38y82dlNstlNISnuwWTnz5s3v/3emySlWq0mi2hLiwhFpj2wopnZU+y/Kda6I6P0YZybNJ/2yzPel8cp9NGDo9siLZHR3SdS4jrnOWf6wbydKf5ZCMwc3nCHfGB57iZPHGL4aUmixm4COumUbzRf8eNwqcVQqqI/0sBZFf1cwU4hxRKxy8ehTN8oE6mKdCAwwdnSiiYCZA/mU+zyMZHhJREDhwPwTJhTk8BjajrHafMaZz6wwbLd7599jWefP04kx6mR1moWXPFU/uUpb0UOrMbHqWI/HeDB71jDOxvf2E1BoiYUVt94OdHLpZgG5FdDd8PtL28ihWiwrdd90+RonNKtX/HloI9VaVXyQNE/E4zBTEC84RjcAOqg9doilRsdaayJ9F5YxVau2bneOx4RQ8kOlN6GD5VEi65Mr8GpqVQgExm1FDU3cQP7/gvVFDwPCaz5UGQd4wtnXA2ibxTiRek7qX8HG44E/VR3omIeigFZ4O5NeYgq111PQnU6HQO09mpZHr98FB9D+G3NfzwtX9FHJUxTrZT+B2ugILE3ltE5NH27U6gjwrK+mM4dpPCjSPVWx29hp/dsRaqH0IGrDNEGaDTGoWouXvspJ0UebNifNjsSmZpKdfBPDWbSh1rhxdtvV6t1C+J90alexMdnNL4Y4RQMXZoCsZ+G4twYGG9eCz/CXIxO8tOZKqY1wjGV4FcWIA2Ic/WP8+gRjn5lNIVjHzYJyK5MuZWEY2t/cW4ukEmB7uSzgrTSCMf2h4MJRjhCsa5y2sTiT+zlWzNlVIqBNbivNQfH1B5GU3Np1iEVMy8K9drPs9XintlgcDL1QNUIqcZa0wtAqBmmMPqc4T5eY+EGVwMjfdavulWqxps6BFxoYQ2xrnQc+GTVVeCWDUZHDaRwfjPqr34TI9YPIWlUlTAKVEFfU49uERu7lVmbFfL+dRnV72nhp1TLClBgrRAY43qoNw7oLCYZ5VtQrvrv9j13zGeFwDxUD1CaPp4bQp3Gv4oUEG+jqp0XsxCYDd43X77JA4K/ON3kCkdFobhn7LeSk4tg/wAx3SInvf9eZQAAAABJRU5ErkJggg==',
 };
-function mkImgSpr(id){
+function mkImgSpr(id,enemy){
   const src=_INF_B64[id]||'';
   const wrap=document.createElement('div');
   wrap.style.cssText='position:relative;line-height:0;width:100%;text-align:center;';
   wrap.className='inf-spr-wrap';
   const cv=document.createElement('canvas');
-  cv.style.cssText='width:100%;max-width:224px;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;display:inline-block;';
+  cv.style.cssText='width:220px;max-width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;display:inline-block;transform-origin:center bottom;will-change:transform,opacity;';
   wrap.appendChild(cv);
   const isMinus=id.startsWith('minus-');
   const img=new Image();
@@ -3297,7 +3346,7 @@ function mkImgSpr(id){
     const SW=img.naturalWidth, SH=img.naturalHeight;   // source sprite (38×31)
     // wider/taller canvas so the puddle can spread and wings/lift have room, never clipped
     // wide canvas for the puddle/wings; minus is short (never lifts), plus is tall (lifts off)
-    const CW=58, CH=isMinus?22:37, OX=Math.round((CW-SW)/2), OY=CH-SH; // sprite centred, floor-anchored
+    const CW=50, CH=isMinus?22:37, OX=Math.round((CW-SW)/2), OY=CH-SH; // sprite centred, floor-anchored
     cv.width=CW;cv.height=CH;
     const ctx=cv.getContext('2d');ctx.imageSmoothingEnabled=false;
     const off=document.createElement('canvas');off.width=SW;off.height=SH;
@@ -3372,60 +3421,105 @@ function mkImgSpr(id){
       if(!cv.isConnected)return; // sprite removed from DOM → stop loop (no leak)
       const t=(now-t0)/1000;
       od.fill(0);
+      // gross-motion triggers, read off the enemy object so they survive re-renders
+      let atk=0, death=0;
+      if(enemy){
+        if(enemy._atkT){ const a=(now-enemy._atkT)/600; if(a<1)atk=a; else enemy._atkT=0; }
+        if(enemy._deathT) death=clamp((now-enemy._deathT)/1100);
+      }
+      const dEase=smooth(death);
+      // ── attack choreography (atk 0..1); the hit lands at atk≈0.5 ──
+      let aStretch=0,aFlat=0,aSmile=0;          // slime: rear up tall → snap flat into a wide grin → settle
+      let aRise=0,aFwd=0,aLandSq=0,aFastWing=0; // plus: leap up → slam down → land squash
+      if(atk>0){
+        if(isMinus){
+          if(atk<0.45){ aStretch=smooth(atk/0.45); }
+          else if(atk<0.55){ const f=smooth((atk-0.45)/0.10); aStretch=1-f; aFlat=f; aSmile=f; }
+          else { const r=1-smooth((atk-0.55)/0.45); aFlat=r; aSmile=r*0.7; }
+        }else{
+          aFastWing=atk<0.52?1:0;
+          if(atk<0.42){ aRise=smooth(atk/0.42); }
+          else if(atk<0.52){ const d=smooth((atk-0.42)/0.10); aRise=1-d; aFwd=d; }
+          else if(atk<0.68){ aLandSq=Math.sin((atk-0.52)/0.16*Math.PI); aFwd=1-(atk-0.52)/0.16; }
+        }
+      }
       if(isMinus){
-        // ─── SLIME: nearly still at rest; rarely melts into a wide, crooked puddle, then snaps back ───
+        // ─── SLIME: jelly idle; rare melt; attack lunge-stretch; death = spread to nothing ───
         const C=16.0, tt=t%C;
         let scV=1,scH=1,melt=0;
-        if(tt<13.0){                                  // idle: only a slow, faint breath — no shake
-          scV=1+0.015*Math.sin(t*0.8); scH=2-scV;
+        if(tt<13.0){                                  // idle: gentle jelly squish — smooth, never jittery
+          const j=Math.sin(t*1.7);
+          scV=1+0.05*j; scH=1-0.045*j;
         }else{                                        // melt burst (rare)
           const bt=tt-13.0;                           // 0 .. 3.0
-          if(bt<1.8)       melt=smooth(bt/1.8);       // slow spread
-          else if(bt<2.25) melt=1;                    // hold as a puddle
-          else             melt=1-smooth((bt-2.25)/0.7); // fast gather back
-          scV=1-0.76*melt;                            // 1 → 0.24 (very flat)
-          scH=1+1.0*melt;                             // 1 → 2.0 (wider than the minus, still on-canvas)
+          if(bt<1.7)      { melt=smooth(bt/1.7);            scV=1-0.76*melt; scH=1+0.85*melt; } // slow spread
+          else if(bt<2.0) { melt=1;                         scV=0.24;        scH=1.85; }        // hold as a puddle
+          else if(bt<2.55){ melt=1-smooth((bt-2.0)/0.55);   scV=1-0.76*melt; scH=1+0.85*melt; } // gather back
+          else{                                       // soft "jello" settle wobble on reforming
+            const st=bt-2.55, damp=Math.exp(-st*5.5)*Math.sin(st*20);
+            scV=1+0.09*damp; scH=1-0.08*damp;
+          }
         }
+        if(death>0){ melt=1; scV=0.22*(1-dEase)+0.05*dEase; scH=1.85+dEase*1.9; } // death: melt away
         const arr=melt>0.5?sdNoEye:sd;                // drop the eyes once it's a proper puddle
+        const halfW=(SW-1)/2;
         for(let Y=0;Y<CH;Y++){
-          const sy=(Y-cBaseY)/scV + sBaseY;           // anchored to floor → melts downward
-          // crooked stretch: each row drifts & stretches a little differently, like pulled goo
-          const crook=melt*(2.2*Math.sin(sy*0.5+t*1.6)+1.4*Math.sin(sy*0.27-t*1.1));
-          const scHrow=scH*(1+melt*0.18*Math.sin(sy*0.6+t*1.3));
-          for(let X=0;X<CW;X++){ cp(arr,(X-cCx)/scHrow + sCx - crook, sy, X, Y); }
+          const syB=(Y-cBaseY)/scV + sBaseY;          // anchored to floor → melts downward
+          const crook=melt*(2.2*Math.sin(syB*0.5+t*1.6)+1.4*Math.sin(syB*0.27-t*1.1));
+          const scHrow=scH*(1+melt*0.18*Math.sin(syB*0.6+t*1.3));
+          for(let X=0;X<CW;X++){
+            const sx=(X-cCx)/scHrow + sCx - crook;
+            let sy=syB;
+            if(aSmile>0){ const dxn=(sx-sCx)/halfW; sy += aSmile*7*Math.min(1,dxn*dxn); } // side edges ride up → a grin
+            cp(arr, sx, sy, X, Y);
+          }
         }
-        // slow, slimy blink only while gathered: left eye first, right a beat later
         const bf=clamp((scV-0.8)/0.2);
-        if(bf>0.01){
+        if(bf>0.01 && death===0 && atk===0){          // slow slimy blink (not mid-attack), left eye first
           shutEye(eyeL, blink(t,6.0,0.5,0)*bf);
           shutEye(eyeR, blink(t,6.0,0.5,-0.55)*bf);
         }
       }else{
-        // ─── PLUS: wings flap; rare burst → fast flap, lift off, drop, wince + eyes shut ───
+        // ─── PLUS: wing flap; attack wing-thrust; death = wings droop & topple ───
         const C=13.0, tt=t%C;
         let flapF=1.6, flapA=0.2, lift=0, squash=1, wince=0;
-        if(tt>=11.0){
+        if(death>0){ flapA=0; lift=-dEase*5; squash=1-dEase*0.12; }    // sag as it dies
+        else if(tt>=11.0){
           const bt=tt-11.0;                           // 0 .. 2.0
-          if(bt<0.7){       flapF=8.5; flapA=0.78; lift=smooth(bt/0.7)*7; }          // beat hard & rise
-          else if(bt<1.25){ flapF=6.5; flapA=0.5;  lift=(1-smooth((bt-0.7)/0.55))*7; } // drop back down
-          else{             flapF=2.5; flapA=0.14;                                    // land → wince
-            wince=Math.sin(clamp((bt-1.25)/0.55)*Math.PI); squash=1-0.16*wince; }
+          if(bt<0.7){       flapF=8.5; flapA=0.78; lift=smooth(bt/0.7)*7; }
+          else if(bt<1.25){ flapF=6.5; flapA=0.5;  lift=(1-smooth((bt-0.7)/0.55))*7; }
+          else{             flapF=2.5; flapA=0.14; wince=Math.sin(clamp((bt-1.25)/0.55)*Math.PI); squash=1-0.16*wince; }
         }else{
           lift=0.7*Math.sin(t*flapF*TAU+Math.PI);     // gentle hover, in sync with the wing beat
         }
-        const phi=-0.1 + flapA*Math.sin(t*flapF*TAU); // up-biased beat around a slight rest droop
-        // 1) wings BEHIND the body (can never dig into the torso); rise with it
+        let phi = death>0 ? (-0.1-1.15*dEase) : (-0.1 + flapA*Math.sin(t*flapF*TAU)); // droop when dying
+        if(aFastWing>0) phi = -0.1 + 0.6*Math.sin(t*15*TAU);   // beat hard while leaping up
         drawWing(OX+6,  OY+18-lift, -1, phi);
         drawWing(OX+32, OY+18-lift, +1, phi);
-        // 2) body on top (squash = wince flinch, lift = take-off)
         for(let Y=0;Y<CH;Y++){
-          const sy=(Y-cBaseY)/squash + sBaseY + lift;  // lift>0 → samples lower → body rises
+          const sy=(Y-cBaseY)/squash + sBaseY + lift;
           for(let X=0;X<CW;X++){ cp(sd, X-OX, sy, X, Y); }
         }
-        // 3) eyes: idle blink, or shut tight during the landing wince
-        shutEye(eyeP, tt<11.0 ? blink(t,3.8,0.15,0) : wince, -lift);
+        shutEye(eyeP, death>0?dEase:(tt<11.0 ? blink(t,3.8,0.15,0) : wince), -lift);
       }
       ctx.putImageData(out,0,0);
+      // gross-motion layer (attack leap / slime rear-up / death topple) via CSS transform (origin: centre-bottom)
+      let tx=0,ty=0,sx=1,sy=1,rot=0,op=1;
+      if(atk>0){
+        if(isMinus){
+          const stretchY=1+0.7*aStretch-0.55*aFlat;   // tall (~1.7) → snap flat (~0.45) onto the floor
+          sy=stretchY; sx=1/Math.sqrt(stretchY);       // narrow when tall, wide when flat
+        }else{
+          ty=-36*aRise; tx=-16*aFwd;                   // leap up, then lunge in on the slam
+          sy=1-0.30*aLandSq; sx=1+0.24*aLandSq;        // squash on landing
+        }
+      }
+      if(death>0){
+        op=1-dEase;
+        if(!isMinus){ ty+=dEase*26; rot=dEase*40; sx*=(1-dEase*0.12); sy*=(1-dEase*0.12); } // plus topples & fades
+      }
+      cv.style.transform=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sx.toFixed(3)},${sy.toFixed(3)}) rotate(${rot.toFixed(1)}deg)`;
+      cv.style.opacity=op.toFixed(3);
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
@@ -3433,8 +3527,8 @@ function mkImgSpr(id){
   img.src=src;
   return wrap;
 }
-function getSpr(id){
-  if(id&&/^(plus|minus)-/.test(id)) return mkImgSpr(id);
+function getSpr(id,enemy){
+  if(id&&/^(plus|minus)-/.test(id)) return mkImgSpr(id,enemy);
   const s=SPRS[id]||SPRS.bubble;return mkSpr(s.grid,s.pal);
 }
 
@@ -3730,7 +3824,7 @@ function _genInfWave(waveNum){
     const hp=Math.round(baseHp*scale);
     const atk=Math.round(baseAtk*scale);
     const arm=Math.round(2*scale);
-    const nm=(isPlus?'Плюс ':'Минус ')+col.toUpperCase();
+    const nm=isPlus?'Плюс':'Минус';
     const dlgPool=isPlus?_INF_DLGS_PLUS:_INF_DLGS_MINUS;
     const dlgBase=dlgPool[Math.floor(Math.random()*dlgPool.length)];
     enemies.push({
@@ -3746,6 +3840,7 @@ function _genInfWave(waveNum){
 
 function loadWave(){
   G.eIdx=0;G.eSts={};G.pSts={};G.taunt=null;G.active=true;G._turnGen=0;window._gameEndShown=false;
+  G._dlgBonuses=[];renderDlgBonus(); // fresh dialogue-bonus table each wave
   if(G.infiniteMode){
     G.enemies=_genInfWave(G.wave);
     dealHand();renderAll();
@@ -4191,7 +4286,19 @@ function checkPhase(e){
 function enemyDefeated(){
   if(window._gameEndShown)return;
   const e=cE();
+  if(!e||e.dead||e._dying)return;   // already dead or playing its death animation → never resolve twice
+  // infinite enemies play a death animation (slime melts away / plus topples) before resolving
+  if(/^(plus|minus)-/.test(e.sprId||'')){
+    e._dying=true; e._deathT=performance.now(); G.active=false;
+    shake(8); flash('#FFFF00',.3);
+    setTimeout(()=>_resolveDefeat(e), 920); // resolve once, after the animation
+    return;
+  }
+  _resolveDefeat(e);
+}
+function _resolveDefeat(e){
   if(!e||e.dead)return;
+  e._dying=false;
   shake(12);flash('#FFFF00',.5);
   spawnTxt('ПОБЕДА!','#44FF00',.45,.4);
   addLog(`${e.name} побеждён! +5`);G.cur+=5;e.dead=true;
@@ -4216,6 +4323,30 @@ function enemyDefeated(){
   }
 }
 
+// burst of shockwave + kicked-up dust under a specific enemy at the moment of impact
+function _impactFx(e){
+  const idx=G.enemies.indexOf(e);
+  const card=document.querySelectorAll('#enemy-cards .ec')[idx];
+  const sp=card&&card.querySelector('.ec-sprite');
+  if(!sp)return;
+  const r=sp.getBoundingClientRect();
+  const cx=r.left+r.width/2, cy=r.bottom-6;
+  const ring=document.createElement('div');ring.className='impact-ring';
+  ring.style.left=cx+'px';ring.style.top=cy+'px';
+  document.body.appendChild(ring);setTimeout(()=>ring.remove(),520);
+  for(let i=0;i<9;i++){
+    const p=document.createElement('div');p.className='impact-dust';
+    const dir=(i/9)*Math.PI*2;
+    const dist=16+Math.random()*26;
+    const dx=Math.cos(dir)*dist;
+    const dy=-(8+Math.random()*16)-Math.abs(Math.sin(dir))*8;   // kicked upward
+    p.style.left=cx+'px';p.style.top=cy+'px';
+    p.style.setProperty('--dx',dx.toFixed(0)+'px');
+    p.style.setProperty('--dy',dy.toFixed(0)+'px');
+    p.style.animationDelay=(Math.random()*45|0)+'ms';
+    document.body.appendChild(p);setTimeout(()=>p.remove(),580);
+  }
+}
 function enemyTurn(e, dmgFactor){
   if(!e)e=cE();
   if(!e||e.dead)return;
@@ -4228,16 +4359,25 @@ function enemyTurn(e, dmgFactor){
   if(!e.patIdx)e.patIdx=0;
   const move=e.pat[e.patIdx%e.pat.length];e.patIdx++;
   if(move.startsWith('ATK')){
-    let dmg=Math.max(1,Math.round(parseInt(move.slice(3))*dmgFactor));
-    if(G.eSts.debuff){dmg+=G.eSts.debuff;delete G.eSts.debuff;}
-    if(G.eSts.curse){dmg=Math.max(0,dmg-4);G.eSts.curse=0;addLog('Curse: −4');}
-    if(G.pSts.shield){G.pSts.shield=0;addLog('Щит!');return;}
-    G.php=Math.max(0,G.php-dmg);
-    const label=dmgFactor<1?`−${dmg} (ослаблен)`:`−${dmg}`;
-    shake(6);flash('#FF0000',.25);spawnTxt('-'+dmg,'#FF2200',.3,.65);
-    addLog(`${e.name}: ${label} HP`);
-    if(G.php<=0){renderAll();playerDead();return;}
-    if(G.php===1)addLog('Семёрка: "Не испытывай судьбу."');
+    const isInf=/^(plus|minus)-/.test(e.sprId||'');
+    e._atkT=performance.now();   // trigger the sprite's attack animation
+    const base=parseInt(move.slice(3));
+    const doHit=()=>{                                  // the actual blow — lands at the animation's impact
+      if(e.dead||window._gameEndShown)return;
+      let dmg=Math.max(1,Math.round(base*dmgFactor));
+      if(G.eSts.debuff){dmg+=G.eSts.debuff;delete G.eSts.debuff;}
+      if(G.eSts.curse){dmg=Math.max(0,dmg-4);G.eSts.curse=0;addLog('Curse: −4');}
+      if(G.pSts.shield){G.pSts.shield=0;addLog('Щит!');renderAll();return;}
+      G.php=Math.max(0,G.php-dmg);
+      const label=dmgFactor<1?`−${dmg} (ослаблен)`:`−${dmg}`;
+      shake(7);flash('#FF0000',.26);spawnTxt('-'+dmg,'#FF2200',.3,.65);
+      if(isInf)_impactFx(e);                           // burst of dust/shockwave under the enemy
+      addLog(`${e.name}: ${label} HP`);
+      renderAll();
+      if(G.php<=0){playerDead();return;}
+      if(G.php===1)addLog('Семёрка: "Не испытывай судьбу."');
+    };
+    if(isInf)setTimeout(doHit,300); else doHit();      // infinite: wait for the slam/splat; casual: instant
   } else if(move.startsWith('DEF')){e.armor+=parseInt(move.slice(3));addLog(`${e.name}: +${parseInt(move.slice(3))} броня`);
   } else if(move.startsWith('HEAL')){const n=parseInt(move.slice(4));e.hp=Math.min(e.maxHp,e.hp+n);addLog(`${e.name}: +${n} HP`);
   } else if(move.startsWith('TAUNT')){
@@ -4447,65 +4587,59 @@ function showDlg(enemy,dIdx){
   spk.textContent=dlg.spk+':';
   ch.innerHTML='';
   typewrite(dlg.text,txt,()=>{
-    showChoices(dlg.choices,ch,enemy);
+    if(enemy._dlgDone){ ch.innerHTML='<div class="dlg-done">— разговор окончен —</div>'; return; }
+    _dlgChoices(dlg.choices,enemy,[]);
   });
 }
-
-function showChoices(choices,container,enemy){
-  container.innerHTML='';
-  choices.forEach((ch,i)=>{
+// render a level of choices; fnChain accumulates the effects of the path taken
+function _dlgChoices(choices,enemy,fnChain){
+  const ch=document.getElementById('dlg-choices');
+  ch.innerHTML='';
+  (choices||[]).forEach((c,i)=>{
     const btn=document.createElement('button');
     btn.className='dlg-btn';
-    btn.textContent=`[${i+1}] ${ch.t}`;
-    btn.onclick=()=>onChoice(ch,enemy);
-    container.appendChild(btn);
+    btn.textContent=`[${i+1}] ${c.t}`;
+    btn.onclick=()=>_dlgPick(c,enemy,fnChain);
+    ch.appendChild(btn);
   });
 }
-
-function onChoice(ch,enemy){
+function _dlgPick(c,enemy,fnChain){
   const txt=document.getElementById('dlg-text');
   const chEl=document.getElementById('dlg-choices');
   const spk=document.getElementById('dlg-speaker');
   chEl.innerHTML='';
-  // Show enemy's reply
-  spk.textContent=(enemy.name.toUpperCase())+':';
-  typewrite(ch.reply,txt,()=>{
-    if(ch.sub&&ch.sub.length>0){
-      // Show sub-choices
-      showChoices(ch.sub,chEl,enemy);
-    } else {
-      // No sub - apply fn and clear after delay
-      if(ch.fn)ch.fn(G);
-      renderAll();
-      setTimeout(()=>{
-        txt.textContent=''; spk.textContent=''; chEl.innerHTML='';
-      },2000);
-    }
+  spk.textContent=enemy.name.toUpperCase()+':';
+  const chain=fnChain.concat([c.fn]);
+  typewrite(c.reply,txt,()=>{
+    if(c.sub&&c.sub.length){ _dlgChoices(c.sub,enemy,chain); }   // go deeper
+    else { _applyDlgBonus(enemy,chain); setTimeout(()=>{txt.textContent='';spk.textContent='';chEl.innerHTML='';},2200); }
   });
 }
-
-// sub-choice click
-function showChoices(choices,container,enemy){
-  container.innerHTML='';
-  choices.forEach((ch,i)=>{
-    const btn=document.createElement('button');
-    btn.className='dlg-btn';
-    btn.textContent=`[${i+1}] ${ch.t}`;
-    btn.onclick=()=>{
-      const txt=document.getElementById('dlg-text');
-      const chEl=document.getElementById('dlg-choices');
-      const spk=document.getElementById('dlg-speaker');
-      chEl.innerHTML='';
-      spk.textContent=(enemy.name.toUpperCase())+':';
-      // final reply
-      typewrite(ch.reply,txt,()=>{
-        if(ch.fn)ch.fn(G);
-        renderAll();
-        setTimeout(()=>{txt.textContent='';spk.textContent='';chEl.innerHTML='';},2500);
-      });
-    };
-    container.appendChild(btn);
-  });
+// apply the whole path's effects exactly once (no dup), then label what was granted
+function _applyDlgBonus(enemy,fns){
+  if(enemy._dlgDone){renderAll();return;}    // guard against re-granting on re-open
+  enemy._dlgDone=true;
+  const snap=()=>{const e=cE();return{cur:G.cur,armor:e?e.armor:null,hp:e?e.hp:null,stun:G.eSts.stun||0,debuff:G.eSts.debuff||0,fr:G.eSts.freeze||0};};
+  const b=snap();
+  fns.forEach(fn=>{try{if(fn)fn(G);}catch(_){}});
+  const a=snap();
+  const fx=[];
+  if(a.cur-b.cur>0) fx.push('+'+(a.cur-b.cur)+' 𝑖 тебе');
+  if(b.armor!=null&&a.armor!=null&&a.armor!==b.armor) fx.push('Броня врага '+(a.armor>b.armor?'+':'−')+Math.abs(a.armor-b.armor));
+  if(b.hp!=null&&a.hp!=null&&a.hp>b.hp) fx.push('Враг +'+(a.hp-b.hp)+' HP');
+  if(a.stun>b.stun) fx.push('Враг оглушён');
+  if(a.fr>b.fr) fx.push('Враг заморожен');
+  if(a.debuff>b.debuff) fx.push('Атака врага +'+(a.debuff-b.debuff));
+  if(fx.length) G._dlgBonuses=(G._dlgBonuses||[]).concat(fx);
+  renderDlgBonus();
+  renderAll();
+}
+function renderDlgBonus(){
+  const el=document.getElementById('dlg-bonus'); if(!el)return;
+  const list=(G&&G._dlgBonuses)||[];
+  if(!list.length){ el.classList.remove('on'); el.innerHTML=''; return; }
+  el.classList.add('on');
+  el.innerHTML='<div class="db-title">🗨 Бонусы за диалог</div>'+list.map(x=>'<div class="db-row">• '+x+'</div>').join('');
 }
 
 // ══════════════════════════════════
@@ -4619,7 +4753,7 @@ function openShop(){
     hpFill.style.background=pct>50?'#22AA44':pct>25?'#DDAA00':'#DD2233';
     hpTxt.textContent=G.php+' / '+G.maxPhp;
   }
-  document.getElementById('shop-ov').classList.add('on');
+  {const _so=document.getElementById('shop-ov');_so.classList.add('on');_so.classList.toggle('inf',!!(G&&G.infiniteMode));}
   setTimeout(()=>_animateShopCoins(false),120);
 }
 
@@ -4642,7 +4776,7 @@ function openShopInBattle(){
     hpFill.style.background=pct>50?'#22AA44':pct>25?'#DDAA00':'#DD2233';
     hpTxt.textContent=G.php+' / '+G.maxPhp;
   }
-  document.getElementById('shop-ov').classList.add('on');
+  {const _so=document.getElementById('shop-ov');_so.classList.add('on');_so.classList.toggle('inf',!!(G&&G.infiniteMode));}
   setTimeout(()=>_animateShopCoins(false),120);
 }
 
@@ -5713,6 +5847,16 @@ function renderHud(){
 const EN_NAME={fireresist:'Огнестойк',reflect:'Отражение',regen:'Регенерац',zeromirror:'Зеркало 0',darkshield:'Тём.щит',chaosarmor:'Хаос.броня'};
 const EN_MX={fireresist:'en_fire',reflect:'en_ref',regen:'en_reg',zeromirror:'en_zmr',darkshield:'en_dk',chaosarmor:'en_ca'};
 
+// readable label for an enemy's queued move (telegraph)
+function moveLabel(mv){
+  if(!mv) return '—';
+  if(mv.startsWith('ATK'))   return '⚔ Атака '+mv.slice(3);
+  if(mv.startsWith('DEF'))   return '🛡 Защита +'+mv.slice(3);
+  if(mv.startsWith('HEAL'))  return '✚ Лечение +'+mv.slice(4);
+  if(mv.startsWith('TAUNT')) return '⚠ Провокация';
+  if(mv==='BUFF')            return '🛡 Усиление';
+  return mv;
+}
 function renderEnemies(){
   const cont=document.getElementById('enemy-cards');cont.innerHTML='';
   G.enemies.forEach((e,i)=>{
@@ -5736,9 +5880,12 @@ function renderEnemies(){
 
     // sprite with idle animation
     const sp=document.createElement('div');sp.className='ec-sprite';
-    // infinite sprites (plus/minus) animate internally → no CSS bob (it fights their rhythm)
-    const sprWrap=document.createElement('div');sprWrap.className=/^(plus|minus)-/.test(e.sprId||'')?'':'sprite-idle';
-    const sprEl=getSpr(e.sprId||e.id);if(sprEl)sprWrap.appendChild(sprEl);
+    // infinite sprites (plus/minus) animate internally → no CSS bob; cache & reuse so the
+    // persistent canvas can play attack/death without flicker and read triggers off the enemy
+    const isInf=/^(plus|minus)-/.test(e.sprId||'');
+    const sprWrap=document.createElement('div');sprWrap.className=isInf?'':'sprite-idle';
+    const sprEl=isInf?(e._sprEl||(e._sprEl=getSpr(e.sprId,e))):getSpr(e.sprId||e.id);
+    if(sprEl)sprWrap.appendChild(sprEl);
     sp.appendChild(sprWrap);card.appendChild(sp);
 
     // enchants with ? icons
@@ -5759,7 +5906,12 @@ function renderEnemies(){
 
     if(i===G.eIdx&&!e.dead){
       const nx=document.createElement('div');nx.className='ec-next';
-      nx.textContent='Ход: '+e.pat[(e.patIdx||0)%e.pat.length];card.appendChild(nx);
+      const mv=e.pat[(e.patIdx||0)%e.pat.length];
+      const inner=document.createElement('span');
+      inner.innerHTML='Готовит: <b>'+moveLabel(mv)+'</b>';
+      if(e._lastMv!==undefined && e._lastMv!==mv) inner.classList.add('ec-next-flip'); // animate on change
+      e._lastMv=mv;
+      nx.appendChild(inner);card.appendChild(nx);
     }
 
     card.onclick=()=>{
@@ -5959,10 +6111,31 @@ function addLog(msg){
 //  INIT — G initialised on mode select, not on page load
 // ══════════════════════════════════
 window._gameMode='casual'; // default
+// Grey-pixel transition: build static → (onCovered swap) → dissolve → onDone
+function _pixelWipe(onCovered,onDone){
+  const cv=document.getElementById('px-wipe'); if(!cv){onCovered&&onCovered();onDone&&onDone();return;}
+  cv.style.display='block'; cv.width=window.innerWidth; cv.height=window.innerHeight;
+  const ctx=cv.getContext('2d'); const ps=10, cols=Math.ceil(cv.width/ps), rows=Math.ceil(cv.height/ps);
+  function draw(d){ ctx.clearRect(0,0,cv.width,cv.height);
+    for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){ if(Math.random()<d){ const v=28+(Math.random()*58|0);
+      ctx.fillStyle='rgba('+v+','+v+','+v+','+(0.5+Math.random()*0.5)+')'; ctx.fillRect(x*ps,y*ps,ps,ps); } } }
+  let phase=1,k=0;
+  (function anim(){
+    k++;
+    if(phase===1){ draw(Math.min(1,k/6));
+      if(k>=8){ ctx.fillStyle='#363636';ctx.fillRect(0,0,cv.width,cv.height); try{onCovered&&onCovered();}catch(e){} phase=2;k=0; }
+      requestAnimationFrame(anim);
+    } else { draw(Math.max(0,1-k/16));
+      if(k<16) requestAnimationFrame(anim);
+      else { cv.style.display='none'; ctx.clearRect(0,0,cv.width,cv.height); try{onDone&&onDone();}catch(e){} } }
+  })();
+}
 function goToMenu(){
   const earned=window._sessionSigmaEarned||0;
   if(earned>0) localStorage.setItem('cw_menu_incoming_sigma',String(earned));
-  location.reload();
+  // grey-pixel cover on the way out of infinite mode, then reload to the menu
+  if(window._gameMode==='infinite'){ _pixelWipe(()=>location.reload()); }
+  else location.reload();
 }
 function restartGame(){
   document.getElementById('gameover').classList.remove('on','win','lose');
@@ -6201,9 +6374,77 @@ const TUT_PAGES=[
   },
 ];
 
-let _tutPage=0,_tutIv=null;
+// ── Infinite-mode tutorial (with animated plus/minus art) ──
+function _twoFoes(a,b){
+  const w=document.createElement('div');w.style.cssText='display:flex;gap:6px;align-items:flex-end;justify-content:center;width:100%;';
+  [a,b].forEach(id=>{const box=document.createElement('div');box.style.cssText='flex:1;max-width:64px;min-width:0;';box.appendChild(getSpr(id));w.appendChild(box);});
+  return w;
+}
+const INF_TUT_PAGES=[
+  {
+    title:'Бесконечный режим',
+    art:()=>_twoFoes('plus-red','minus-gre'),
+    text:`Добро пожаловать в БЕСКОНЕЧНЫЙ режим — здесь фармят сигмы (Σ).
 
-function tutOpen(){
+Волны не заканчиваются. Бейся, пока хватает сил, и копи как можно больше Σ.
+
+Бой такой же, как в обычной игре: решай выражения и используй ВСЕ цифры ровно по разу.
+
+Выйти можно в любой момент — заработанное зачислится в Σ.`
+  },
+  {
+    title:'Враги: Плюс и Минус',
+    art:()=>_twoFoes('plus-yel','minus-blu'),
+    text:`Каждую волну тебя ждут Плюс, Минус или оба сразу — иногда по несколько штук.
+
+После каждой волны враги усиливаются на 1% (HP, атака, броня). Чем дальше — тем жарче.
+
+Следи за строкой «Готовит:» над врагом — она заранее показывает его следующий ход. Готовься.`
+  },
+  {
+    title:'Магазин дорожает',
+    art:()=>{
+      const w=document.createElement('div');w.style.cssText='display:flex;flex-direction:column;align-items:center;gap:12px;';
+      const row=document.createElement('div');row.style.cssText='display:flex;align-items:center;gap:8px;font-family:"Press Start 2P",monospace;';
+      [['200',0],['×1.5',0],['300',1],['×1.5',0],['450',2]].forEach(([v,k])=>{
+        const el=document.createElement('div');el.textContent=v;
+        if(v[0]==='×'){el.style.cssText='color:#ff6688;font-size:8px;';}
+        else{el.style.cssText='color:#ffd24d;border:2px solid #aa7700;background:#1a1000;padding:6px 7px;font-size:10px;';el.style.animation=`tut-float 2s ease-in-out ${k*0.3}s infinite`;}
+        row.appendChild(el);
+      });
+      w.appendChild(row);
+      const c=document.createElement('div');c.style.cssText='font-family:"Press Start 2P",monospace;font-size:7px;color:#ff8866;';c.classList.add('tut-anim-shake');c.textContent='цена ↑ после покупки';w.appendChild(c);
+      return w;
+    },
+    text:`Между волнами открывается магазин.
+
+ВАЖНО: каждая покупка поднимает цены — следующий предмет станет дороже (×1.5). Сами по себе, без покупок, цены не растут.
+
+Покупай с умом: иногда выгоднее накопить, чем хватать всё подряд.`
+  },
+  {
+    title:'Сигмы (Σ)',
+    art:()=>{
+      const w=document.createElement('div');w.style.cssText='display:flex;flex-direction:column;align-items:center;gap:10px;';
+      const s=document.createElement('div');s.style.cssText='font-family:"Press Start 2P",monospace;font-size:52px;color:#cc88ff;text-shadow:0 0 18px #aa44ff;';s.classList.add('tut-anim-glow');s.textContent='Σ';w.appendChild(s);
+      const sub=document.createElement('div');sub.style.cssText='font-family:"Press Start 2P",monospace;font-size:8px;color:#dd99ff;';sub.classList.add('tut-anim-pulse');sub.textContent='20 𝑖 → 1 Σ  + бонус за волну';w.appendChild(sub);
+      return w;
+    },
+    text:`За волны ты копишь монеты. При выходе они превращаются в Σ: 20 𝑖 → 1 Σ, плюс бонус за каждую пройденную волну.
+
+Чем дальше зашёл — тем больше Σ унесёшь.
+
+Кнопку «? ОБУЧЕНИЕ» снизу справа можно нажать в любой момент, чтобы открыть эту подсказку заново.
+
+Удачи. Бесконечность не ждёт.`
+  },
+];
+
+let _tutPage=0,_tutIv=null,_tutPages=TUT_PAGES,_tutMode='casual';
+
+function tutOpen(mode){
+  _tutMode=mode||(window._gameMode==='infinite'?'infinite':'casual');
+  _tutPages=_tutMode==='infinite'?INF_TUT_PAGES:TUT_PAGES;
   _tutPage=0;
   // Make sure tut overlay is on top of everything including splash
   const ov=document.getElementById('tut-ov');
@@ -6214,7 +6455,7 @@ function tutOpen(){
 function tutClose(){
   document.getElementById('tut-ov').classList.remove('on');
   if(_tutIv){clearInterval(_tutIv);_tutIv=null;}
-  localStorage.setItem('cw_tut','1');
+  localStorage.setItem(_tutMode==='infinite'?'cw_tut_inf':'cw_tut','1');
   // After tutorial on first launch, go back to menu (don't auto-enter game)
   const sp=document.getElementById('splash');
   const onMenu=sp&&sp.style.display!=='none';
@@ -6226,21 +6467,21 @@ function tutClose(){
 function _tutSetNextBtn(){
   const btn=document.getElementById('tut-next');
   if(_tutIv){btn.textContent='ПРОПУСТИТЬ ТЕКСТ ▶▶';}
-  else{btn.textContent=_tutPage===TUT_PAGES.length-1?'ИГРАТЬ ▶':'ДАЛЕЕ ▶';}
+  else{btn.textContent=_tutPage===_tutPages.length-1?'ИГРАТЬ ▶':'ДАЛЕЕ ▶';}
 }
 function tutStep(d){
   if(_tutIv){clearInterval(_tutIv);_tutIv=null;
-    document.getElementById('tut-content').textContent=TUT_PAGES[_tutPage].text;
+    document.getElementById('tut-content').textContent=_tutPages[_tutPage].text;
     _tutSetNextBtn();return;
   }
   const np=_tutPage+d;
   if(np<0)return;
-  if(np>=TUT_PAGES.length){tutClose();return;}
+  if(np>=_tutPages.length){tutClose();return;}
   _tutPage=np;_tutRender();
 }
 function _tutRender(){
-  const p=TUT_PAGES[_tutPage];
-  document.getElementById('tut-pages').textContent=`${_tutPage+1} / ${TUT_PAGES.length}`;
+  const p=_tutPages[_tutPage];
+  document.getElementById('tut-pages').textContent=`${_tutPage+1} / ${_tutPages.length}`;
   document.getElementById('tut-title').textContent=p.title;
   document.getElementById('tut-prev').disabled=_tutPage===0;
   // art
@@ -7088,12 +7329,20 @@ async function cloudLoad(){
   };
   window.startInfinite=function(){
     window._gameMode='infinite';
-    const ms=document.getElementById('mode-select');
-    ms.style.opacity='0';ms.style.transition='opacity .3s ease';
-    setTimeout(()=>{
+    // grey-pixel transition: cover the screen, build the game underneath, then dissolve in
+    _pixelWipe(()=>{
+      const ms=document.getElementById('mode-select');
       ms.style.display='none';ms.style.opacity='';ms.style.transition='';
-      _enterGameActual();
-    },320);
+      cancelAnimationFrame(_rainAF);
+      const sp=document.getElementById('splash');
+      sp.style.display='none';sp.style.opacity='';sp.style.pointerEvents='none';
+      const sw=document.getElementById('shake-wrapper');
+      sw.style.display='';
+      sw.classList.add('inf-mode');
+      initG();
+    },()=>{
+      if(!localStorage.getItem('cw_tut_inf')) setTimeout(()=>tutOpen('infinite'),250);
+    });
   };
 
   // --- Actually hides splash and enters game ---
@@ -7109,7 +7358,11 @@ async function cloudLoad(){
       sw.classList.toggle('inf-mode',window._gameMode==='infinite');
       initG();
     },420);
-    if(!_supaUser&&!localStorage.getItem('cw_tut')) setTimeout(tutOpen,600);
+    if(window._gameMode==='infinite'){
+      if(!localStorage.getItem('cw_tut_inf')) setTimeout(()=>tutOpen('infinite'),700);
+    }else if(!_supaUser&&!localStorage.getItem('cw_tut')){
+      setTimeout(()=>tutOpen('casual'),600);
+    }
   }
 
   // --- doEnterGame now shows mode select instead ---
@@ -8966,6 +9219,25 @@ const UPD_LOG=[
       {cls:'boss', text:'Некоторые игроки уже заметили: с разработчиком лучше быть повежливее — он лично выдаёт и забирает ачивки 👀'},
     ]
   },
+  {
+    ver:'1.9', date:'15 Июня 2026', tag:'major', label:'Бесконечный режим',
+    items:[
+      {cls:'rainbow', text:'Новый БЕСКОНЕЧНЫЙ режим — фарми сигмы (Σ) волна за волной без конца. Выбор режима на экране после «Играть»'},
+      {cls:'new', text:'Враги Плюс и Минус с честной попиксельной анимацией: Минус — слизь (желейно дышит, растекается в кривую лужу и собирается обратно), Плюс — машет крыльями, взлетает и садится, жмурясь от боли'},
+      {cls:'new', text:'Анимация атаки: Минус делает рывок-растяжение, Плюс бьёт крыльями и кидается на тебя'},
+      {cls:'new', text:'Анимация гибели: слизь полностью растекается и тает, Плюс роняет крылья и заваливается'},
+      {cls:'new', text:'Периодическое моргание у всех врагов; у слизи — медленное, сперва один глаз, затем другой'},
+      {cls:'new', text:'Серо-пиксельный переход при входе в бесконечный режим и выходе из него'},
+      {cls:'new', text:'Обучение бесконечного режима с живыми картинками при первом входе (+ кнопка «? Обучение» снизу справа открывает его снова)'},
+      {cls:'new', text:'Магазин дорожает: каждая покупка поднимает цену предмета ×1.5. Отдельный фиолетовый дизайн магазина для режима'},
+      {cls:'new', text:'Понятная строка хода над врагом — «Готовит: ⚔ Атака 7» — обновляется с анимацией перед ходом врага'},
+      {cls:'new', text:'Отдельная табличка «Бонусы за диалог» — показывает, что именно ты получил за ответы'},
+      {cls:'fix', text:'Исправлено: бонусы за ответы в диалоге не выдавались (подменю не открывалось) и могли дублироваться при повторном открытии — теперь выдаются ровно один раз и видны в табличке'},
+      {cls:'fix', text:'Исправлено: жёлтые Плюс и Минус были невидимыми из-за повреждённой картинки'},
+      {cls:'fix', text:'Исправлено: на мобильных не было видно окна лога действий — теперь оно над калькулятором'},
+      {cls:'fix', text:'ХП и броня врагов в бесконечном режиме стали светлее и читаемее, текст брони — крупнее'},
+    ]
+  },
 ];
 
 
@@ -9002,7 +9274,7 @@ function updClose(){
 
 // Auto-open update log only on fresh tab open (sessionStorage empty = new tab/file open)
 (function(){
-  const CURRENT_VER='1.8';
+  const CURRENT_VER='1.9';
   localStorage.setItem('cw_ver_upd',CURRENT_VER);
   if(sessionStorage.getItem('cw_tab_alive')) return;
   sessionStorage.setItem('cw_tab_alive','1');
