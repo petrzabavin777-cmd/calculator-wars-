@@ -2703,8 +2703,7 @@ button, .menu-btn {
 
 <!-- Update Log overlay -->
 <div id="upd-ov">
-  <canvas id="upd-confetti" style="position:fixed;inset:0;pointer-events:none;z-index:9501;"></canvas>
-  <div id="upd-box">
+<div id="upd-box">
     <div id="upd-hdr">
       <h2>ЖУРНАЛ ОБНОВЛЕНИЙ</h2>
       <span id="upd-curver"></span>
@@ -3296,6 +3295,7 @@ function loadWave(){
 // ══════════════════════════════════
 function dealHand(){
   G.hand=[];G.usedIdx=[];G.tokens=[];G.usedOps={};G.turnDone=false;G._67shown=false;
+  if(G.taunt){G.taunt=null;const tb=document.getElementById('taunt-bar');if(tb)tb.classList.remove('on');}
   const pool=[];
   for(let i=1;i<=9;i++)pool.push(i,i);
   if(G.event!=='no_zero'){const z=G.event==='zero_feast'?5:1;for(let i=0;i<z;i++)pool.push(0);}
@@ -8146,41 +8146,6 @@ const UPD_LOG=[
   },
 ];
 
-function _launchConfetti(){
-  const cv=document.getElementById('upd-confetti');
-  if(!cv) return;
-  cv.width=window.innerWidth; cv.height=window.innerHeight;
-  const ctx=cv.getContext('2d');
-  const colors=['#FF00AA','#CC88FF','#FFE000','#44FF00','#00CCFF','#FF6600','#FF4466'];
-  const pieces=Array.from({length:120},()=>({
-    x:Math.random()*cv.width, y:-10-Math.random()*200,
-    r:Math.random()*5+3, vx:(Math.random()-0.5)*4, vy:Math.random()*3+2,
-    rot:Math.random()*360, rv:(Math.random()-0.5)*8,
-    col:colors[Math.floor(Math.random()*colors.length)],
-    shape:Math.random()<0.5?'rect':'circle', w:Math.random()*8+4, h:Math.random()*5+3,
-    life:1
-  }));
-  let frame=0;
-  function tick(){
-    ctx.clearRect(0,0,cv.width,cv.height);
-    let alive=false;
-    pieces.forEach(p=>{
-      p.x+=p.vx; p.y+=p.vy; p.vy+=0.06; p.rot+=p.rv;
-      if(frame>120) p.life-=0.012;
-      if(p.life<=0||p.y>cv.height+20) return;
-      alive=true;
-      ctx.save(); ctx.globalAlpha=p.life;
-      ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
-      ctx.fillStyle=p.col;
-      if(p.shape==='circle'){ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();}
-      else{ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);}
-      ctx.restore();
-    });
-    if(alive) requestAnimationFrame(tick); else ctx.clearRect(0,0,cv.width,cv.height);
-    frame++;
-  }
-  tick();
-}
 
 function updOpen(){
   const ov=document.getElementById('upd-ov');
@@ -8206,7 +8171,6 @@ function updOpen(){
     body.appendChild(block);
   });
   ov.classList.add('on');
-  setTimeout(_launchConfetti, 200);
 }
 
 function updClose(){
@@ -8214,10 +8178,12 @@ function updClose(){
   if(ov) ov.classList.remove('on');
 }
 
-// Auto-open update log every time the page loads
+// Auto-open update log only on fresh tab open (sessionStorage empty = new tab/file open)
 (function(){
   const CURRENT_VER='1.8';
   localStorage.setItem('cw_ver_upd',CURRENT_VER);
+  if(sessionStorage.getItem('cw_tab_alive')) return;
+  sessionStorage.setItem('cw_tab_alive','1');
   setTimeout(()=>{
     const sp=document.getElementById('splash');
     if(sp&&sp.style.display!=='none') updOpen();
@@ -8491,6 +8457,42 @@ async function _chatLoadFriends(){
   }catch(e){_chatFriends=[];_renderDmList();}
 }
 
+// Refresh only last_seen for friends every 30s and update online dots without full re-render
+async function _refreshFriendsOnline(){
+  if(!_supa||!_chatFriends.length) return;
+  const pids=_chatFriends.map(f=>f.pid);
+  try{
+    const{data}=await _supa.from('profiles').select('pid,last_seen').in('pid',pids);
+    if(!data) return;
+    data.forEach(row=>{
+      const f=_chatFriends.find(f=>f.pid===row.pid);
+      if(f) f.last_seen=row.last_seen;
+      // Update dot in list
+      const item=document.getElementById('chat-item-'+row.pid);
+      if(item){
+        const dot=item.querySelector('.chat-item-online');
+        if(dot){const on=isOnline(row.last_seen);dot.className='chat-item-online '+(on?'on':'off');}
+      }
+    });
+    // Update header status if DM is open
+    const peer=_chatFriends.find(f=>f.pid===_chatCurrentRoom);
+    if(peer){
+      const online=isOnline(peer.last_seen);
+      const st=document.getElementById('chat-peer-status');
+      if(st&&_chatCurrentRoom!=='general'){
+        if(!online&&peer.last_seen){
+          const diff=Date.now()-new Date(peer.last_seen).getTime();
+          const mins=Math.floor(diff/60000),hrs=Math.floor(mins/60),days=Math.floor(hrs/24);
+          let ago=days>0?`${days}д назад`:hrs>0?`${hrs}ч назад`:mins>1?`${mins}мин назад`:'только что';
+          st.textContent='был(а) '+ago;
+        }else{st.textContent=online?'онлайн':'офлайн';}
+        st.className=online?'online':'offline';st.style.color='';
+      }
+    }
+  }catch{}
+}
+setInterval(_refreshFriendsOnline, 30000);
+
 function _defaultAv(){
   return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%230a1e30'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='18' fill='%23335566'%3E👤%3C/text%3E%3C/svg%3E";
 }
@@ -8524,12 +8526,10 @@ function _renderDmList(){
       </div>
       <div class="chat-item-time" id="chat-time-${p.pid}"></div>`;
     wrap.appendChild(item);
-    // Inject verified badge async
-    if(_supa&&p.pid){
-      _prefetchProfiles([p.pid]).then(()=>{
-        const slot=item.querySelector('.chat-item-ver-'+p.pid);
-        if(slot&&_verCache[p.pid]) slot.appendChild(_mkVerifiedBadge(12));
-      });
+    // Inject verified badge directly from already-loaded friends data
+    if(p.verified){
+      const slot=item.querySelector('.chat-item-ver-'+p.pid);
+      if(slot) slot.appendChild(_mkVerifiedBadge(12));
     }
   });
 }
