@@ -4979,13 +4979,6 @@ function showEnd(msg,good){
       s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;--sd:${(.7+Math.random()*1.8).toFixed(2)}s;--del:${(Math.random()*2).toFixed(2)}s;--sop:${(.5+Math.random()*.5).toFixed(2)};`;
       starsEl.appendChild(s);
     }
-    const CCOLS=['#FFE000','#FF6600','#44FF88','#00CCFF','#FF44AA','#FFAA00','#AA44FF'];
-    for(let i=0;i<30;i++){
-      const c=document.createElement('div');c.className='go-confetti';
-      const w=4+Math.random()*8,h=4+Math.random()*12;
-      c.style.cssText=`left:${Math.random()*100}%;top:${-20+Math.random()*20}px;width:${w}px;height:${h}px;background:${CCOLS[Math.floor(Math.random()*CCOLS.length)]};--cd:${(1.5+Math.random()*2.5).toFixed(2)}s;--cdel:${(Math.random()*2).toFixed(2)}s;border-radius:${Math.random()>.5?'50%':'1px'};`;
-      starsEl.appendChild(c);
-    }
   } else {
     const bg=document.getElementById('go-bg');
     for(let i=0;i<8;i++){
@@ -8491,7 +8484,7 @@ async function _refreshFriendsOnline(){
     }
   }catch{}
 }
-setInterval(_refreshFriendsOnline, 30000);
+setInterval(_refreshFriendsOnline, 10000);
 
 function _defaultAv(){
   return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%230a1e30'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='18' fill='%23335566'%3E👤%3C/text%3E%3C/svg%3E";
