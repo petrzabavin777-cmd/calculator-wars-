@@ -661,8 +661,6 @@ body{background:var(--bg);font-family:'Press Start 2P',monospace;color:var(--tex
 #go-stars{position:absolute;inset:0;z-index:1;pointer-events:none;}
 .go-star{position:absolute;background:#FFE000;border-radius:50%;animation:goStarAnim var(--sd,1.5s) var(--del,0s) ease-in-out infinite alternate;}
 @keyframes goStarAnim{from{opacity:0;transform:scale(.3);}to{opacity:var(--sop,1);transform:scale(1.4);}}
-.go-confetti{position:absolute;animation:goConfFall var(--cd,2s) var(--cdel,0s) linear infinite;}
-@keyframes goConfFall{from{transform:translateY(-20px) rotate(0deg);opacity:1;}to{transform:translateY(110vh) rotate(720deg);opacity:.2;}}
 /* LOSE */
 #gameover.lose #go-bg{background:radial-gradient(ellipse at 50% 40%,#1a0000 0%,#0d0000 50%,#000 100%);animation:loseFlicker 3s ease infinite;}
 @keyframes loseFlicker{0%,100%{opacity:1;}48%{opacity:1;}50%{opacity:.85;}52%{opacity:1;}73%{opacity:.92;}75%{opacity:1;};}
@@ -1988,6 +1986,226 @@ button, .menu-btn {
   #chat-back-btn{display:block;}
   .msg-row{padding:3px 10px;}
 }
+
+/* ══ INF SPRITES ══ */
+.inf-spr-wrap{position:relative;image-rendering:pixelated;}
+.spr-minus{
+  image-rendering:pixelated;image-rendering:crisp-edges;
+  animation:minus-blob 2.6s ease-in-out infinite;
+}
+@keyframes minus-blob{
+  0%,100%{transform:scaleX(1)   scaleY(1);}
+  20%    {transform:scaleX(1.2) scaleY(0.8);}
+  50%    {transform:scaleX(0.85)scaleY(1.18);}
+  75%    {transform:scaleX(1.06)scaleY(0.96);}
+}
+.spr-plus{
+  image-rendering:pixelated;image-rendering:crisp-edges;
+  animation:plus-wave 1.5s ease-in-out infinite;
+  transform-origin:center 80%;
+}
+@keyframes plus-wave{
+  0%  {transform:rotate(-8deg) scaleX(0.94);}
+  20% {transform:rotate(9deg)  scaleX(1.06);}
+  40% {transform:rotate(-5deg) scaleX(0.97);}
+  60% {transform:rotate(11deg) scaleX(1.07);}
+  80% {transform:rotate(-6deg) scaleX(0.95);}
+  100%{transform:rotate(-8deg) scaleX(0.94);}
+}
+
+/* ══ INFINITE MODE THEME ══ */
+.inf-mode{background:#050010;}
+.inf-mode #hud{background:linear-gradient(90deg,#0c0120,#110328,#0c0120);border-bottom:3px solid #3a0066;}
+.inf-mode #hud .hl{color:#9966cc;}
+.inf-mode .hv{color:#cc88ff;}
+.inf-mode #coin-count{color:#ff88cc;}
+.inf-mode .ec{background:#0d0020;border-color:#3a0055;}
+.inf-mode .ec.active-e{border-color:#aa44ff;box-shadow:0 0 14px #aa44ff33,inset 0 0 8px #33006622;}
+.inf-mode .ec-name{color:#cc88ff;}
+.inf-mode #calc-body{background:#060016;border-color:#3a0066;}
+.inf-mode #expr-display{background:#0a001a;color:#dd99ff;}
+.inf-mode #result-display{background:#0a001a;color:#ff88cc;}
+.inf-mode .dkey{background:#0c0022;border-color:#330055;color:#cc88ff;}
+.inf-mode .dkey:hover{background:#18003a;}
+.inf-mode .opkey{background:#110028;border-color:#440077;color:#ff99ff;}
+.inf-mode #submit-btn{background:#220044;border-color:#8800cc;color:#ff99ff;}
+.inf-mode #submit-btn:hover{background:#330066;}
+.inf-mode #wave-info{color:#663388;}
+
+/* ══ EXIT CONFIRM OVERLAY ══ */
+#exit-confirm-ov{
+  position:fixed;inset:0;z-index:8000;
+  background:rgba(0,0,0,0);
+  display:none;align-items:center;justify-content:center;
+  transition:background .3s;
+}
+#exit-confirm-ov.on{display:flex;background:rgba(0,0,0,.82);}
+#exit-confirm-box{
+  background:#030d08;border:3px solid #225533;
+  padding:28px 32px;max-width:380px;width:92%;
+  box-shadow:0 0 40px #00330022,6px 6px 0 #001108;
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+  animation:exitBoxIn .3s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes exitBoxIn{
+  from{transform:translateY(20px);opacity:0;}
+  to{transform:translateY(0);opacity:1;}
+}
+#exit-confirm-box.inf{border-color:#441166;box-shadow:0 0 40px #33006633,6px 6px 0 #110022;}
+.exit-confirm-title{
+  font-family:'Press Start 2P',monospace;font-size:10px;
+  color:#44FF88;letter-spacing:2px;text-align:center;line-height:1.8;
+}
+.exit-confirm-title.inf{color:#cc88ff;}
+.exit-confirm-sub{
+  font-family:'Press Start 2P',monospace;font-size:7px;
+  color:#335544;text-align:center;line-height:2;
+}
+#exit-confirm-btns{display:flex;gap:14px;width:100%;}
+.exit-yes,.exit-no{
+  flex:1;font-family:'Press Start 2P',monospace;font-size:8px;
+  padding:12px;cursor:pointer;border:2px solid;
+  transition:all .15s;
+}
+.exit-yes{background:#0a1a0a;color:#44FF88;border-color:#226622;}
+.exit-yes:hover{background:#122214;border-color:#44FF88;}
+.exit-no{background:#1a0a0a;color:#FF4444;border-color:#662222;}
+.exit-no:hover{background:#221212;border-color:#FF4444;}
+/* sigma result mid-exit */
+#exit-sigma-ov{
+  position:fixed;inset:0;z-index:8100;
+  display:none;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.92);
+}
+#exit-sigma-ov.on{display:flex;}
+#exit-sigma-box{
+  background:#030d08;border:3px solid #225533;
+  padding:28px 32px;max-width:420px;width:94%;
+  box-shadow:6px 6px 0 #001108;
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  animation:exitBoxIn .35s cubic-bezier(.22,1,.36,1) both;
+}
+#exit-sigma-box.inf{border-color:#441166;background:#080010;}
+.exit-sigma-title{
+  font-family:'Press Start 2P',monospace;font-size:9px;
+  color:#44FF88;letter-spacing:2px;text-align:center;
+}
+.exit-sigma-title.inf{color:#cc88ff;}
+#exit-sigma-rows{width:100%;display:flex;flex-direction:column;gap:8px;}
+.exit-sigma-rows .go-row{font-size:7px;padding:5px 0;border-bottom:1px solid #0d2a0d;}
+#exit-sigma-goto{
+  font-family:'Press Start 2P',monospace;font-size:8px;
+  padding:12px 24px;background:#0a1a0a;color:#44FF88;
+  border:2px solid #226622;cursor:pointer;width:100%;margin-top:4px;
+  transition:all .15s;opacity:0;
+}
+#exit-sigma-goto:hover{background:#122214;}
+#exit-sigma-goto.visible{opacity:1;transition:opacity .5s ease .2s;}
+
+/* ══ MODE SELECT ══ */
+#mode-select{
+  position:fixed;inset:0;z-index:9000;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  background:#050a0f;
+}
+#ms-pixel-canvas{
+  position:absolute;inset:0;width:100%;height:100%;
+  pointer-events:none;z-index:1;
+}
+#ms-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;gap:28px;
+  opacity:0;transition:opacity .4s ease;
+  padding:20px;
+}
+#ms-title{
+  font-family:'Press Start 2P',monospace;
+  font-size:clamp(10px,2.5vw,18px);
+  color:#334455;letter-spacing:4px;
+  text-shadow:0 0 20px #002233;
+  animation:msTitlePulse 3s ease-in-out infinite;
+}
+@keyframes msTitlePulse{
+  0%,100%{color:#334455;text-shadow:0 0 10px #002233;}
+  50%{color:#4a6677;text-shadow:0 0 20px #004466,0 0 40px #002233;}
+}
+#ms-buttons{
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+  width:min(340px,92vw);
+}
+.ms-btn-wrap{width:100%;}
+.ms-btn{
+  width:100%;
+  font-family:'Press Start 2P',monospace;
+  font-size:clamp(9px,2vw,13px);
+  padding:18px 12px;
+  background:#060e16;
+  border:2px solid #1a3344;
+  color:#88aacc;
+  cursor:pointer;
+  letter-spacing:2px;
+  transition:all .2s ease;
+  position:relative;
+  overflow:hidden;
+}
+.ms-btn::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,0.03) 50%,transparent 100%);
+  transform:translateX(-100%);
+  transition:transform .3s ease;
+}
+.ms-btn:hover::before{transform:translateX(100%);}
+.ms-btn:hover{
+  border-color:#44aadd;color:#cceeFF;
+  background:#0a1a28;
+  box-shadow:0 0 16px #0044aa44,inset 0 0 12px #002233;
+}
+.ms-btn-inf{border-color:#332255;color:#9966cc;}
+.ms-btn-inf:hover{
+  border-color:#aa44ff;color:#ddaaff;
+  background:#0d0a1a;
+  box-shadow:0 0 16px #6600aa44,inset 0 0 12px #110022;
+}
+#ms-info{
+  min-height:54px;
+  font-family:'Press Start 2P',monospace;
+  font-size:7px;
+  color:#334455;
+  line-height:2.2;
+  text-align:center;
+  max-width:min(380px,90vw);
+}
+.ms-info-text{
+  animation:msinfoIn .25s ease both;
+}
+@keyframes msinfoIn{
+  from{opacity:0;transform:translateY(6px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.ms-back{
+  font-family:'Press Start 2P',monospace;
+  font-size:7px;
+  background:none;border:none;
+  color:#223344;cursor:pointer;
+  letter-spacing:1px;
+  transition:color .2s;
+  margin-top:4px;
+}
+.ms-back:hover{color:#4488aa;}
+
+/* ══ INF WAVE HEADER ══ */
+#inf-wave-badge{
+  display:none;
+  font-family:'Press Start 2P',monospace;
+  font-size:7px;color:#9966cc;
+  background:#0d0818;border:1px solid #442266;
+  padding:3px 8px;margin-left:8px;
+  animation:infBadgePulse 2s ease-in-out infinite;
+}
+@keyframes infBadgePulse{
+  0%,100%{border-color:#442266;color:#9966cc;}
+  50%{border-color:#aa44ff;color:#cc88ff;box-shadow:0 0 8px #6600aa66;}
+}
 </style>
 </head>
 <body>
@@ -2098,6 +2316,28 @@ button, .menu-btn {
   </div>
 </div>
 
+<!-- Mode Select Overlay -->
+<div id="mode-select">
+  <canvas id="ms-pixel-canvas"></canvas>
+  <div id="ms-content">
+    <div id="ms-title">ВЫБЕРИ РЕЖИМ</div>
+    <div id="ms-buttons">
+      <div class="ms-btn-wrap"
+           onmouseenter="msHover('casual')" onmouseleave="msLeave()"
+           ontouchstart="msHover('casual')" ontouchend="msLeave()">
+        <button class="ms-btn" onclick="startCasual()" ontouchend="startCasual();event.preventDefault()">▶ &nbsp;КАЗУАЛ</button>
+      </div>
+      <div class="ms-btn-wrap"
+           onmouseenter="msHover('infinite')" onmouseleave="msLeave()"
+           ontouchstart="msHover('infinite')" ontouchend="msLeave()">
+        <button class="ms-btn ms-btn-inf" onclick="startInfinite()" ontouchend="startInfinite();event.preventDefault()">∞ &nbsp;БЕСКОНЕЧНЫЙ</button>
+      </div>
+    </div>
+    <div id="ms-info"></div>
+    <button class="ms-back" onclick="modeSelectBack()" ontouchend="modeSelectBack();event.preventDefault()">← НАЗАД</button>
+  </div>
+</div>
+
 <!-- Main Menu -->
 <div id="splash">
   <canvas id="menu-rain"></canvas>
@@ -2167,22 +2407,11 @@ button, .menu-btn {
   <!-- Credits overlay — fixed above splash -->
   <div id="credits-ov">
     <div id="credits-box">
-      <div class="credits-title">✦ СОЗДАТЕЛИ ✦</div>
+      <div class="credits-title">✦ РАЗРАБОТЧИКИ ✦</div>
       <div class="credits-list">
-        <div class="credits-role">ГЕЙМДИЗАЙН & КОД</div>
-        <div class="credits-name">Ficus</div>
-        <div class="credits-role" style="margin-top:12px;">АРТЫ & ИЛЛЮСТРАЦИИ</div>
-        <div class="credits-name" id="credits-artists">Художники</div>
-        <div class="credits-role" style="margin-top:12px;">ТЕСТИРОВАНИЕ</div>
-        <div class="credits-name" id="credits-testers">Тестеры</div>
-        <div class="credits-role" style="margin-top:12px;">РАЗРАБОТЧИКИ</div>
-        <div id="credits-devs" style="width:100%;display:flex;flex-direction:column;gap:6px;margin-top:6px;"></div>
-        <div class="credits-role" style="margin-top:12px;">ВДОХНОВЕНИЕ</div>
-        <div class="credits-name">Block Tales · Paper Mario · EarthBound</div>
-        <div class="credits-divider"></div>
+        <div id="credits-devs" style="width:100%;display:flex;flex-direction:column;gap:4px;"></div>
+        <div class="credits-divider" style="margin-top:16px;"></div>
         <div class="credits-thanks">Спасибо всем, кто играл ♥</div>
-        <div class="credits-role" style="margin-top:12px;color:#FF6644;">✦ АЛЬФА ТЕСТЕРЫ</div>
-        <div id="credits-alpha" class="credits-name" style="color:#FF9966;font-size:11px;line-height:1.8;">Стань альфа тестером прямо сейчас!<br>Найди баг и расскажи нам в разделе<br>"Сообщить об ошибке".<br>Если наша команда найдёт и исправит его —<br>титул Альфа Тестера и место на доске почёта твоё.</div>
       </div>
       <button class="menu-btn" style="margin-top:16px;" onclick="creditsClose()" ontouchend="creditsClose();event.preventDefault()">← НАЗАД</button>
     </div>
@@ -2492,26 +2721,11 @@ button, .menu-btn {
         <div class="asec">
           <div class="asec-title" style="color:#44AAFF;">👨‍💻 СПИСОК РАЗРАБОТЧИКОВ</div>
           <div id="admin-dev-list" style="margin-bottom:12px;"></div>
-          <!-- Add dev -->
           <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:#335566;margin-bottom:6px;">ДОБАВИТЬ</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
             <input id="admin-dev-pid" class="admin-input" placeholder="PID или ник" style="width:120px;">
-            <select id="admin-dev-role" class="admin-input" style="background:#010a06;color:#44FF88;cursor:pointer;">
-              <option value="Кодер">Кодер</option>
-              <option value="Геймдизайнер">Геймдизайнер</option>
-              <option value="Художник">Художник</option>
-              <option value="Тестер">Тестер</option>
-              <option value="Композитор">Композитор</option>
-              <option value="Продюсер">Продюсер</option>
-              <option value="Нарратив">Нарратив</option>
-              <option value="UI/UX">UI/UX</option>
-            </select>
+            <input id="admin-dev-role-txt" class="admin-input" placeholder="Роль (текст)" style="width:140px;">
             <button class="admin-btn admin-buff" onclick="adminAddDev()" ontouchend="adminAddDev();event.preventDefault()">+ ДОБАВИТЬ</button>
-          </div>
-          <!-- Remove dev -->
-          <div style="display:flex;gap:6px;margin-top:8px;align-items:center;">
-            <input id="admin-dev-remove" class="admin-input" placeholder="PID для удаления" style="width:150px;">
-            <button class="admin-btn admin-danger" onclick="adminRemoveDev()" ontouchend="adminRemoveDev();event.preventDefault()">− УДАЛИТЬ</button>
           </div>
         </div>
       </div>
@@ -2562,6 +2776,27 @@ button, .menu-btn {
   </div>
 </div>
 
+<!-- Exit Confirm Overlay -->
+<div id="exit-confirm-ov">
+  <div id="exit-confirm-box">
+    <div class="exit-confirm-title" id="exit-confirm-title">🏠 ВЫЙТИ В МЕНЮ?</div>
+    <div class="exit-confirm-sub">Прогресс волны не сохранится.<br>Заработанные монеты будут конвертированы в Σ.</div>
+    <div id="exit-confirm-btns">
+      <button class="exit-yes" onclick="exitConfirmYes()">ДА — ВЫЙТИ</button>
+      <button class="exit-no"  onclick="exitConfirmNo()">НЕТ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Exit Sigma Result Overlay -->
+<div id="exit-sigma-ov">
+  <div id="exit-sigma-box">
+    <div class="exit-sigma-title" id="exit-sigma-title">ИТОГИ</div>
+    <div id="exit-sigma-rows"></div>
+    <button id="exit-sigma-goto" onclick="goToMenu()">🏠 В ГЛАВНОЕ МЕНЮ</button>
+  </div>
+</div>
+
 <div id="shake-wrapper" style="display:none;">
 
 <!-- HUD -->
@@ -2571,7 +2806,7 @@ button, .menu-btn {
     <div class="hpbar-outer" style="width:100px;" id="php-bar-outer"><div class="hpbar-inner" id="php-bar-inner" style="width:100%;"></div></div>
     <span class="hp-txt" id="php-val"></span>
   </div>
-  <span class="hl">ВОЛНА</span><span class="hv" id="wave-val"></span>
+  <span class="hl">ВОЛНА</span><span class="hv" id="wave-val"></span><span id="inf-wave-badge">∞</span>
   <div id="hud-cur"><div class="coin"></div><span id="coin-count">0</span></div>
   <button id="btn-shop-hud" onclick="openShopInBattle()">🛒 МАГАЗИН</button>
   <button id="btn-to-menu" onclick="returnToMenu()" title="Вернуться в главное меню">🏠 МЕНЮ</button>
@@ -3054,7 +3289,22 @@ const SPRS={
     grid:['....CCCC....','...CCWWCC...','..CCWWWWCC..','..CWWQQWWC..','..CWWQQWWC..','..CCWWWWCC..','...CCRRCC...','....CCCC....','..CCCCCCCC..','..CYYYYYCCC.','.CYYYYYYYYY.','..CYYYYYYY..','...CC...CC..'],
     pal:{C:'#AA8855',W:'#FFEECC',Y:'#FFDD88',R:'#DD3311',Q:'#663300'}},
 };
-function getSpr(id){const s=SPRS[id]||SPRS.bubble;return mkSpr(s.grid,s.pal);}
+const _INF_FILE_MAP={'plus-cian':'Characters/plus-cian .png'};
+function mkImgSpr(id){
+  const src=_INF_FILE_MAP[id]||('Characters/'+id+'.png');
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:relative;width:152px;height:124px;';
+  wrap.className='inf-spr-wrap';
+  const img=document.createElement('img');
+  img.src=src;img.draggable=false;
+  img.style.cssText='width:152px;height:124px;image-rendering:pixelated;image-rendering:crisp-edges;display:block;';
+  img.className='inf-spr '+(id.startsWith('minus-')?'spr-minus':'spr-plus');
+  wrap.appendChild(img);return wrap;
+}
+function getSpr(id){
+  if(id&&/^(plus|minus)-/.test(id)) return mkImgSpr(id);
+  const s=SPRS[id]||SPRS.bubble;return mkSpr(s.grid,s.pal);
+}
 
 // ══════════════════════════════════
 //  DIALOGUE SYSTEM
@@ -3268,11 +3518,108 @@ function initG(){
     titles:new Set(JSON.parse(localStorage.getItem('cw_titles')||'[]')),
     event:getCfg().active_event||null,
     newMx:0,
+    infiniteMode:window._gameMode==='infinite',
+    shopPriceMult:{},
   };
   loadWave();
 }
 
+const _INF_COLORS=['red','gre','blu','cian','yel'];
+const _INF_DLGS_PLUS=[
+  {text:'Я сложу твою боль с бесконечностью — результат: ты.',choices:[
+    {t:'Бесконечность плюс боль — всё равно бесконечность.',reply:'...Ты разрушил мою математику. Броня −3 от шока.',fn:g=>{cE().armor=Math.max(0,cE().armor-3);renderEnemies();},
+     sub:[{t:'Учись считать.',reply:'Я... работаю над этим. +3 𝑖 за урок.',fn:g=>{g.cur+=3;renderHud();}}]},
+    {t:'Ты не способен сложить два числа.',reply:'НЕПРАВДА! 2+2=5. Иногда. Атака +2 от злости!',fn:g=>{g.eSts.debuff=(g.eSts.debuff||0)+2;},
+     sub:[{t:'2+2=4.',reply:'ЕРЕТИК! Стан от математического кризиса!',fn:g=>{g.eSts.stun=1;}}]},
+  ]},
+  {text:'Твоя сила? Я уже прибавил к ней ноль. Ничего не изменилось.',choices:[
+    {t:'Прибавление нуля — нейтральная операция.',reply:'Именно! Ты нейтрален. Слаб. Броня +2 от самодовольства.',fn:g=>{cE().armor+=2;renderEnemies();},
+     sub:[{t:'А делить тебя на ноль не нейтрально.',reply:'Э-э-э... Броня −5 от экзистенциального ужаса!',fn:g=>{cE().armor=Math.max(0,cE().armor-5);renderEnemies();}}]},
+    {t:'Прибавь к себе ноль — тоже ничего не изменится.',reply:'...Это было оскорбление. +3 𝑖 за дерзость, уважаю.',fn:g=>{g.cur+=3;renderHud();},
+     sub:[{t:'Просто честность.',reply:'Честность — редкость. Стан от неожиданного уважения.',fn:g=>{g.eSts.stun=1;}}]},
+  ]},
+  {text:'+ и + даёт ++. Я непобедим вдвойне!',choices:[
+    {t:'++ — это инкремент, не победа.',reply:'Ин-кре-мент... Это звучит угрожающе. Броня −2 от незнания.',fn:g=>{cE().armor=Math.max(0,cE().armor-2);renderEnemies();},
+     sub:[{t:'Это просто +1.',reply:'ВСЕГО ОДИН?! Броня −4 от разочарования!',fn:g=>{cE().armor=Math.max(0,cE().armor-4);renderEnemies();}}]},
+    {t:'Вдвойне ноль — всё равно ноль.',reply:'Я не ноль! Я ПЛЮС! Ярость! Атака усилена!',fn:g=>{g.eSts.debuff=(g.eSts.debuff||0)+3;},
+     sub:[{t:'Спокойно.',reply:'...Хорошо. Стан от принудительного спокойствия.',fn:g=>{g.eSts.stun=1;}}]},
+  ]},
+];
+const _INF_DLGS_MINUS=[
+  {text:'Ты — лишнее слагаемое. Я вычту тебя и не замечу потери.',choices:[
+    {t:'Вычесть меня невозможно — я не число.',reply:'Всё есть число. Ты просто не знаешь своего значения.',fn:g=>{},
+     sub:[
+       {t:'Может, я иррациональный.',reply:'Иррациональные не вычитаются легко... Броня −4 от математической неловкости.',fn:g=>{cE().armor=Math.max(0,cE().armor-4);renderEnemies();}},
+       {t:'Моё значение — победа.',reply:'Хамство. Стан от неожиданной уверенности.',fn:g=>{g.eSts.stun=1;}},
+     ]},
+    {t:'Ты уже замечаешь потери — вон, броня падает.',reply:'Это... временно. Броня +1 от отрицания реальности.',fn:g=>{cE().armor+=1;renderEnemies();},
+     sub:[
+       {t:'Отрицание — не стратегия.',reply:'Зато работает. Пока. +2 𝑖 за честность.',fn:g=>{g.cur+=2;renderHud();}},
+       {t:'Продолжай верить.',reply:'Верю! Броня −3 от самообмана.',fn:g=>{cE().armor=Math.max(0,cE().armor-3);renderEnemies();}},
+     ]},
+  ]},
+  {text:'Минус на минус даёт плюс. Значит я могу победить сам себя. Но не тебя.',choices:[
+    {t:'Логика железная.',reply:'Я знаю! Стан от гордости за собственный интеллект.',fn:g=>{g.eSts.stun=1;},
+     sub:[
+       {t:'Ты сам себя оглушил.',reply:'...Да. Случается. +3 𝑖 за наблюдательность.',fn:g=>{g.cur+=3;renderHud();}},
+       {t:'Это называется самосаботаж.',reply:'У нас разные названия для одного явления.',fn:g=>{}},
+     ]},
+    {t:'Тогда умножь себя на −1.',reply:'...Я стану плюсом?! НЕЕЕТ! Броня −5 от ужаса!',fn:g=>{cE().armor=Math.max(0,cE().armor-5);renderEnemies();},
+     sub:[
+       {t:'Это было бы улучшением.',reply:'ЭТО БЫЛО БЫ ПРЕДАТЕЛЬСТВОМ! Атака +3 от праведного гнева!',fn:g=>{g.eSts.debuff=(g.eSts.debuff||0)+3;}},
+       {t:'Попробуй, может понравится.',reply:'Никогда. Но... +2 𝑖 за интересную идею.',fn:g=>{g.cur+=2;renderHud();}},
+     ]},
+  ]},
+  {text:'Каждая волна я сильнее. Тебя уже почти не видно на горизонте.',choices:[
+    {t:'Значит, ты смотришь не туда.',reply:'Куда смотреть?!',fn:g=>{},
+     sub:[
+       {t:'Прямо — я стою перед тобой.',reply:'...О. Броня −4 от смущения.',fn:g=>{cE().armor=Math.max(0,cE().armor-4);renderEnemies();}},
+       {t:'Сначала вперёд, потом назад не оглядывайся.',reply:'Хитро. Стан от осмысления.',fn:g=>{g.eSts.stun=1;}},
+     ]},
+    {t:'Каждая волна я тоже сильнее.',reply:'Это... нечестно. Нас должно быть больше!',fn:g=>{},
+     sub:[
+       {t:'Нас? Ты один.',reply:'Пока один. Броня +2 от угрозы позвать подкрепление.',fn:g=>{cE().armor+=2;renderEnemies();}},
+       {t:'Больше не значит сильнее.',reply:'Вычтено из моей мотивации. Броня −3.',fn:g=>{cE().armor=Math.max(0,cE().armor-3);renderEnemies();}},
+     ]},
+  ]},
+];
+function _genInfWave(waveNum){
+  const scale=Math.pow(1.01,waveNum);
+  const count=Math.min(1+Math.floor(waveNum/3),4);
+  const roll=Math.random();
+  const pool=roll<0.4?['minus']:roll<0.7?['plus']:['plus','minus'];
+  const enemies=[];
+  for(let i=0;i<count;i++){
+    const type=pool[Math.floor(Math.random()*pool.length)];
+    const col=_INF_COLORS[Math.floor(Math.random()*_INF_COLORS.length)];
+    const isPlus=type==='plus';
+    const baseHp=isPlus?45:35;
+    const baseAtk=isPlus?9:7;
+    const hp=Math.round(baseHp*scale);
+    const atk=Math.round(baseAtk*scale);
+    const arm=Math.round(2*scale);
+    const nm=(isPlus?'Плюс ':'Минус ')+col.toUpperCase();
+    const dlgPool=isPlus?_INF_DLGS_PLUS:_INF_DLGS_MINUS;
+    const dlgBase=dlgPool[Math.floor(Math.random()*dlgPool.length)];
+    enemies.push({
+      id:'inf_'+type,name:nm,hp,maxHp:hp,armor:arm,enchants:[],
+      sprId:type+'-'+col,infType:type,
+      pat:[`ATK${atk}`,`ATK${atk}`,`DEF${Math.max(1,Math.round(3*scale))}`],
+      patIdx:0,
+      dlg:[{spk:isPlus?'ПЛЮС':'МИНУС',text:dlgBase.text,choices:dlgBase.choices}],
+    });
+  }
+  return enemies;
+}
+
 function loadWave(){
+  G.eIdx=0;G.eSts={};G.pSts={};G.taunt=null;G.active=true;G._turnGen=0;window._gameEndShown=false;
+  if(G.infiniteMode){
+    G.enemies=_genInfWave(G.wave);
+    dealHand();renderAll();
+    showDlg(cE(),0);
+    return;
+  }
   const c=getCfg();
   const wd=WAVE_DEFS[Math.min(G.wave,WAVE_DEFS.length-1)];
   G.enemies=wd.map(tpl=>{
@@ -3284,7 +3631,6 @@ function loadWave(){
     e.patIdx=0;
     return e;
   });
-  G.eIdx=0;G.eSts={};G.pSts={};G.taunt=null;G.active=true;G._turnGen=0;window._gameEndShown=false;
   dealHand();
   renderAll();
   showDlg(cE(),0);
@@ -3732,7 +4078,7 @@ function enemyDefeated(){
   } else {
     G.active=false;renderAll();
     setTimeout(()=>{
-      if(G.wave>=WAVE_DEFS.length-1)showEnd('🎉 ТЫ ПОБЕДИЛ!\nРичард доволен!',true);
+      if(!G.infiniteMode&&G.wave>=WAVE_DEFS.length-1)showEnd('🎉 ТЫ ПОБЕДИЛ!\nРичард доволен!',true);
       else openShop();
     },1200);
   }
@@ -4048,9 +4394,13 @@ let _shopInBattle=false;
 function _renderShopItems(){
   const c=document.getElementById('shop-items');c.innerHTML='';
   SHOP.forEach(it=>{
-    const ok=G.cur>=it.price;
+    const price=_shopPrice(it.id);
+    const ok=G.cur>=price;
+    const priceStr=G.infiniteMode&&(G.shopPriceMult[it.id]||0)>0
+      ?`<span style="color:#ff8844;">${price}</span>`
+      :`${price}`;
     const d=document.createElement('div');d.className='si';
-    d.innerHTML=`<div class="si-top"><div style="display:flex;align-items:flex-start;gap:8px;"><span style="font-size:22px;line-height:1;">${it.icon||''}</span><div><div class="si-name">${it.name}</div><div class="si-desc">${it.desc}</div></div></div><span class="si-pr"><div class="coin" style="display:inline-block;vertical-align:middle;margin-right:4px;"></div>${it.price}</span></div><button class="bbuy" ${ok?'':'disabled'} onclick="buyItem('${it.id}')">КУПИТЬ</button>`;
+    d.innerHTML=`<div class="si-top"><div style="display:flex;align-items:flex-start;gap:8px;"><span style="font-size:22px;line-height:1;">${it.icon||''}</span><div><div class="si-name">${it.name}</div><div class="si-desc">${it.desc}</div></div></div><span class="si-pr"><div class="coin" style="display:inline-block;vertical-align:middle;margin-right:4px;"></div>${priceStr}</span></div><button class="bbuy" ${ok?'':'disabled'} onclick="buyItem('${it.id}')">КУПИТЬ</button>`;
     c.appendChild(d);
   });
 }
@@ -4164,13 +4514,21 @@ function openShopInBattle(){
   setTimeout(()=>_animateShopCoins(false),120);
 }
 
+function _shopPrice(id){
+  const it=SHOP.find(x=>x.id===id);if(!it)return 0;
+  if(!G?.infiniteMode)return it.price;
+  return Math.round(it.price*Math.pow(1.5,G.shopPriceMult[id]||0));
+}
 function buyItem(id){
-  const it=SHOP.find(x=>x.id===id);if(!it||G.cur<it.price)return;
+  const it=SHOP.find(x=>x.id===id);
+  const price=_shopPrice(id);
+  if(!it||G.cur<price)return;
   const btn=document.querySelector(`.bbuy[onclick="buyItem('${id}')"]`);
   const doFinish=()=>{
     const prev=G.cur;
-    G.cur-=it.price;
-    const _sb=getStats();_sb.coinsSpent=(_sb.coinsSpent||0)+it.price;saveStats(_sb);
+    G.cur-=price;
+    const _sb=getStats();_sb.coinsSpent=(_sb.coinsSpent||0)+price;saveStats(_sb);
+    if(G.infiniteMode) G.shopPriceMult[id]=(G.shopPriceMult[id]||0)+1;
     if(_shopInBattle){
       G.active=false;
       enemyTurn(cE(),1.0);
@@ -4599,7 +4957,16 @@ function renderProfTitle(isOwn=true){
   const active=getActiveTitle();
   if(isOwn){
     if(active&&_getTitles().has(active)){
-      const tag=mkTitleTag(active);
+      let tag=mkTitleTag(active);
+      if(!tag){
+        // Custom title (tc_*) — not in TITLES dict, build from local storage
+        try{
+          const customs=JSON.parse(localStorage.getItem('cw_custom_titles')||'{}');
+          const cname=customs[active]?.name||null;
+          const ccolor=getTitleColors(active);
+          tag=mkTitleTagRaw(active,ccolor?JSON.stringify(ccolor):null,cname);
+        }catch{}
+      }
       if(tag) el.appendChild(tag);
     } else {
       const noTag=document.createElement('span');
@@ -4938,6 +5305,64 @@ function showEnd(msg,good){
   G.active=false;
   const coinsEarned=G.cur||0;
   const wave=G.wave||0;
+
+  // ── INFINITE MODE end screen ──
+  if(G.infiniteMode){
+    const baseSigma=Math.floor(coinsEarned/20);
+    const waveBonus=wave*2;
+    const totalSigma=Math.max(1,baseSigma+waveBonus);
+    if(totalSigma>0){addSigma(totalSigma);window._sessionSigmaEarned=(window._sessionSigmaEarned||0)+totalSigma;}
+    const el=document.getElementById('gameover');
+    el.classList.add('on','lose');
+    const bg=document.getElementById('go-bg');
+    for(let i=0;i<6;i++){
+      const c=document.createElement('div');c.className='go-crack';
+      c.style.cssText=`position:absolute;left:${Math.random()*80}%;top:${Math.random()*80}%;width:${40+Math.random()*100}px;height:${1+Math.random()*2}px;--cr:${Math.random()*180}deg;--cdl:${(Math.random()*1.5).toFixed(2)}s;`;
+      bg.appendChild(c);
+    }
+    const waveWord=wave===1?'волну':wave<5?'волны':'волн';
+    const content=document.getElementById('go-content');
+    content.innerHTML=`
+      <div id="go-title-lose" style="font-size:clamp(14px,3vw,22px);">∞ БЕСКОНЕЧНЫЙ РЕЖИМ</div>
+      <div class="go-subtitle">Ты продержался ${wave} ${waveWord}.</div>
+      <div class="go-rows" id="go-rows"></div>
+      <div class="go-btns" id="go-btns">
+        <button class="go-btn go-btn-main" onclick="restartInfinite()">∞ СНОВА</button>
+        <button class="go-btn go-btn-menu" onclick="goToMenu()">🏠 МЕНЮ</button>
+      </div>`;
+    function _cUp(el,target,dur,fmt){
+      if(target===0){el.textContent=fmt(0);return;}
+      const s=performance.now();
+      const tick=now=>{const p=Math.min(1,(now-s)/dur);const e2=1-Math.pow(1-p,3);el.textContent=fmt(Math.floor(e2*target));if(p<1)requestAnimationFrame(tick);else el.textContent=fmt(target);};
+      requestAnimationFrame(tick);
+    }
+    const rows=document.getElementById('go-rows');
+    const infItems=[
+      {label:'Монеты заработано',val:coinsEarned,fmt:v=>`${v.toLocaleString('ru')} 𝑖`,cls:''},
+      {label:'Конвертация (20 𝑖 → 1 Σ)',val:baseSigma,fmt:v=>`+${v} Σ`,cls:'bonus'},
+      {label:`Бонус за волны (×${wave})`,val:waveBonus,fmt:v=>`+${v} Σ`,cls:'bonus'},
+      {label:'ИТОГО СИГМА',val:totalSigma,fmt:v=>`+${v.toLocaleString('ru')} Σ`,cls:'total'},
+    ];
+    let delay=400;
+    infItems.forEach(item=>{
+      setTimeout(()=>{
+        const row=document.createElement('div');
+        row.className='go-row'+(item.cls?' '+item.cls:'');
+        const lbl=document.createElement('span');lbl.className='go-row-label';lbl.textContent=item.label;
+        const val=document.createElement('span');val.className='go-row-val';val.textContent='…';
+        row.append(lbl,val);rows.appendChild(row);
+        row.style.animation='goRowIn .4s ease both';
+        _cUp(val,item.val,900,item.fmt);
+      },delay);
+      delay+=700;
+    });
+    setTimeout(()=>{
+      const btns=document.getElementById('go-btns');
+      if(btns)btns.style.animation='goRowIn .4s ease both';
+    },delay);
+    return;
+  }
+
   if(good){
     const _sw=getStats();
     _sw.wins=(_sw.wins||0)+1;
@@ -4973,7 +5398,7 @@ function showEnd(msg,good){
 
   if(good){
     const starsEl=document.getElementById('go-stars');starsEl.innerHTML='';
-    for(let i=0;i<55;i++){
+    for(let i=0;i<15;i++){
       const s=document.createElement('div');s.className='go-star';
       const sz=2+Math.random()*5;
       s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;--sd:${(.7+Math.random()*1.8).toFixed(2)}s;--del:${(Math.random()*2).toFixed(2)}s;--sop:${(.5+Math.random()*.5).toFixed(2)};`;
@@ -5140,7 +5565,14 @@ function renderHud(){
   inner.style.width=(pr*100)+'%';
   inner.className='hpbar-inner'+(pr<=.25?' r':pr<=.5?' y':'');
   document.getElementById('php-val').textContent=`${G.php}/${G.maxPhp}`;
-  document.getElementById('wave-val').textContent=`${G.wave+1}/${WAVE_DEFS.length}`;
+  const infBadge=document.getElementById('inf-wave-badge');
+  if(G.infiniteMode){
+    document.getElementById('wave-val').textContent=`${G.wave+1}`;
+    if(infBadge)infBadge.style.display='inline';
+  } else {
+    document.getElementById('wave-val').textContent=`${G.wave+1}/${WAVE_DEFS.length}`;
+    if(infBadge)infBadge.style.display='none';
+  }
   document.getElementById('coin-count').textContent=G.cur;
   document.getElementById('wave-info').textContent=`Волна ${G.wave+1} — Врагов: ${G.enemies.filter(e=>!e.dead).length}/${G.enemies.length}`;
   renderSigmaHud();
@@ -5391,23 +5823,33 @@ function addLog(msg){
 }
 
 // ══════════════════════════════════
-//  INIT
+//  INIT — G initialised on mode select, not on page load
 // ══════════════════════════════════
-initG();
+window._gameMode='casual'; // default
 function goToMenu(){
   const earned=window._sessionSigmaEarned||0;
   if(earned>0) localStorage.setItem('cw_menu_incoming_sigma',String(earned));
   location.reload();
 }
 function restartGame(){
-  // hide end screens, reset state, start fresh
   document.getElementById('gameover').classList.remove('on','win','lose');
   document.getElementById('div0-overlay').classList.remove('on');
   document.getElementById('div0-dark').classList.remove('on');
   document.getElementById('div0-vignette').classList.remove('on');
   window._gameEndShown=false;
   window._playerDeadPending=false;
-  if(window._doEnterGame) window._doEnterGame();
+  window._gameMode='casual';
+  initG();
+}
+function restartInfinite(){
+  document.getElementById('gameover').classList.remove('on','win','lose');
+  document.getElementById('div0-overlay').classList.remove('on');
+  document.getElementById('div0-dark').classList.remove('on');
+  document.getElementById('div0-vignette').classList.remove('on');
+  window._gameEndShown=false;
+  window._playerDeadPending=false;
+  window._gameMode='infinite';
+  document.getElementById('shake-wrapper').classList.add('inf-mode');
   initG();
 }
 // ══════════════════════════════════
@@ -6045,19 +6487,12 @@ _supaInitPromise=(async()=>{
       const pid=_supaUser.user_metadata?.pid;
       const avatar=_supaUser.user_metadata?.avatar||null;
       if(pid&&_supa){
-        // Load sigma immediately — independent of upsert
+        // Load sigma from DB — always trust the server (fixes cross-account contamination)
         _supa.from('profiles').select('sigma').eq('pid',pid).single()
           .then(({data})=>{
-            if(data?.sigma!=null){
-              // Take max so locally-earned sigma is never overwritten by stale DB value
-              const dbVal=parseInt(data.sigma)||0;
-              const localVal=getSigma();
-              if(dbVal>localVal){saveSigma(dbVal);renderSigmaHud();}
-              else if(localVal>dbVal){
-                // Local is ahead — sync DB to local
-                _supa.from('profiles').update({sigma:localVal}).eq('pid',pid).then(null,()=>{});
-              }
-            }
+            const dbVal=parseInt(data?.sigma)||0;
+            saveSigma(dbVal);
+            renderSigmaHud();
           }).catch(()=>{});
         // Update profile (don't wait for this)
         _supa.from('profiles').upsert(
@@ -6417,19 +6852,136 @@ async function cloudLoad(){
     'Бесконечность начинается с тебя,',
   ];
 
-  // --- Hides splash and enters game ---
-  function doEnterGame(){
+  // --- Pixel-static mode select ---
+  const _MS_INFO={
+    casual:'▶ Классический режим. 6 волн нарастающей сложности,\nбосс Ричард в конце и награда Σ за победу.',
+    infinite:'∞ Бесконечный режим. Плюсы и минусы атакуют волна за волной.\nВраги усиливаются. Σ падает щедро — 20 𝑖 → 1 Σ + бонус за волны.',
+  };
+  window.msHover=function(mode){
+    const el=document.getElementById('ms-info');
+    el.innerHTML='';
+    const txt=document.createElement('div');
+    txt.className='ms-info-text';
+    txt.style.whiteSpace='pre-line';
+    txt.textContent=_MS_INFO[mode]||'';
+    el.appendChild(txt);
+  };
+  window.msLeave=function(){
+    const el=document.getElementById('ms-info');
+    if(el)el.innerHTML='';
+  };
+  window.modeSelectBack=function(){
+    const ms=document.getElementById('mode-select');
+    const canvas=document.getElementById('ms-pixel-canvas');
+    canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+    const ctx=canvas.getContext('2d');
+    const content=document.getElementById('ms-content');
+    content.style.transition='opacity .15s ease';content.style.opacity='0';
+    function drawStatic(d){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const ps=10,cols=Math.ceil(canvas.width/ps),rows=Math.ceil(canvas.height/ps);
+      for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+        if(Math.random()<d){
+          const v=Math.floor(30+Math.random()*50);
+          ctx.fillStyle=`rgba(${v},${v},${v},${0.35+Math.random()*0.5})`;
+          ctx.fillRect(x*ps,y*ps,ps,ps);
+        }
+      }
+    }
+    let phase=1,pt=0;
+    function anim(){
+      pt++;
+      if(phase===1){drawStatic(Math.min(1,pt/7));if(pt>=9){phase=2;pt=0;}requestAnimationFrame(anim);}
+      else{drawStatic(Math.max(0,1-pt/14));if(pt<14)requestAnimationFrame(anim);
+        else{ms.style.display='none';ctx.clearRect(0,0,canvas.width,canvas.height);
+          content.style.opacity='';content.style.transition='';}}
+    }
+    requestAnimationFrame(anim);
+  };
+
+  function _showModeSelect(){
+    const ms=document.getElementById('mode-select');
+    ms.style.display='flex';
+    const content=document.getElementById('ms-content');
+    content.style.opacity='0';
+    // Pixel static canvas transition
+    const canvas=document.getElementById('ms-pixel-canvas');
+    canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+    const ctx=canvas.getContext('2d');
+    let tick=0;
+    function drawStatic(density){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const ps=10;
+      const cols=Math.ceil(canvas.width/ps),rows=Math.ceil(canvas.height/ps);
+      for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+        if(Math.random()<density){
+          const v=Math.floor(60+Math.random()*80);
+          ctx.fillStyle=`rgba(${v},${v},${v},${0.3+Math.random()*0.5})`;
+          ctx.fillRect(x*ps,y*ps,ps,ps);
+        }
+      }
+    }
+    // Phase 1: build static (8 frames)
+    // Phase 2: dissolve static (20 frames)
+    let phase=1,phTick=0;
+    function anim(){
+      phTick++;
+      if(phase===1){
+        drawStatic(Math.min(1,phTick/6));
+        if(phTick>=9){phase=2;phTick=0;
+          // reveal content while static fades
+          content.style.transition='opacity .5s ease';
+          content.style.opacity='1';
+        }
+        requestAnimationFrame(anim);
+      } else {
+        const d=Math.max(0,1-phTick/18);
+        drawStatic(d);
+        if(d>0) requestAnimationFrame(anim);
+        else ctx.clearRect(0,0,canvas.width,canvas.height);
+      }
+    }
+    requestAnimationFrame(anim);
+  }
+
+  window.startCasual=function(){
+    window._gameMode='casual';
+    const ms=document.getElementById('mode-select');
+    ms.style.opacity='0';ms.style.transition='opacity .3s ease';
+    setTimeout(()=>{
+      ms.style.display='none';ms.style.opacity='';ms.style.transition='';
+      _enterGameActual();
+    },320);
+  };
+  window.startInfinite=function(){
+    window._gameMode='infinite';
+    const ms=document.getElementById('mode-select');
+    ms.style.opacity='0';ms.style.transition='opacity .3s ease';
+    setTimeout(()=>{
+      ms.style.display='none';ms.style.opacity='';ms.style.transition='';
+      _enterGameActual();
+    },320);
+  };
+
+  // --- Actually hides splash and enters game ---
+  function _enterGameActual(){
     cancelAnimationFrame(_rainAF);
     const sp=document.getElementById('splash');
-    sp.style.transition='opacity .5s ease';
-    sp.style.opacity='0';
-    sp.style.pointerEvents='none';
+    sp.style.transition='opacity .4s ease';
+    sp.style.opacity='0';sp.style.pointerEvents='none';
     setTimeout(()=>{
       sp.style.display='none';
-      document.getElementById('shake-wrapper').style.display='';
-    }, 520);
-    // Only show tutorial for guests who've never seen it
-    if(!_supaUser && !localStorage.getItem('cw_tut')) setTimeout(tutOpen, 300);
+      const sw=document.getElementById('shake-wrapper');
+      sw.style.display='';
+      sw.classList.toggle('inf-mode',window._gameMode==='infinite');
+      initG();
+    },420);
+    if(!_supaUser&&!localStorage.getItem('cw_tut')) setTimeout(tutOpen,600);
+  }
+
+  // --- doEnterGame now shows mode select instead ---
+  function doEnterGame(){
+    _showModeSelect();
   }
   window._doEnterGame=doEnterGame;
 
@@ -6532,6 +7084,8 @@ async function cloudLoad(){
     setTimeout(()=>{
       sp.style.display='none';
       document.getElementById('shake-wrapper').style.display='';
+      window._gameMode='casual';
+      initG();
     }, 520);
     setTimeout(tutOpen, 300);
   };
@@ -6596,8 +7150,9 @@ async function cloudLoad(){
   // ── Online status (based on last_seen in profiles table) ──
   function isOnline(lastSeen){
     if(!lastSeen) return false;
-    return (Date.now()-new Date(lastSeen).getTime()) < 5*60*1000; // 5 min
+    return (Date.now()-new Date(lastSeen).getTime()) < 5*60*1000;
   }
+  window.isOnline=isOnline;
   function mkStatusDot(online){
     const d=document.createElement('div');
     d.className='player-status-dot '+(online?'online':'offline');
@@ -6923,7 +7478,7 @@ async function cloudLoad(){
     tbl.innerHTML='<div class="admin-loading">загрузка игроков...</div>';
     try{
       const{data,error}=await _supa.from('profiles')
-        .select('nickname,pid,avatar,last_seen,created_at,verified,active_title,title_color')
+        .select('nickname,pid,avatar,last_seen,created_at,verified,active_title,title_color,title_name')
         .order('created_at',{ascending:false});
       if(error) throw error;
       _allPlayers=data||[];
@@ -7484,93 +8039,167 @@ async function cloudLoad(){
   };
 
   // ── Dev list management ──
+  let _devListCache=[];
+
   async function loadDevList(){
     if(!_supa) return;
     try{
-      const{data,error}=await _supa.from('developers').select('pid,role,nickname,avatar,created_at').order('created_at');
-      // Update admin list
-      const listEl=document.getElementById('admin-dev-list');
-      if(listEl){
-        if(!data||data.length===0){
-          listEl.innerHTML='<div style="font-family:\'Press Start 2P\',monospace;font-size:7px;color:#335566;padding:8px 0;">список пуст</div>';
-        } else {
-          listEl.innerHTML='';
-          data.forEach(d=>{
-            const row=document.createElement('div');
-            row.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #0a1a0a;';
-            const av=mkAvEl(d.avatar,28);
-            const info=document.createElement('div');
-            info.style.cssText='flex:1;';
-            info.innerHTML=`<div style="font-family:'Press Start 2P',monospace;font-size:7px;color:#88BBDD;">${d.nickname||d.pid}</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:5px;color:#446644;margin-top:2px;">${d.role||''}</div>`;
-            const pidEl=document.createElement('div');
-            pidEl.style.cssText='font-family:\'Press Start 2P\',monospace;font-size:5px;color:#1a3a55;';
-            pidEl.textContent='#'+d.pid;
-            row.append(av,info,pidEl);
-            listEl.appendChild(row);
-          });
-        }
+      const{data,error}=await _supa.from('developers')
+        .select('pid,role,nickname,avatar,sort_order,pinned')
+        .order('pinned',{ascending:false})
+        .order('sort_order',{ascending:true})
+        .order('nickname',{ascending:true});
+      if(error) throw error;
+      const devs=data||[];
+      if(devs.length){
+        const pids=devs.map(d=>d.pid);
+        const{data:profs}=await _supa.from('profiles').select('pid,verified').in('pid',pids);
+        if(profs) profs.forEach(p=>{const d=devs.find(x=>x.pid===p.pid);if(d)d.verified=p.verified;});
       }
-      // Update credits section with player rows
-      const credsEl=document.getElementById('credits-devs');
-      if(credsEl){
-        credsEl.innerHTML='';
-        if(!data||data.length===0){
-          credsEl.innerHTML='<div class="credits-name">—</div>';
-        } else {
-          data.forEach(d=>{
-            const row=document.createElement('div');
-            row.style.cssText='display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #0a1e2e;cursor:pointer;';
-            row.onclick=()=>{ creditsClose(); profOpenByPid&&profOpenByPid(d.pid); };
-            const av=mkAvEl(d.avatar,36);
-            av.style.borderColor='#226633';
-            const info=document.createElement('div');
-            info.style.cssText='flex:1;text-align:left;';
-            info.innerHTML=`<div style="font-family:'Press Start 2P',monospace;font-size:8px;color:#88BBDD;">${d.nickname||d.pid}</div>
-              <div style="font-family:'Press Start 2P',monospace;font-size:6px;color:#446644;margin-top:3px;">${d.role||''}</div>`;
-            row.append(av,info);
-            credsEl.appendChild(row);
-          });
-        }
-      }
+      _devListCache=devs;
+      _renderAdminDevList();
+      _renderCreditsDevs();
     }catch(e){
       const listEl=document.getElementById('admin-dev-list');
-      if(listEl) listEl.innerHTML='<div style="font-family:\'Press Start 2P\',monospace;font-size:6px;color:#FF5544;">таблица developers не создана</div>';
+      if(listEl) listEl.innerHTML='<div style="font-family:\'Press Start 2P\',monospace;font-size:6px;color:#FF5544;">ошибка загрузки: '+e.message+'</div>';
     }
+  }
+
+  function _renderAdminDevList(){
+    const listEl=document.getElementById('admin-dev-list');
+    if(!listEl) return;
+    if(!_devListCache.length){
+      listEl.innerHTML='<div style="font-family:\'Press Start 2P\',monospace;font-size:7px;color:#335566;padding:8px 0;">список пуст</div>';
+      return;
+    }
+    listEl.innerHTML='';
+    _devListCache.forEach((d,i)=>{
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #0a1a0a;';
+      // Pin indicator
+      const pinBtn=document.createElement('button');
+      pinBtn.className='admin-btn';
+      pinBtn.style.cssText='padding:3px 6px;font-size:10px;min-width:28px;'+(d.pinned?'color:#FFE000;border-color:#664400;':'color:#335566;border-color:#1a2a1a;');
+      pinBtn.textContent='📌';
+      pinBtn.title=d.pinned?'Откреп':'Закреп';
+      pinBtn.onclick=()=>adminTogglePin(d.pid,d.pinned);
+      // Order buttons
+      const upBtn=document.createElement('button');
+      upBtn.className='admin-btn';upBtn.style.cssText='padding:2px 5px;font-size:9px;';
+      upBtn.textContent='↑';upBtn.disabled=i===0;
+      upBtn.onclick=()=>adminMoveDev(d.pid,'up');
+      const downBtn=document.createElement('button');
+      downBtn.className='admin-btn';downBtn.style.cssText='padding:2px 5px;font-size:9px;';
+      downBtn.textContent='↓';downBtn.disabled=i===_devListCache.length-1;
+      downBtn.onclick=()=>adminMoveDev(d.pid,'down');
+      // Info
+      const info=document.createElement('div');
+      info.style.cssText='flex:1;min-width:0;';
+      info.innerHTML=`<span style="font-family:'Press Start 2P',monospace;font-size:7px;color:#88BBDD;">${d.nickname||d.pid}</span>`+
+        `<span style="font-family:'Press Start 2P',monospace;font-size:5px;color:#446644;margin-left:6px;">— ${d.role||'—'}</span>`;
+      // Remove
+      const delBtn=document.createElement('button');
+      delBtn.className='admin-btn admin-danger';delBtn.style.cssText='padding:2px 6px;font-size:9px;';
+      delBtn.textContent='✕';
+      delBtn.onclick=()=>adminRemoveDev(d.pid);
+      row.append(pinBtn,upBtn,downBtn,info,delBtn);
+      listEl.appendChild(row);
+    });
+  }
+
+  function _renderCreditsDevs(){
+    const credsEl=document.getElementById('credits-devs');
+    if(!credsEl) return;
+    credsEl.innerHTML='';
+    if(!_devListCache.length){
+      credsEl.innerHTML='<div style="font-family:\'Press Start 2P\',monospace;font-size:7px;color:#335566;">—</div>';
+      return;
+    }
+    _devListCache.forEach(d=>{
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #0a1e2e;cursor:pointer;';
+      row.onclick=()=>{creditsClose();profOpenByPid&&profOpenByPid(d.pid);};
+      row.ontouchend=(e)=>{e.preventDefault();creditsClose();profOpenByPid&&profOpenByPid(d.pid);};
+      // Avatar
+      const av=document.createElement('div');
+      av.style.cssText='width:30px;height:30px;border-radius:4px;overflow:hidden;flex-shrink:0;background:#0a1a2a;border:1px solid #1a3a5a;display:flex;align-items:center;justify-content:center;';
+      if(d.avatar){const img=document.createElement('img');img.src=d.avatar;img.style.cssText='width:100%;height:100%;object-fit:cover;';av.appendChild(img);}
+      // Info: nick + verified + dash + role
+      const info=document.createElement('div');
+      info.style.cssText='display:flex;align-items:center;gap:4px;flex:1;min-width:0;flex-wrap:wrap;';
+      const nick=document.createElement('span');
+      nick.style.cssText="font-family:'Press Start 2P',monospace;font-size:8px;color:#88DDFF;";
+      nick.textContent=d.nickname||d.pid;
+      info.appendChild(nick);
+      if(d.verified){const badge=_mkVerifiedBadge(10);if(badge)info.appendChild(badge);}
+      const dash=document.createElement('span');
+      dash.style.cssText="font-family:'Press Start 2P',monospace;font-size:7px;color:#335566;";
+      dash.textContent='—';
+      info.appendChild(dash);
+      const role=document.createElement('span');
+      role.style.cssText="font-family:'Press Start 2P',monospace;font-size:7px;color:#446644;";
+      role.textContent=d.role||'';
+      info.appendChild(role);
+      row.append(av,info);
+      credsEl.appendChild(row);
+    });
   }
 
   window.adminAddDev=async function(){
     if(!_adminGuard()) return;
     const q=(document.getElementById('admin-dev-pid')?.value||'').trim();
-    const role=(document.getElementById('admin-dev-role')?.value||'').trim();
+    const role=(document.getElementById('admin-dev-role-txt')?.value||'').trim();
     if(!q){alert('Введи PID или ник');return;}
     try{
-      // Find player in profiles
       const isId=/^\d+$/.test(q);
       const{data:prof}=isId
         ? await _supa.from('profiles').select('*').eq('pid',q).limit(1)
         : await _supa.from('profiles').select('*').ilike('nickname',q).limit(1);
-      if(!prof||!prof.length){alert('Игрок не найден в базе.\nСначала игрок должен открыть игру.');return;}
+      if(!prof||!prof.length){alert('Игрок не найден в базе.');return;}
       const p=prof[0];
+      const nextOrder=(_devListCache.length?Math.max(..._devListCache.map(x=>x.sort_order||0))+1:0);
       await _supa.from('developers').upsert({
-        pid:p.pid,role,nickname:p.nickname,avatar:p.avatar||null,
-        created_at:new Date().toISOString()
+        pid:p.pid,role:role||'Разработчик',nickname:p.nickname,avatar:p.avatar||null,
+        sort_order:nextOrder,pinned:false
       },{onConflict:'pid'});
       document.getElementById('admin-dev-pid').value='';
+      document.getElementById('admin-dev-role-txt').value='';
       loadDevList();
-      alert(`✅ ${p.nickname||p.pid} добавлен как "${role}"`);
     }catch(e){alert('Ошибка: '+e.message);}
   };
 
-  window.adminRemoveDev=async function(){
+  window.adminRemoveDev=async function(pid){
     if(!_adminGuard()) return;
-    const pid=(document.getElementById('admin-dev-remove')?.value||'').trim();
-    if(!pid){alert('Введи PID');return;}
+    if(!pid) return;
+    if(!confirm('Удалить из списка?')) return;
     try{
       await _supa.from('developers').delete().eq('pid',pid);
-      document.getElementById('admin-dev-remove').value='';
       loadDevList();
-      alert('Удалено');
+    }catch(e){alert('Ошибка: '+e.message);}
+  };
+
+  window.adminTogglePin=async function(pid,currentPinned){
+    if(!_adminGuard()) return;
+    try{
+      await _supa.from('developers').update({pinned:!currentPinned}).eq('pid',pid);
+      loadDevList();
+    }catch(e){alert('Ошибка: '+e.message);}
+  };
+
+  window.adminMoveDev=async function(pid,dir){
+    if(!_adminGuard()) return;
+    const idx=_devListCache.findIndex(d=>d.pid===pid);
+    if(idx<0) return;
+    const swapIdx=dir==='up'?idx-1:idx+1;
+    if(swapIdx<0||swapIdx>=_devListCache.length) return;
+    const a=_devListCache[idx],b=_devListCache[swapIdx];
+    try{
+      // Use target indices directly to avoid collisions when sort_order values are equal
+      await Promise.all([
+        _supa.from('developers').update({sort_order:swapIdx*10}).eq('pid',a.pid),
+        _supa.from('developers').update({sort_order:idx*10}).eq('pid',b.pid),
+      ]);
+      loadDevList();
     }catch(e){alert('Ошибка: '+e.message);}
   };
 
@@ -7970,10 +8599,77 @@ function sigmaPopupClose(){
 // Load sigma on init
 renderSigmaHud();
 function returnToMenu(){
-  const confirmed=confirm('Вернуться в главное меню?\nПрогресс текущей волны не сохранится.');
-  if(!confirmed) return;
-  location.reload();
+  if(!G||window._gameEndShown) return;
+  const ov=document.getElementById('exit-confirm-ov');
+  const box=document.getElementById('exit-confirm-box');
+  const title=document.getElementById('exit-confirm-title');
+  const isInf=G.infiniteMode;
+  box.classList.toggle('inf',isInf);
+  title.classList.toggle('inf',isInf);
+  title.textContent=isInf?'∞ ВЫЙТИ ИЗ БЕСКОНЕЧНОГО?':'🏠 ВЫЙТИ В МЕНЮ?';
+  ov.classList.add('on');
 }
+window.exitConfirmNo=function(){
+  document.getElementById('exit-confirm-ov').classList.remove('on');
+};
+window.exitConfirmYes=function(){
+  document.getElementById('exit-confirm-ov').classList.remove('on');
+  // Build sigma results then go to menu
+  const coinsEarned=G?.cur||0;
+  const wave=G?.wave||0;
+  const isInf=G?.infiniteMode;
+  const isWin=false; // exiting = no win
+  const baseRate=isInf?20:(isWin?150:400);
+  const baseSigma=Math.floor(coinsEarned/baseRate);
+  const waveBonus=isInf?(wave*2):0;
+  const totalSigma=Math.max(0,baseSigma+waveBonus);
+  if(totalSigma>0){
+    addSigma(totalSigma);
+    window._sessionSigmaEarned=(window._sessionSigmaEarned||0)+totalSigma;
+  }
+  // Show sigma overlay
+  const sigOv=document.getElementById('exit-sigma-ov');
+  const sigBox=document.getElementById('exit-sigma-box');
+  const sigTitle=document.getElementById('exit-sigma-title');
+  const rowsCont=document.getElementById('exit-sigma-rows');
+  const gotoBtn=document.getElementById('exit-sigma-goto');
+  sigBox.classList.toggle('inf',isInf);
+  sigTitle.classList.toggle('inf',isInf);
+  sigTitle.textContent=isInf?`∞ ВОЛНА ${wave} — ИТОГИ`:'ИТОГИ ИГРЫ';
+  rowsCont.innerHTML='';
+  gotoBtn.classList.remove('visible');
+  sigOv.classList.add('on');
+  function cUp(el,target,dur,fmt){
+    if(target===0){el.textContent=fmt(0);return;}
+    const s=performance.now();
+    const tick=now=>{const p=Math.min(1,(now-s)/dur);const e2=1-Math.pow(1-p,3);el.textContent=fmt(Math.floor(e2*target));if(p<1)requestAnimationFrame(tick);else el.textContent=fmt(target);};
+    requestAnimationFrame(tick);
+  }
+  const items=[
+    {label:'Монеты заработано',val:coinsEarned,fmt:v=>`${v.toLocaleString('ru')} 𝑖`,cls:''},
+    ...(isInf?[
+      {label:`Конвертация (20 𝑖 → 1 Σ)`,val:baseSigma,fmt:v=>`+${v} Σ`,cls:'bonus'},
+      {label:`Бонус за ${wave} волн`,val:waveBonus,fmt:v=>`+${v} Σ`,cls:'bonus'},
+    ]:[
+      {label:`Конвертация (400 𝑖 → 1 Σ)`,val:baseSigma,fmt:v=>`+${v} Σ`,cls:'bonus'},
+    ]),
+    {label:'ИТОГО СИГМА',val:totalSigma,fmt:v=>`+${v.toLocaleString('ru')} Σ`,cls:'total'},
+  ];
+  let delay=200;
+  items.forEach(item=>{
+    setTimeout(()=>{
+      const row=document.createElement('div');
+      row.className='go-row'+(item.cls?' '+item.cls:'');
+      row.style.cssText='animation:goRowIn .4s ease both;font-size:7px;padding:5px 0;border-bottom:1px solid #0d2a0d;display:flex;justify-content:space-between;';
+      const lbl=document.createElement('span');lbl.className='go-row-label';lbl.textContent=item.label;
+      const val=document.createElement('span');val.className='go-row-val';val.textContent='…';
+      row.append(lbl,val);rowsCont.appendChild(row);
+      cUp(val,item.val,800,item.fmt);
+    },delay);
+    delay+=600;
+  });
+  setTimeout(()=>gotoBtn.classList.add('visible'),delay+200);
+};
 
 // ── Dynamic menu scaling to fit screen height ──
 function fitMenuToScreen(){
@@ -8484,7 +9180,7 @@ async function _refreshFriendsOnline(){
     }
   }catch{}
 }
-setInterval(_refreshFriendsOnline, 10000);
+setInterval(_refreshFriendsOnline, 3000);
 
 function _defaultAv(){
   return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%230a1e30'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='18' fill='%23335566'%3E👤%3C/text%3E%3C/svg%3E";
@@ -8707,10 +9403,12 @@ function _mkMsgRow(m, continued){
   if(continued){
     const spacer=document.createElement('div');spacer.className='msg-av-spacer';
     const content=document.createElement('div');content.className='msg-content';
-    const text=document.createElement('div');
-    text.className='msg-text'+(isMine?' mine':'');
-    text.textContent=m.text||'';
-    content.appendChild(text);
+    if(m.text){
+      const text=document.createElement('div');
+      text.className='msg-text'+(isMine?' mine':'');
+      text.textContent=m.text;
+      content.appendChild(text);
+    }
     row.appendChild(spacer);row.appendChild(content);
   } else {
     const avCol=document.createElement('div');avCol.className='msg-av-col';
@@ -8740,11 +9438,13 @@ function _mkMsgRow(m, continued){
     time.textContent=_fmtTime(m.created_at);
     header.appendChild(time);
 
-    const text=document.createElement('div');
-    text.className='msg-text'+(isMine?' mine':'');
-    text.textContent=m.text||'';
-
-    content.appendChild(header);content.appendChild(text);
+    content.appendChild(header);
+    if(m.text){
+      const text=document.createElement('div');
+      text.className='msg-text'+(isMine?' mine':'');
+      text.textContent=m.text;
+      content.appendChild(text);
+    }
     row.appendChild(avCol);row.appendChild(content);
   }
   return row;
@@ -8805,7 +9505,7 @@ function _chatSubscribe(room){
 }
 
 window.chatInputChanged=function(){
-  document.getElementById('chat-send').disabled=!document.getElementById('chat-input').value.trim();
+  document.getElementById('chat-send').disabled=!document.getElementById('chat-input').value.trim()&&!_chatAttachFiles.length;
 };
 
 window.chatSend=async function(){
@@ -8908,6 +9608,23 @@ function _fmtSize(bytes){
   if(bytes<1024) return bytes+'B';
   if(bytes<1024*1024) return Math.round(bytes/1024)+'KB';
   return (bytes/1024/1024).toFixed(1)+'MB';
+}
+
+// ── Image lightbox ──
+function _chatLightbox(src){
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.95);display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+  const img=document.createElement('img');
+  img.src=src;
+  img.style.cssText='max-width:95vw;max-height:95vh;object-fit:contain;border:2px solid #1a4a70;';
+  const close=document.createElement('button');
+  close.textContent='✕';
+  close.style.cssText='position:absolute;top:12px;right:16px;background:none;border:none;color:#fff;font-size:24px;cursor:pointer;z-index:1;font-family:monospace;';
+  ov.appendChild(img);ov.appendChild(close);
+  document.body.appendChild(ov);
+  const rm=()=>ov.remove();
+  ov.onclick=rm;close.onclick=rm;
+  img.onclick=(e)=>e.stopPropagation();
 }
 
 // ── Danger popup ──
@@ -9108,20 +9825,32 @@ window._mkMsgRowPatched=function(m, continued){
     if(m.file_type&&m.file_type.startsWith('image/')){
       const img=document.createElement('img');img.className='msg-img';
       img.src=m.file_url;img.alt=m.file_name||'image';
-      img.onclick=()=>chatShowDanger(m.file_url,()=>window.open(m.file_url,'_blank'));
-      img.ontouchend=(e)=>{e.preventDefault();chatShowDanger(m.file_url,()=>window.open(m.file_url,'_blank'));};
-      if(msgText) msgText.after(img); else content.appendChild(img);
+      img.style.cursor='zoom-in';
+      const openLightbox=()=>_chatLightbox(m.file_url);
+      img.onclick=openLightbox;
+      img.ontouchend=(e)=>{e.preventDefault();openLightbox();};
+      if(msgText) content.appendChild(img); else content.appendChild(img);
+    } else if(m.file_type&&m.file_type.startsWith('video/')){
+      const fbox=document.createElement('div');fbox.className='msg-file';
+      fbox.innerHTML=`<div class="msg-file-icon">🎬</div>
+        <div class="msg-file-info">
+          <div class="msg-file-name">${(m.file_name||'видео').slice(0,30)}</div>
+          <div class="msg-file-size">${m.file_size?_fmtSize(m.file_size):''}</div>
+        </div>`;
+      fbox.onclick=()=>window.open(m.file_url,'_blank');
+      fbox.ontouchend=(e)=>{e.preventDefault();window.open(m.file_url,'_blank');};
+      if(msgText) content.appendChild(fbox); else content.appendChild(fbox);
     } else {
       const fbox=document.createElement('div');fbox.className='msg-file';
-      const isVideo=m.file_type&&m.file_type.startsWith('video/');
-      fbox.innerHTML=`<div class="msg-file-icon">${isVideo?'🎬':'📄'}</div>
+      fbox.innerHTML=`<div class="msg-file-icon">📄</div>
         <div class="msg-file-info">
           <div class="msg-file-name">${(m.file_name||'файл').slice(0,30)}</div>
           <div class="msg-file-size">${m.file_size?_fmtSize(m.file_size):''}</div>
         </div>`;
-      fbox.onclick=()=>chatShowDanger(m.file_url,()=>window.open(m.file_url,'_blank'));
-      fbox.ontouchend=(e)=>{e.preventDefault();chatShowDanger(m.file_url,()=>window.open(m.file_url,'_blank'));};
-      if(msgText) msgText.after(fbox); else content.appendChild(fbox);
+      const _dlFile=()=>{fetch(m.file_url).then(r=>r.blob()).then(blob=>{const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=m.file_name||'file';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);}).catch(()=>window.open(m.file_url,'_blank'));};
+      fbox.onclick=()=>chatShowDanger(m.file_url,_dlFile);
+      fbox.ontouchend=(e)=>{e.preventDefault();chatShowDanger(m.file_url,_dlFile);};
+      if(msgText) content.appendChild(fbox); else content.appendChild(fbox);
     }
   }
 
@@ -9205,12 +9934,13 @@ window.chatSend=async function(){
 
   try{
     if(hasFiles){
-      // Send each file as separate message (base64 stored in text for now)
-      for(const f of _chatAttachFiles){
+      for(let fi=0;fi<_chatAttachFiles.length;fi++){
+        const f=_chatAttachFiles[fi];
         const b64=await _fileToBase64(f);
+        // Text only on the last file to avoid duplication
         await _supa.from('messages').insert({
           room:dbRoom,sender_pid:myPid,sender_nick:myNick,
-          text:text||'',
+          text:fi===_chatAttachFiles.length-1?(text||''):'',
           file_url:b64,file_name:f.name,
           file_type:f.type,file_size:f.size,
           created_at:new Date().toISOString(),
@@ -9219,8 +9949,7 @@ window.chatSend=async function(){
       }
       _chatAttachFiles=[];
       _renderAttachPreview();
-    }
-    if(text||!hasFiles){
+    } else {
       await _supa.from('messages').insert({
         room:dbRoom,sender_pid:myPid,sender_nick:myNick,
         text:text||'',
