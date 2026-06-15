@@ -1988,30 +1988,8 @@ button, .menu-btn {
 }
 
 /* ══ INF SPRITES ══ */
+/* Анимация полностью попиксельная (canvas в mkImgSpr) — никаких transform-масштабирований картинки */
 .inf-spr-wrap{position:relative;image-rendering:pixelated;}
-.spr-minus{
-  image-rendering:pixelated;image-rendering:crisp-edges;
-  animation:minus-blob 2.6s ease-in-out infinite;
-}
-@keyframes minus-blob{
-  0%,100%{transform:scaleX(1)   scaleY(1);}
-  20%    {transform:scaleX(1.2) scaleY(0.8);}
-  50%    {transform:scaleX(0.85)scaleY(1.18);}
-  75%    {transform:scaleX(1.06)scaleY(0.96);}
-}
-.spr-plus{
-  image-rendering:pixelated;image-rendering:crisp-edges;
-  animation:plus-wave 1.5s ease-in-out infinite;
-  transform-origin:center 80%;
-}
-@keyframes plus-wave{
-  0%  {transform:rotate(-8deg) scaleX(0.94);}
-  20% {transform:rotate(9deg)  scaleX(1.06);}
-  40% {transform:rotate(-5deg) scaleX(0.97);}
-  60% {transform:rotate(11deg) scaleX(1.07);}
-  80% {transform:rotate(-6deg) scaleX(0.95);}
-  100%{transform:rotate(-8deg) scaleX(0.94);}
-}
 
 /* ══ INFINITE MODE THEME ══ */
 .inf-mode{background:#050010;}
@@ -2101,6 +2079,10 @@ button, .menu-btn {
 }
 #exit-sigma-goto:hover{background:#122214;}
 #exit-sigma-goto.visible{opacity:1;transition:opacity .5s ease .2s;}
+@keyframes goRowIn{
+  from{opacity:0;transform:translateX(-10px);}
+  to{opacity:1;transform:translateX(0);}
+}
 
 /* ══ MODE SELECT ══ */
 #mode-select{
@@ -3289,17 +3271,167 @@ const SPRS={
     grid:['....CCCC....','...CCWWCC...','..CCWWWWCC..','..CWWQQWWC..','..CWWQQWWC..','..CCWWWWCC..','...CCRRCC...','....CCCC....','..CCCCCCCC..','..CYYYYYCCC.','.CYYYYYYYYY.','..CYYYYYYY..','...CC...CC..'],
     pal:{C:'#AA8855',W:'#FFEECC',Y:'#FFDD88',R:'#DD3311',Q:'#663300'}},
 };
-const _INF_FILE_MAP={'plus-cian':'Characters/plus-cian .png'};
+const _INF_B64={
+  'minus-blu':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAfCAYAAACLSL/LAAACc0lEQVRYCe1Vy2oUQRS9ERFEZXw1isIQCIKhW3DhRgizS8SFIAj+Q7aC4zc4P5AfmJUgGETE0VXI0oVgD8kmEGMUpRUV8a3Ec6pudVW/Rgi46ws999Z91anT1XdEWmkZaBloGWgZaBloGWgZaBloGahhYKrGV3HFg3Sn4lTHuJ809phUx/JJtXubNqTfNe7djGVl02ZGh0Syz9buHEOONINm3dp7n2+r/C9rm8BNPu3VWHpnbKOVWyPfkdbiQnHtVr9EoqMiswBtDoO1/HBB1Qeht/GcwHNvXMvcRMYI6gBqHy5tSXp7HpaXhECvKDhuEEi2BpZ0Hc36AP1yWNdO+3DBagb27hVeQyzZYGRAJcm5vDBNn1ufA/dWQx3oT9buzVldYVpTjeLBsE+dNAMrZE/JzPmTsvHsjXqDGwAwnWngeaEhMvFR7N3CoeTBDQ2I6cHF8vCxJEsvPXt5hjf2eLNqZaiV6bN5gOAKwhgw5qA0yNeX3bGvP01TA8jVLg+f+Ba/vVm2/s3YXBenwyZhQ3ShL7reFQOeXdwmruPmOnJE0sUuGArAmFqcGH3lTxmOXwfvxDtpxf1HO3INd2C/+le3Cgk5KHp/4tmnYQfsK77OGcucRrwiKMpwJOPBpVoMtU7WGGDQUX9Bstf0QPRiCz93B4aaggNEpwCEX15ZCNod0MW+wbg7Ejl+2njK86wWGAfrZQzHLyjhgHRCgOaiu82PIPJBowQYAuac+a4xVQR+AfON8lT7Zht2TZAhexVgZtpfjMXNHzPlt7W4SemXWAhzdITi2A59Zfu+B1cBxlz3V1Sua5o5lbxdOkLGdtni/5f9BcvZu/PLx+3VAAAAAElFTkSuQmCC',
+  'minus-cian':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAfCAYAAACLSL/LAAAC00lEQVRYCe1VXUiTURh+9m261TYmzJzzJ7Myk7SIruoivKz7LvoRyquiK4kFJdRFgXUlXoXhRUE/hHlfEIQQlEFQaKW2zCxnzlQMXW3ObX3vO8/hbPu+BUJ333vxnfd9znne7znPt3MGWGE5YDlgOWA5YDlgOWA5YDlgOWDggM0AK4C8NzsyBeA6sHypx7RHMR7Ri3EdZi8kXDQ+EWrDUNLOS/1OFxYScc59iUW8A0xFEy+sueV6JimPSZ1rJq7obuvOHschb1Z7X6hbaQm03LiYU4siHU9gi8+HhnSMN0N1Jr4qpnlMRj/oYwCldVWYuv3I0LmijpEoF+zo7x3AdOfVnOY1l6+h4cwxxugFakSGRxFZB6r3NgG+bEF4SaCcCzGqPDU3FbYyO8efYfDCdRZVXbFb8iJzY4zVdGXFrU7N8Jy9vAyp+SXOW5u38tin843jBW+M3mMUpsLUxWXuWrQ012Lk/XeGqRZBYso9GSz+KWFI0x1JRuflpjI9D8VS7kHF0+fPcKD/nnRPLlASTckL0tlv0wjsrJc4iVOD5jS7Q4oSc/T5Rm/dZ1djsRgLEtyh12NiGdKJhMzzk3865tjvx447XZhQGlITwprOt4HEa06nfAnlFNHPk+zKRHsnVDE0R25R32JheiptHSczjedOYWVhnPlrbxdy+ghRBNKps7lKeV4IS/1aRnDXdnYuh6gXQlTk8Rvon9pQgyFIjUgYja3dVxB+9YRSbHZv49Fe5pVixFVg82xCZVUQdPLyQ3M55QbFnMffiPHeB/BUVjCUf58ZCqOLtT10GnGk+EcsmpHA+j378HM2e8E6An6sRbNO0n2lCrb7vFj6+FJQeWw4eBQt6Sx3RHMx9uPTFx5JpOpegTASFTxyGHz/6JTI8KD+DDDZ7EF3Ep1ENX7HvqqldDsHzCvCdwekuAJhtFb8FeXxYHbn5K/baK06ttEe/533F4VOAlzE1qMIAAAAAElFTkSuQmCC',
+  'minus-gre':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAfCAYAAACLSL/LAAACzUlEQVRYCe1VS08TURT++oCOsUVstWmjrQIWSQAfC+NC0cTIwrWRDZGYxhXu3IsRf4MhMYYYjAvZ6M6FBCOmG2NEhfgoapWqYJsqWrRvas8pd3I7nakJibs5i7nnfPecc7/7deYUMM1UwFTAVMBUwFTAVMBUwFTAVEBHAYsOVgftvzZQrgPXgRcXJg17NKqj8ka1dqMDCReNB4fP4BlSnOqGC9+RZt+Zz9FqSJrqPiKv5nNR7aNsRK7hbTvDfTik+LjV2Mj1mpaHR0/XxCIoZQvYrrixG818GYrLuZLY5jX7LQaLZRuUQCui4491lWuoGJFyVA64M3EP7y9P1jTvGBlAz9ljjNEBssUXPiC+DgRC7YBSDQh3eF0ciFWuk31DYr+Wf/DPcL+iFJHy+kJqXWJ5gbGOK1Vy2fgK79k9m1BMZdjvC3XxqlVabYJXfDE6R88MicnJFlsrejp3YT76iWGKhREZj7MJK5nqq2arKJJLpNcvdRPpsVmRyj0omJ6ZwtHbF1X11ATJsUp+nbuU+Ar/np0qTuRkoz2bza6SEnv08z2fmGJVk8kkExK1DyNPRRpKuYLqa51/Kqb0NuHIRBgRqSE1IezA0EkQeZujST2EfLKld59ZlcjQOGQytEdqUd9GZvhVtl3qL+87fwLpVIzrs3O1txOkaHMtW4RVqd5RECv8zGBHMMjKaQkIUrG7McSuPtDloAtSIyJG66nRc3gz+4hcbHYGeLVvUVQyRIrMWnnP/G4/6MvTmtVhVy8o9lyeNry8MY0W31aGtPNMlxgN1vDwIHKV4UgDUhgRbO/uRnL5D0PNXifyiVX213JFyITtLQpSr+dEKa9dB49jL5zsv0W17sviIsdEUlavjhiRCvb3gudPpWQx+oSHIVcbPGgm0Zco2+9VMcmqqFBbztH687dmVHJ1xChZ/BVpC41mjjZvo7Gs2EZ7/Pe6v4qe/6OJNip5AAAAAElFTkSuQmCC',
+  'minus-red':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAfCAYAAACLSL/LAAAC2UlEQVRYCe1VTWgTQRR+2U2axaRGbGuSSqw1Ri2aQFEQRTDgQU+CR2/2pAiCllD06ElPIgil4kHPevAkgiDkULCCUknBRGO0P6Qm1hZ/Gpt0m8R9L5nJZH8iFLztg8z7mffefPPtzATAFpsBmwGbAZsBmwGbAZsBmwGbARMGHCYxQ+h2d6RuCDYD139nLXt0qsPyTrVOqwUxzhonzl8DdSpJqe6e7VBZXiG74usHePfMEjTWSdkUz6cicfgCdStwHXd7cSAG3cdPUavEg5tiS7gVPdnmM6dcq4Kvrw9qkRhtBv1yvcqmSRdVn6aLMNDlgftzKVPmOjJGoBQXTDwehyvpmbbmN4aicCEyTDFcQJRUfhYAf5rEdu4GhIGCcb9LIZtpckwGS2CF1V/0GUaTTwlU+MAOXp7LfKPYvSa4ufUSzfXKbvherZB9KH6W9KiOad5EM3BjuI6ZWAITkwMhD4R2RWFhvsEa+kwQjLd3ENZWZinklxQoqmW+qbv1IkulHugkX7yE5/HTnD2eIBiSYBvM+cIi7PVrB7wpCE4UnJMlBwfF5vDzjadfE6ulUokAsdpMeoqlQaVW47be+Cdjw8498DB8AjK5VkNsgrHLQ0cBwbsliS+CNsqn4iKxMpKbBBEMziFb2BdARddULG/lVYe/fmn/EVhebRzW6Y3PbQ0YKAzirVMcMs0zYD+rKuwLhoi5tkLNaYACeJKfBO1Tm2IwDWIjBIb6TvwcvMouoQmeLY1Dvk3u4mDYU+B1OKE/EKSbR8nCoEgy3yAL93jLMPHhDQS8Wymkf89MgeHDmhgZ06hQ6RCzZgjw4GAICktZCvmd2kHfKJON75UI2Ce74P0PVtnQxyLa+xY9TI4085b0x68LpBGkyJ4BGII6EwzT+4MVqfyaNrZuFnXRDfgm4U0UpfSndXMxztgWc/T2o+w0B2cAhsnsr0hfaPXm6PM264uMbbbHf6/7CxuhCDck/A38AAAAAElFTkSuQmCC',
+  'minus-yel':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAfCAYAAACLSL/LAAACd0lEQVRYCe1VTWsUQRAtZTUJiqJBVAKrIApuiAS8eMghy+TiQTwoHrx49xp/gkcXIeAPEHIzgYQIuWQYD+ItIgRXUARdCCJiFkSJmsj6qruqZ6bnQwh464KdrqruV/PqTXcvUbCgQFAgKBAUCAoEBYICQYGgQIkC+0pyhdTrx9ODQlIS43eeVdaowzG8DltZlIFauHVrhmiwximikWNE233rb41SN/5q/ZKnwQ2vp+u9Nd0n1eQqiTGp1nVUGgIpWPxIiJmIKLorjj/8RuIoyP+8bJvheMdbtIF4DL+TRN3lcnIND5IPmVRjhHpLKxTNJrm5uNOm6Jqk8IKcvWVFpZELIKnG+eMS6Khz3lhJ7NMXohY+Q9zpG1LtdttBkyQxOUfus0wdwfhN/KYo3ckr7Yq8hOpojN9TZpXE/MUTY5O0sfnKTxMxmT+j+OSy11iJLfykqftPUwjXYJubf0i9BTRao9r+FFbibfbp/Jk0r4U1Y+a4NSWlE/h8vQWrNKvLOMUyKWe/nFdw/qlY8xCZ7ubm83uMO27exP4BeRpCXX0J+7B3H/EwaxKjkEnKw2BRt84qT+Xag+lBdAPQNxbe+5Ev40hxmk/dAZkXYvQd8VmrnMy4gZtli7tEM/fK78FaYgyOZqHKKp8y2Dk7EBdWMnoVDCN3CmvNiZR1OhyEIw1qii6C2CLR6RM241+2pcTMHXYbR2Z322xiV4wJXsJG35GNzjeBcCa+r7KEDyN+4ZDWuQrA7pT1G8/t+MEWYJJZ9QrEDKkrwOj9kwDIl2Gd6UnMrnmfDeCr2l46G8YrKbkCMV6of0VZEPtVd46/bq9xVrG91vjvuL9UQ7efXzO2rwAAAABJRU5ErkJggg==',
+  'plus-blu':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAfCAYAAACLSL/LAAADWklEQVRYCe2WMWsUURDHZ09RGwmi8UTE4jjuMCAe2lmlC3KdCAG1ESu7ILZ+hZDO0kYELWxiDMHmsEhhJQgJgStEQuQ8RSQW2uw6/3lvlrndvdt7dygpMrD73s7Om/d7M/PebtRoNOggSuUgQoHpECw0M4cR+38Ru/siyU0GXZE+Z1iuOFpukrHwE1futCgmBnm2GIkF66GDDOhFE34LA8Pkt/zkfwomY13MathMCzdR8cvkliuTPoWbJq1hETMwsyeJ+j4yGkW8xkoBhmsamShiVYa6doEIcIBCa0WdCnAmmqndML03UB+p/TidSwwF0ba/7571PnNae0NardURcMGpjLnAOx+I5t0ekJk1Yr1vDuTHHrfHOZ3ZDeJBqvdapLZD0Mf8VurKcDSsMhXL9q670O+t7slVPYMnLx3QGWEf849bNA4URkUjf3vsCp8ykD2zuLYg8UaXtpYu0lzzMtGDNQ5lnWixSVs7H2lu5TPR/i+xA1TnvXQHbxvGr3kzPJUMhdVBpJYQfnOgIn29TFDoSZut16h25ZyMww0+sFHeKNTP9BXRjOlnusXF76HgEFBYKSAE1Eexhwh6OULHJEIAqm3ep9cv3xJ0EIxbf+cNbaNQC7x479O+zqcSRjC2glV6R9XzDhY1ht0YY0dudmlniVNopLnSJbrudNFvokQ3AvwYf/Sc0w9Zf+g+be6JhqfSG6SNd4YI4JLJTri3lYU6CUhqzO+v1km/8gnsFExtFAjPGSio8mBS4P7PwUZOQ+9rJOFnwEWzHI2+A4FDKwqPFseHRi1CH4YFQDo+D4Y3uvu+Lyd0u02pIw+lg8/WXDoBB4nZW/TF9e1dImbTZ18O6RcXvzHWVad1kak1PVwlagZKYKwfjhLqSfy94roaES0MK46YcShdOLzJRwGK2NcV6gyCDQCoMkk8DKcwKYOCr9FgvCp1JG2b4QDmd9ZX1I4RW0MSGRS8X0hqVhIptRsNBit15FqpWR1MHMW0flgptcgwCljhM1COk3TA+J1yMOtLIW8sJ9VHHD0W+bMwvz0Dh5EdG9gPA4NzD6U1RqdY94kvjo6K7qhJowU/YWAKta0I3OIYMFC0y+nTM0/NcJhqtFVX0oaBsfMedlWoBELBff5bGTrpP7L/C/0SMHOymffCAAAAAElFTkSuQmCC',
+  'plus-cian':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAfCAYAAACLSL/LAAADo0lEQVRYCe1WXUhUURCeVfFnTVS2TDNzxcSCDKMeoh+QoAiCniQwlIweggjyISKCHpOICJ+iKAsSCqyH3gqkgiLqYZMKRBeJrDS39Wcj9bYau7f7ze7c7r27d3ev4UPhwNkzZ87MnO98d+awRMuyzMAyA/8JA0UXO1TrVWBLZrf6LclaDm9UB0wgYIfNal8siBwngTi85tQRDlHePU8IjYYXKOx/TfD5SKTOnO1yJThlaMjK0M/khsPz67frNuvnE3BWux6QgeKIMWM+T14+UZwZYRH7AAxgGH8ji2KscnMTNUTDBHAAxSANKIRN7NmxZmeXNIsCVhed43iZp+bDko/n4vlp09q6AKhUoOHv+FNGlJ/0UgvcWZyrnyeMBUMhtk1TAc/wNYqwtO3McRJf475Rz4gxSYgu+3yjl+OHswoJA+K/1cujrLSU1/iZ9QV1HQpytJxupUxAwT8lYwIIyXzx9mdwmp6t1Q8k2P2A3hxqo8qyDYTnwtNygAY8O2gsOERb7/Wwj4B6EfihrTFisrb1II3aPCu2wJAMgCBcSwZwsOHzBb6OQ9UlcPIC6w2bqnQbcqBR+gKxzxyZ/K7vZa8s0XWrkhSYgELCMEVIbirMIYnv0nXCjSElhVXM0P49e4mu3aHHT/vYhj2AH1fmyeXOw1IXZW6ESOshO9YSXmaAkgORZebTW3IXekluV76mghlEfaEbf02FKPTwCX04ek4/FErt7U7K2eKhoupGUjVg0XgjIA9Yk3xDl29ynNp114QlKWOmE+ILSQYGAppNVSZ0FsqONVNtd6cprGTfLpqdGOSLARxZOlQAIcgKCrYEYCjuUc0Xm8W712FikRtKjWANJnKrymnhS4AAxCorVm1kcPDLchforEGHJAMkOZI+FwCHMXZf60VNJJGAkuCK9V5WAQ4j4ja/W+IH5vApua7EmGZOCswYg1ujcAEKiSW51Jo8rmAtW4kxgXhrseNyuCjY81/tSckW4tMCgxPqAYkBUgS1Jg0AUOlEwMiczj+hxowBqAG/Vgoy17U38zZYc5OXnwGjv3QeLmHsRKNPqroy+qUEBkdJhHk43hSxBD6qP9HGxY3nBAJAACcA8+trSOkf4T2nP2mBGRMKSFfHYbXpynnemtKKfinEETAAEFDDrx4xnoJqL7kmoX7jNX7k/9h0/zPd5lQxvbbpggXU2PtBi+sfUESr9c4VJ+5Gy8sue3azI2BIAnB2yezsUgJ2+/+U/TcoV8GXuqxBhgAAAABJRU5ErkJggg==',
+  'plus-gre':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAfCAYAAACLSL/LAAADqklEQVRYCe2WTUhUURTHz/iFY6ND5ZRZKiKapNgmhUgStEWLlkVESZsQapGb9tGqtraJokVB0bKN0KIQk0SwxYSl1ESYmjZpfpujo840/+M71+ub55t5E4YLDzzvveeee+7v/u/H6PJ6vbQTLW0nQoFpF8zpzuwq9t8UK7zTEDVPBp+V3xyXTDsjmSA9Riaubm2COzp2+60LFfgN3yY/GqmYIzBMfuxGA88z1/8pbr7IyiotBD6TEaOg4wKTcKR0+DG5p6JSpRcVxSFwZr/0J1M6UkxPuDczVykjKqIfwADD9y+WkmJFVbVUSXkkcCh1EzUBvJVqW/klT0pgpZTN46WcXpmXfFx6wuFNbXMDUHbQiHe8lauLYeqlUarzHlbziWITs5PsmzF6EKubqHSq9RxJrN6v15NSTBLiaQg86eHxg7RE+GAfn3Xx5/Pu5zb+zPhDqo4KclxpPU/JQCHeVjEBQrJu480y3q1ohvFsDD99T+8u36cDh8opsrRKhReOU2fJPRr/+ZXqn9/EHAqqJ/id2/Kn7OIJVC2flS3BAAUgGJ8lDQ4+bF8wGERVWeDWK65Xl5coH3LgonQGA+xbmdpQMnOfW8WZK5ZgAoWEyxQmWakohyTdbe1krJiy3D5WqPH0GaKHA9TR9YZ9iAP8WGiU0tzpaCpbXBghWiDJEaeay/wfLKBkQmSZHQ5QjqeIZHUFBQWsIM4XbuPy5B/61T5AvddeqElRqXt8ibJrMshbXEGR0BqthdYvAvJANcn3oe01j5t/0Mc/bZLEUjHp1EtJBgWwgZhMVCi+Wssgeryv6SjNT3zjhQFubWMHOUyA0DBDwRcHJocbnfkn81CwyQrljKANOPeRPAr9mCOAmC3XV8ZwiEt3ZynVUIdZAUkOy+cCcPgGXw5xnCQSKBlcWLr+lgEOX8QdOzQWBuWwlXyuLPqtXJZgeiBWjS0DFBJLcjlr8rhCtbSQRw2VbRYHFoeFQr2+Rx22amFMQjAE4TwgMSDFcNbkAgAqkQmMlIni486YPgBnoC/2AEpZ1VzP3VAth4r4GdDj5eZhEVBG2nqM3bnS42zBECiJUPbHIDcGD1FNSyMfbjwnMAABRoA85fm06I+9VylYQjA9p0DmXq+Jnr3bzF3TsUO/HeYIDAAC9aW3i3n2FB+k6FTs+kd/Kz75f2zc71c+p5W4l98ugUCNDAxuDtOgyBXbPvzcaIbbKGprbtuqIzBkApxtRotOp1BI4RjMYt5tcf0F4lyrAGLdEEQAAAAASUVORK5CYII=',
+  'plus-red':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAfCAYAAACLSL/LAAADuUlEQVRYCe1WzUtUURQ/41iOmh9ljR81iZkYgYJkqwoEw2jZUmhRtIvAgrD+hIqIVm3CWrYIwkUbK0GoqMWkZBTKIJVm6vgV6Lxmcsbp/s7zPN97M2/mzdQiwgP33XPPPffc3/3dc88M0ZZsMbDFwH/CwI2ypqT9KLCls9v93IwL3TiZfWTja41HiSYoeX0l5ME87GzDwGTHMB/JCRg272lo433ea9tS9ouux2k8Wkzs83kTdIqjC0OBC58UF2ze7Ptp2IVFMQg4u13m3fQ5MWYOWFS1i3pIsaeYERYxD8AAhvYnkhdjrXuLab3lCDE4dbXozSJsArATa052iZMXsPWmVl4vfWxxSeJxH6uos4ztA4DKBBr+OV+llogTvX5BFcdOGvsJY8vhsG5bmlR9GbGv4aW/XAx72zvJ8DXNm1VXjAntKA33Jz/w+oLQKKFBHoy/47bT7+cxPsHVT4YOBTGudl9xBQr+GRkTQDghBfXnz3VrUiW8Vy8bfeEQnR4aoMZDfkK56K5qoKqPT2hiLEyPOk5hDwPU7MsBHsvn7L7DRN/SlxVHYADFgFQU5FIvom2Ag4rr+z47A9WQS7MjrAf2txg2xMBDmX3+lG0LiZgxt9tbZOh2JS0wAYWAFF0jOakwhyC3goPEJ1Z6TaCUGero6qSbFKehZ4Nsgx/AazP9VOKxbhXRSimi5p1Y458TBBABKNkQtq8rhVRaEiE5XV1NLTOI/MJrXFyLUf/yJJ2feCUhuH/YeJzaCg9QfVmctKRq6wm2Iw5Yk3i3x96y/W5yzoLFegxLaOtAgvH1gQW1mbBwwd9EfQqIWboq62h+VT9YfRmRRjow8RFAGNtBwZYCjJNbJSQmT1To9Qq6nFByBGOAC2wvpalfEQIQu+zZEVXgfPohCrwGayVKh6QDJDHSlguAQ3s8rV+PBBJQsvhgbYBVgEMrSVTKlKVncOoqkVduJS0w82KcGlcGUJywG8El16S4gjXN+8NYKtcsBhwOBwXL98aDGdnCmqzA4IR8QGCAFEGuyQMAqGwiYKTP5p+SY+YFnAPjwaT055r0ospXol6qNjNldrfkkPklmp0y5ZXZLyMwOEog7kMjlr/TF5vbOblRTiBgFWVBSkOzr5yGNetrZEcXn6zAzDEE5GVPdfJOxxmeCvA/i3Kz21/RcwKGHQXUm9A8A6gv9tGCZ1Hp1TzGR/6PDS/lxxZiWKotDJlEQI1Of7G5bYIimkspC3iNwrZtoeMwJ2CIAnCO0RwmcgXlEObfMP8GvV6y8pzrty0AAAAASUVORK5CYII=',
+  'plus-yel':'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAfCAYAAACLSL/LAAADZ0lEQVRYCe2WP4gTQRTGXw4FoygoKqgQC4s0WhxbmMPK4rCJ2ohBsAjYWtpZW14jwUIQrhHBP+BBsFGwUIhNuEaEFDZXeIVBTy0iBC5+38y82dlNstlNISnuwWTnz5s3v/3emySlWq0mi2hLiwhFpj2wopnZU+y/Kda6I6P0YZybNJ/2yzPel8cp9NGDo9siLZHR3SdS4jrnOWf6wbydKf5ZCMwc3nCHfGB57iZPHGL4aUmixm4COumUbzRf8eNwqcVQqqI/0sBZFf1cwU4hxRKxy8ehTN8oE6mKdCAwwdnSiiYCZA/mU+zyMZHhJREDhwPwTJhTk8BjajrHafMaZz6wwbLd7599jWefP04kx6mR1moWXPFU/uUpb0UOrMbHqWI/HeDB71jDOxvf2E1BoiYUVt94OdHLpZgG5FdDd8PtL28ihWiwrdd90+RonNKtX/HloI9VaVXyQNE/E4zBTEC84RjcAOqg9doilRsdaayJ9F5YxVau2bneOx4RQ8kOlN6GD5VEi65Mr8GpqVQgExm1FDU3cQP7/gvVFDwPCaz5UGQd4wtnXA2ibxTiRek7qX8HG44E/VR3omIeigFZ4O5NeYgq111PQnU6HQO09mpZHr98FB9D+G3NfzwtX9FHJUxTrZT+B2ugILE3ltE5NH27U6gjwrK+mM4dpPCjSPVWx29hp/dsRaqH0IGrDNEGaDTGoWouXvspJ0UebNifNjsSmZpKdfBPDWbSh1rhxdtvV6t1C+J90alexMdnNL4Y4RQMXZoCsZ+G4twYGG9eCz/CXIxO8tOZKqY1wjGV4FcWIA2Ic/WP8+gRjn5lNIVjHzYJyK5MuZWEY2t/cW4ukEmB7uSzgrTSCMf2h4MJRjhCsa5y2sTiT+zlWzNlVIqBNbivNQfH1B5GU3Np1iEVMy8K9drPs9XintlgcDL1QNUIqcZa0wtAqBmmMPqc4T5eY+EGVwMjfdavulWqxps6BFxoYQ2xrnQc+GTVVeCWDUZHDaRwfjPqr34TI9YPIWlUlTAKVEFfU49uERu7lVmbFfL+dRnV72nhp1TLClBgrRAY43qoNw7oLCYZ5VtQrvrv9j13zGeFwDxUD1CaPp4bQp3Gv4oUEG+jqp0XsxCYDd43X77JA4K/ON3kCkdFobhn7LeSk4tg/wAx3SInvf9eZQAAAABJRU5ErkJggg==',
+};
 function mkImgSpr(id){
-  const src=_INF_FILE_MAP[id]||('Characters/'+id+'.png');
+  const src=_INF_B64[id]||'';
   const wrap=document.createElement('div');
-  wrap.style.cssText='position:relative;width:152px;height:124px;';
+  wrap.style.cssText='position:relative;line-height:0;width:100%;text-align:center;';
   wrap.className='inf-spr-wrap';
-  const img=document.createElement('img');
-  img.src=src;img.draggable=false;
-  img.style.cssText='width:152px;height:124px;image-rendering:pixelated;image-rendering:crisp-edges;display:block;';
-  img.className='inf-spr '+(id.startsWith('minus-')?'spr-minus':'spr-plus');
-  wrap.appendChild(img);return wrap;
+  const cv=document.createElement('canvas');
+  cv.style.cssText='width:100%;max-width:224px;height:auto;image-rendering:pixelated;image-rendering:crisp-edges;display:inline-block;';
+  wrap.appendChild(cv);
+  const isMinus=id.startsWith('minus-');
+  const img=new Image();
+  img.onload=function(){
+    const SW=img.naturalWidth, SH=img.naturalHeight;   // source sprite (38×31)
+    // wider/taller canvas so the puddle can spread and wings/lift have room, never clipped
+    // wide canvas for the puddle/wings; minus is short (never lifts), plus is tall (lifts off)
+    const CW=58, CH=isMinus?22:37, OX=Math.round((CW-SW)/2), OY=CH-SH; // sprite centred, floor-anchored
+    cv.width=CW;cv.height=CH;
+    const ctx=cv.getContext('2d');ctx.imageSmoothingEnabled=false;
+    const off=document.createElement('canvas');off.width=SW;off.height=SH;
+    const octx=off.getContext('2d');octx.drawImage(img,0,0);
+    const sd=octx.getImageData(0,0,SW,SH).data;
+    const out=ctx.createImageData(CW,CH);
+    const od=out.data;
+    const sCx=(SW-1)/2, sBaseY=SH-1, cCx=OX+sCx, cBaseY=CH-1, TAU=6.2831853;
+    const t0=performance.now()-Math.random()*16000; // desync enemies across the whole cycle
+    const clamp=p=>p<0?0:p>1?1:p;
+    const smooth=p=>{p=clamp(p);return p*p*(3-2*p);};   // smoothstep
+    // copy sprite-source (sx,sy) → canvas-dest (dx,dy), nearest, only if source opaque
+    function cp(arr,sx,sy,dx,dy){
+      sx=Math.round(sx);sy=Math.round(sy);dx=Math.round(dx);dy=Math.round(dy);
+      if(sx<0||sx>=SW||sy<0||sy>=SH||dx<0||dx>=CW||dy<0||dy>=CH)return;
+      const si=(sy*SW+sx)*4; if(arr[si+3]<8)return;
+      const di=(dy*CW+dx)*4;
+      od[di]=arr[si];od[di+1]=arr[si+1];od[di+2]=arr[si+2];od[di+3]=arr[si+3];
+    }
+    // paint a solid colour pixel in canvas space (for drawn wings)
+    function setPx(x,y,r,g,b){
+      x=Math.round(x);y=Math.round(y);
+      if(x<0||x>=CW||y<0||y>=CH)return;
+      const di=(y*CW+x)*4; od[di]=r;od[di+1]=g;od[di+2]=b;od[di+3]=255;
+    }
+    function blink(t,cycle,dur,phase){                  // periodic pulse 0→1→0
+      let tt=(t+phase)%cycle; if(tt<0)tt+=cycle;
+      return tt>=dur?0:Math.sin((tt/dur)*Math.PI);
+    }
+    // close an eye by pulling its "lid" row down over it (amt 0..1); yoff follows a lifted body
+    function shutEye(rg,amt,yoff){
+      if(amt<=0.01)return; yoff=yoff||0;
+      for(let y=rg.y0;y<=rg.y1;y++)for(let x=rg.x0;x<=rg.x1;x++){
+        cp(sd, x, y*(1-amt)+rg.lid*amt, x+OX, y+OY+yoff);
+      }
+    }
+    // ── per-kind geometry (all colours share one silhouette, so these are fixed) ──
+    let bodyCol,edgeCol,eyeP,eyeL,eyeR,sdNoEye=sd;
+    if(isMinus){
+      eyeL={x0:9,x1:13,y0:20,y1:24,lid:18};   // left eye: white spans y20-24
+      eyeR={x0:23,x1:29,y0:21,y1:24,lid:20};  // right eye: lower & wider
+      sdNoEye=new Uint8ClampedArray(sd);       // eyeless copy → puddle has no stretched eyes
+      [eyeL,eyeR].forEach(rg=>{ for(let y=rg.y0;y<=rg.y1;y++)for(let x=rg.x0;x<=rg.x1;x++){
+        const di=(y*SW+x)*4, si=(rg.lid*SW+x)*4;
+        sdNoEye[di]=sd[si];sdNoEye[di+1]=sd[si+1];sdNoEye[di+2]=sd[si+2];sdNoEye[di+3]=sd[si+3]; } });
+    }else{
+      let rs=0,gs=0,bs=0,nn=0;                  // dominant (bright, saturated) body colour
+      for(let i=0;i<sd.length;i+=4){
+        const r=sd[i],g=sd[i+1],b=sd[i+2],mx=Math.max(r,g,b),mn=Math.min(r,g,b);
+        if(sd[i+3]>140 && (mx-mn)>55 && (r+g+b)>230){rs+=r;gs+=g;bs+=b;nn++;}
+      }
+      nn=nn||1; bodyCol=[rs/nn|0,gs/nn|0,bs/nn|0];
+      edgeCol=[bodyCol[0]*0.6|0,bodyCol[1]*0.6|0,bodyCol[2]*0.6|0];      // darker trailing edge
+      eyeP={x0:17,x1:22,y0:15,y1:18,lid:14};  // white "U" reaches y18
+    }
+    // draw one tapered wing rooted at canvas (px,py), extending dir (-1 left/+1 right), rotated phi
+    function drawWing(px,py,dir,phi){
+      const len=9, baseTh=4;
+      const ux=dir*Math.cos(phi), uy=-Math.sin(phi);    // axis: outward, tip up when phi>0
+      const vx=Math.sin(phi),     vy=dir*Math.cos(phi); // perpendicular (thickness)
+      for(let s=0;s<=len;s++){
+        const ti=Math.round(baseTh*(1-Math.pow(s/len,1.6)));
+        const axc=px+ux*s, ayc=py+uy*s;
+        for(let k=-ti;k<=ti;k++){
+          const edge=((k===ti&&ti>=2)||s>=len);
+          const c=edge?edgeCol:bodyCol;
+          setPx(axc+vx*k, ayc+vy*k, c[0],c[1],c[2]);
+        }
+      }
+    }
+    function frame(now){
+      if(!cv.isConnected)return; // sprite removed from DOM → stop loop (no leak)
+      const t=(now-t0)/1000;
+      od.fill(0);
+      if(isMinus){
+        // ─── SLIME: nearly still at rest; rarely melts into a wide, crooked puddle, then snaps back ───
+        const C=16.0, tt=t%C;
+        let scV=1,scH=1,melt=0;
+        if(tt<13.0){                                  // idle: only a slow, faint breath — no shake
+          scV=1+0.015*Math.sin(t*0.8); scH=2-scV;
+        }else{                                        // melt burst (rare)
+          const bt=tt-13.0;                           // 0 .. 3.0
+          if(bt<1.8)       melt=smooth(bt/1.8);       // slow spread
+          else if(bt<2.25) melt=1;                    // hold as a puddle
+          else             melt=1-smooth((bt-2.25)/0.7); // fast gather back
+          scV=1-0.76*melt;                            // 1 → 0.24 (very flat)
+          scH=1+1.0*melt;                             // 1 → 2.0 (wider than the minus, still on-canvas)
+        }
+        const arr=melt>0.5?sdNoEye:sd;                // drop the eyes once it's a proper puddle
+        for(let Y=0;Y<CH;Y++){
+          const sy=(Y-cBaseY)/scV + sBaseY;           // anchored to floor → melts downward
+          // crooked stretch: each row drifts & stretches a little differently, like pulled goo
+          const crook=melt*(2.2*Math.sin(sy*0.5+t*1.6)+1.4*Math.sin(sy*0.27-t*1.1));
+          const scHrow=scH*(1+melt*0.18*Math.sin(sy*0.6+t*1.3));
+          for(let X=0;X<CW;X++){ cp(arr,(X-cCx)/scHrow + sCx - crook, sy, X, Y); }
+        }
+        // slow, slimy blink only while gathered: left eye first, right a beat later
+        const bf=clamp((scV-0.8)/0.2);
+        if(bf>0.01){
+          shutEye(eyeL, blink(t,6.0,0.5,0)*bf);
+          shutEye(eyeR, blink(t,6.0,0.5,-0.55)*bf);
+        }
+      }else{
+        // ─── PLUS: wings flap; rare burst → fast flap, lift off, drop, wince + eyes shut ───
+        const C=13.0, tt=t%C;
+        let flapF=1.6, flapA=0.2, lift=0, squash=1, wince=0;
+        if(tt>=11.0){
+          const bt=tt-11.0;                           // 0 .. 2.0
+          if(bt<0.7){       flapF=8.5; flapA=0.78; lift=smooth(bt/0.7)*7; }          // beat hard & rise
+          else if(bt<1.25){ flapF=6.5; flapA=0.5;  lift=(1-smooth((bt-0.7)/0.55))*7; } // drop back down
+          else{             flapF=2.5; flapA=0.14;                                    // land → wince
+            wince=Math.sin(clamp((bt-1.25)/0.55)*Math.PI); squash=1-0.16*wince; }
+        }else{
+          lift=0.7*Math.sin(t*flapF*TAU+Math.PI);     // gentle hover, in sync with the wing beat
+        }
+        const phi=-0.1 + flapA*Math.sin(t*flapF*TAU); // up-biased beat around a slight rest droop
+        // 1) wings BEHIND the body (can never dig into the torso); rise with it
+        drawWing(OX+6,  OY+18-lift, -1, phi);
+        drawWing(OX+32, OY+18-lift, +1, phi);
+        // 2) body on top (squash = wince flinch, lift = take-off)
+        for(let Y=0;Y<CH;Y++){
+          const sy=(Y-cBaseY)/squash + sBaseY + lift;  // lift>0 → samples lower → body rises
+          for(let X=0;X<CW;X++){ cp(sd, X-OX, sy, X, Y); }
+        }
+        // 3) eyes: idle blink, or shut tight during the landing wince
+        shutEye(eyeP, tt<11.0 ? blink(t,3.8,0.15,0) : wince, -lift);
+      }
+      ctx.putImageData(out,0,0);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  };
+  img.src=src;
+  return wrap;
 }
 function getSpr(id){
   if(id&&/^(plus|minus)-/.test(id)) return mkImgSpr(id);
@@ -5604,7 +5736,8 @@ function renderEnemies(){
 
     // sprite with idle animation
     const sp=document.createElement('div');sp.className='ec-sprite';
-    const sprWrap=document.createElement('div');sprWrap.className='sprite-idle';
+    // infinite sprites (plus/minus) animate internally → no CSS bob (it fights their rhythm)
+    const sprWrap=document.createElement('div');sprWrap.className=/^(plus|minus)-/.test(e.sprId||'')?'':'sprite-idle';
     const sprEl=getSpr(e.sprId||e.id);if(sprEl)sprWrap.appendChild(sprEl);
     sp.appendChild(sprWrap);card.appendChild(sp);
 
