@@ -2254,6 +2254,61 @@ button, .menu-btn {
   0%,100%{border-color:#442266;color:#9966cc;}
   50%{border-color:#aa44ff;color:#cc88ff;box-shadow:0 0 8px #6600aa66;}
 }
+/* ════════════════════════════════
+   CO-OP Phase 2+3 — Lobby + Battle
+   ════════════════════════════════ */
+#coop-lobby-ov{position:fixed;inset:0;z-index:9800;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.76);padding:8px;}
+#coop-lobby-ov.on{display:flex;}
+#coop-lobby-box{background:linear-gradient(160deg,#080118,#12012a);border:3px solid #9b30ff;box-shadow:0 0 40px #6a18c255,8px 8px 0 #1a0033;padding:20px;max-width:420px;width:100%;display:flex;flex-direction:column;gap:12px;max-height:90vh;overflow:hidden;animation:exitBoxIn .3s cubic-bezier(.22,1,.36,1) both;}
+.cll-title{font-family:'Press Start 2P',monospace;font-size:10px;color:#d97cff;text-align:center;letter-spacing:1px;text-shadow:0 0 10px #9b30ff66;}
+.cll-players{display:flex;align-items:center;justify-content:center;gap:10px;}
+.clp-slot{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;min-width:0;}
+.clp-crown{font-size:18px;line-height:1;text-align:center;}
+.clp-avatar{width:46px;height:46px;border-radius:50%;border:2px solid #6030b0;overflow:hidden;flex-shrink:0;}
+.clp-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+.clp-name{font-family:'Press Start 2P',monospace;font-size:7px;color:#e0c0ff;text-align:center;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.clp-vs{font-family:'Press Start 2P',monospace;font-size:16px;color:#ff3399;text-shadow:0 0 8px #ff339955;flex-shrink:0;}
+.cll-chat{display:flex;flex-direction:column;gap:6px;flex:1;min-height:0;}
+.cll-msgs{min-height:60px;max-height:110px;overflow-y:auto;background:#0a0120;border:1.5px solid #3a1060;padding:6px 8px;display:flex;flex-direction:column;gap:3px;scrollbar-width:thin;}
+.cll-msg{font-family:'Press Start 2P',monospace;font-size:7px;color:#c0a0e0;line-height:1.5;word-break:break-word;}
+.cll-msg .cll-msgnick{color:#b070ff;}
+.cll-msg.self-msg{color:#88ccff;}
+.cll-input-row{display:flex;gap:6px;}
+.cll-input{flex:1;background:#0a0120;border:1.5px solid #3a1060;color:#e0c0ff;font-family:'Press Start 2P',monospace;font-size:7px;padding:6px 8px;outline:none;min-width:0;}
+.cll-input:focus{border-color:#9b30ff;}
+.cll-send{background:#1a0a3a;border:2px solid #9b30ff;color:#e7b3ff;font-family:'Press Start 2P',monospace;font-size:9px;padding:6px 10px;cursor:pointer;flex-shrink:0;}
+.cll-send:hover{background:#2a1050;}
+.cll-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+#coop-btn-start{font-family:'Press Start 2P',monospace;font-size:8px;background:#1d0840;border:2px solid #a040ff;color:#e0a0ff;padding:10px 16px;cursor:pointer;transition:background .15s;}
+#coop-btn-start:hover{background:#2d1060;}
+.cll-waiting{font-family:'Press Start 2P',monospace;font-size:7px;color:#7050b0;text-align:center;padding:8px 0;}
+#coop-btn-leave{font-family:'Press Start 2P',monospace;font-size:8px;background:#200010;border:2px solid #802060;color:#c080a0;padding:10px 14px;cursor:pointer;}
+#coop-btn-leave:hover{background:#300020;}
+#coop-turn-bar{display:none;font-family:'Press Start 2P',monospace;font-size:8px;padding:6px 10px;border-radius:3px;text-align:center;margin:4px 0;letter-spacing:.5px;}
+#coop-turn-bar.my-turn{display:block;background:#0a2a0a;border:2px solid #44cc44;color:#66ff66;}
+#coop-turn-bar.their-turn{display:block;background:#2a0a14;border:2px solid #cc4444;color:#ff8888;}
+.coop-php-wrap{display:flex;align-items:center;gap:5px;margin-left:6px;}
+.coop-php-label{font-family:'Press Start 2P',monospace;font-size:6px;color:#b080ff;white-space:nowrap;}
+.coop-php-bar-outer{width:60px;height:7px;background:#1a0040;border:1px solid #5030a0;flex-shrink:0;}
+.coop-php-bar-inner{height:100%;transition:width .3s;}
+.coop-php-val{font-family:'Press Start 2P',monospace;font-size:6px;color:#b080ff;white-space:nowrap;}
+#coop-shop-wait{position:fixed;inset:0;z-index:9600;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(8,1,24,.82);gap:14px;}
+#coop-shop-wait.on{display:flex;}
+.csw-title{font-family:'Press Start 2P',monospace;font-size:11px;color:#d97cff;}
+.csw-sub{font-family:'Press Start 2P',monospace;font-size:8px;color:#8060c0;line-height:1.7;text-align:center;}
+/* ── IN-BATTLE CHAT ── */
+#coop-chat-fab{position:fixed;bottom:72px;right:8px;z-index:9700;background:#1a0a3a;border:2px solid #9b30ff;color:#e7b3ff;font-family:'Press Start 2P',monospace;font-size:10px;padding:6px 10px;cursor:pointer;line-height:1;}
+#coop-chat-fab.has-new{border-color:#ff66ff;box-shadow:0 0 8px #ff44ff66;animation:chat-ping .6s ease infinite alternate;}
+@keyframes chat-ping{from{border-color:#ff66ff;}to{border-color:#cc00cc;}}
+#coop-battle-chat{position:fixed;bottom:115px;right:8px;width:210px;max-width:90vw;z-index:9700;background:#08011a;border:2px solid #3a1060;display:none;flex-direction:column;}
+#coop-battle-chat.on{display:flex;}
+#coop-battle-msgs{min-height:70px;max-height:110px;overflow-y:auto;padding:5px 7px;display:flex;flex-direction:column;gap:2px;scrollbar-width:thin;}
+.cbc-msg{font-family:'Press Start 2P',monospace;font-size:6px;color:#c0a0e0;line-height:1.5;word-break:break-word;}
+.cbc-msg .cbc-nick{color:#b070ff;}
+.cbc-msg.self{color:#88ccff;}
+#coop-battle-inp-row{display:flex;border-top:1px solid #2a0850;}
+#coop-battle-inp{flex:1;background:#08011a;border:none;color:#e0c0ff;font-family:'Press Start 2P',monospace;font-size:6px;padding:5px 7px;outline:none;min-width:0;}
+#coop-battle-send{background:#1a0a3a;border:none;border-left:1px solid #2a0850;color:#e7b3ff;font-family:'Press Start 2P',monospace;font-size:8px;padding:5px 9px;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -4189,6 +4244,8 @@ function calcDmg(base){
 function doAttack(){
   if(!G.active||!cE())return;
   if(G.turnDone)return;
+  // co-op: block when it's not your turn
+  if(window.coopIsActive?.()&&!window.coopIsMyTurn?.()){ addLog('⏳ Не твой ход!');return; }
   // Allow attack if bad luck - all available digits used, even if ops remain
   const availDigits=G.hand.length;
   const usedDigits=G.usedIdx.length;
@@ -4218,6 +4275,26 @@ function doAttack(){
   const{dmg,opsUsed,uniq}=calcDmg(raw);
   let fd=dmg;
   if(G.pSts.overload){fd=Math.floor(fd/2);delete G.pSts.overload;}
+
+  // co-op guest: send attack to host instead of applying locally
+  if(window.coopIsActive?.()&&window.coopIsGuest?.()){
+    G.turnDone=true;G.active=false;
+    if(fd>0){
+      spawnTxt('-'+fd,'#FFAA00',.35,.55);
+      addLog('⚔ Атака '+fd+'…');
+    } else if(fd<0){
+      const sd=Math.abs(fd);G.php=Math.max(0,G.php-sd);
+      shake(6);flash('#FF2200',.3);spawnTxt('-'+sd,'#FF00AA',.35,.7);
+      addLog('Самоудар: '+sd+' HP!');
+      if(G.php<=0){renderAll();playerDead();return;}
+    }
+    G.cur++;if(uniq.length>=3){G.cur+=2;addLog('КОМБО! +2');}
+    easterEgg(raw);
+    window.coopSendLobby?.('guest_atk',{dmg:Math.max(0,fd),opsUsed,raw});
+    window.coopBroadcastMyHp?.();
+    renderAll();
+    return;
+  }
 
   if(fd>0){
     hitEnemy(fd,opsUsed);
@@ -4264,7 +4341,14 @@ function doAttack(){
   renderAll();
 
   if(cE()&&cE().hp<=0){enemyDefeated();return;}
-  scheduleEnemyTurn();
+  if(window.coopIsActive?.()){
+    // co-op host: sync state, hand off to guest
+    window.coopBroadcastState?.();
+    window.coopBroadcastMyHp?.();
+    window.coopSetTurn?.('guest');
+  } else {
+    scheduleEnemyTurn();
+  }
 }
 
 // dmgFactors by attack position — only apply during this group, not permanent
@@ -4340,6 +4424,8 @@ function enemyDefeated(){
   if(!e||e.dead||e._dying||e._resolved)return;   // already dead/dying/resolved → never trigger twice
   // fatal blow: shake + "ПОБЕДА" happen NOW, then the death animation plays, then we resolve
   shake(14);flash('#FFFF00',.45);spawnTxt('ПОБЕДА!','#44FF00',.45,.4);
+  if(window.coopIsActive?.()&&window.coopIsHost?.())
+    window.coopSendLobby?.('enemy_death',{eIdx:G.eIdx,isPlus:!!(e.sprId?.startsWith('plus-'))});
   if(/^(plus|minus)-/.test(e.sprId||'')){
     e._dying=true; e._deathT=performance.now(); G.active=false;
     const isPlus=e.sprId.startsWith('plus-');
@@ -4369,11 +4455,19 @@ function _resolveDefeat(e){
     G.eIdx=nxt;G.eSts={};G.active=true;
     addLog(`Следующий: ${cE().name}`);
     renderAll();showDlg(cE(),0);dealHand();renderAll();
+    if(window.coopIsActive?.()&&window.coopIsHost?.()){
+      window.coopBroadcastState?.();
+      window.coopSetTurn?.('host');
+    }
   } else {
     G.active=false;renderAll();
     setTimeout(()=>{                              // already past the death animation → short beat, then shop
       if(!G.infiniteMode&&G.wave>=WAVE_DEFS.length-1)showEnd('🎉 ТЫ ПОБЕДИЛ!\nРичард доволен!',true);
-      else openShop();
+      else{
+        if(window.coopIsActive?.()&&window.coopIsHost?.())
+          window.coopSendLobby?.('shop_open',{heal:Math.min(10,G.maxPhp-G.php)});
+        openShop();
+      }
     },350);
   }
 }
@@ -4476,7 +4570,16 @@ function enemyTurn(e, dmgFactor){
   } else if(move==='BUFF'){e.armor+=3;addLog(`${e.name}: +3 броня`);}
 }
 
-function playerDead(){if(window._gameEndShown||window._playerDeadPending)return;window._playerDeadPending=true;G.active=false;defeatEffect(()=>{window._playerDeadPending=false;showEnd('Ричард одолел тебя.',false);});}
+function playerDead(){
+  if(window._gameEndShown||window._playerDeadPending)return;
+  window._playerDeadPending=true;G.active=false;
+  if(window.coopIsActive?.()){
+    if(window.coopIsHost?.())
+      window.coopSendLobby?.('game_end',{win:false,reason:'host_dead',coins:G.cur,wave:G.wave});
+    window.coopEndBattle?.();
+  }
+  defeatEffect(()=>{window._playerDeadPending=false;showEnd('Ричард одолел тебя.',false);});
+}
 
 function showDiv0End(){
   if(window._gameEndShown)return;
@@ -4736,13 +4839,13 @@ function renderDlgBonus(){
 // ══════════════════════════════════
 const SHOP=[
   {id:'eraser',   icon:'🧹', name:'Стёрка',         desc:'Разовый Backspace в бою — удаляет последний токен из выражения.',          price:8,  fn:g=>{g.inv.eraser=(g.inv.eraser||0)+1;renderEraserBtn();}},
-  {id:'charge',   icon:'⚡', name:'Зарядка',         desc:'+8 HP прямо сейчас.',               price:10, fn:g=>{g.php=Math.min(g.maxPhp,g.php+8);renderHud();}},
-  {id:'dblheal',  icon:'💉', name:'Двойной хил',     desc:'Дополнительные +10 HP сверх обычного восстановления. Итого +20 HP.',price:14, fn:g=>{g.php=Math.min(g.maxPhp,g.php+10);renderHud();}},
+  {id:'charge',   icon:'⚡', name:'Зарядка',         desc:'+8 HP прямо сейчас.',               price:10, coopSync:true, fn:g=>{g.php=Math.min(g.maxPhp,g.php+8);renderHud();}},
+  {id:'dblheal',  icon:'💉', name:'Двойной хил',     desc:'Дополнительные +10 HP сверх обычного восстановления. Итого +20 HP.',price:14, coopSync:true, fn:g=>{g.php=Math.min(g.maxPhp,g.php+10);renderHud();}},
   {id:'medkit',   icon:'💊', name:'Аптечка',         desc:'Кнопка рядом с калькулятором. Жми в бою без потери хода — восстанавливает 5+5+5 HP за 3 тика.',price:12, fn:g=>{g.inv.medkit=(g.inv.medkit||0)+1;renderMedkit();}},
   {id:'nullprot', icon:'0️⃣', name:'Нуль-протектор',  desc:'Один раз: следующий ноль в выражении не снижает бонус оператора.',price:6, fn:g=>{g.inv.nullprot=(g.inv.nullprot||0)+1;renderNullprot();}},
-  {id:'shield',   icon:'🛡️', name:'Калькулятор-щит', desc:'Поглотить следующий удар врага целиком. Активен до конца боя.',   price:15, fn:g=>{g.pSts.shield=1;renderShield();}},
+  {id:'shield',   icon:'🛡️', name:'Калькулятор-щит', desc:'Поглотить следующий удар врага целиком. Активен до конца боя.',   price:15, coopSync:true, fn:g=>{g.pSts.shield=1;renderShield();}},
   {id:'reroll',   icon:'🔀', name:'Перетасовка',     desc:'Перебросить текущую руку — новые цифры и знаки прямо сейчас.',          price:10, fn:g=>{dealHand();renderCalc();}},
-  {id:'maxhp',    icon:'❤️', name:'Апгрейд батареи', desc:'Навсегда увеличивает максимальный запас HP на 10. Сохраняется до конца игры.',price:25, fn:g=>{g.maxPhp+=10;g.php=Math.min(g.php+10,g.maxPhp);renderHud();}},
+  {id:'maxhp',    icon:'❤️', name:'Апгрейд батареи', desc:'Навсегда увеличивает максимальный запас HP на 10. Сохраняется до конца игры.',price:25, coopSync:true, fn:g=>{g.maxPhp+=10;g.php=Math.min(g.php+10,g.maxPhp);renderHud();}},
 ];
 let _shopInBattle=false;
 
@@ -4893,6 +4996,8 @@ function buyItem(id){
       setTimeout(closeShopInBattle, 600);
     }
     it.fn(G);
+    if(it.coopSync&&window.coopIsActive?.()&&window.coopIsHost?.())
+      window.coopSendLobby?.('shop_buff',{id:it.id});
     addLog(`Куплено: ${it.name}`);
     _updateShopBalance(G.cur);
     renderHud();
@@ -4914,6 +5019,10 @@ function closeShop(){
     document.getElementById('shop-ov').classList.remove('on');
     G.wave++;G.active=true;loadWave();
     _shopInBattle=false;
+    if(window.coopIsActive?.()&&window.coopIsHost?.()){
+      window.coopSendLobby?.('shop_close',{wave:G.wave,enemies:window.coopSerEnemies?.()});
+      window.coopSetTurn?.('host');
+    }
   },380);
 }
 function closeShopInBattle(){
@@ -6220,9 +6329,13 @@ function _pixelWipe(onCovered,onDone){
   })();
 }
 function goToMenu(){
+  if(window.coopIsActive?.()){
+    window.coopSendLobby?.(window.coopIsHost?.() ? 'host_leave' : 'guest_leave',
+      (window.coopIsHost?.()&&typeof G!=='undefined'&&G)?{coins:G.cur,wave:G.wave}:{});
+    window.coopEndBattle?.();
+  }
   const earned=window._sessionSigmaEarned||0;
   if(earned>0) localStorage.setItem('cw_menu_incoming_sigma',String(earned));
-  // grey-pixel cover on the way out of infinite mode, then reload to the menu
   if(window._gameMode==='infinite'){ _pixelWipe(()=>location.reload()); }
   else location.reload();
 }
@@ -7661,7 +7774,10 @@ async function cloudLoad(){
     _coopPresChan.subscribe(async(s)=>{ if(s==='SUBSCRIBED'){ try{ await _coopPresChan.track({pid,nick:coopMyNick(),avatar:coopMyAvatar(),status:_coopStatus}); }catch(e){} } });
     _coopUserChan=_supa.channel('cw-user-'+pid);          // personal channel: receive requests/replies
     _coopUserChan.on('broadcast',{event:'join_req'},({payload})=>coopOnJoinRequest(payload));
-    _coopUserChan.on('broadcast',{event:'join_accept'},({payload})=>coopToast('✓ '+(payload?.hostNick||'Хост')+' принял! Лобби скоро.'));
+    _coopUserChan.on('broadcast',{event:'join_accept'},({payload})=>{
+      coopToast('✓ '+(payload?.hostNick||'Хост')+' принял!');
+      if(payload?.lobbyId)coopJoinLobby(payload);
+    });
     _coopUserChan.on('broadcast',{event:'join_decline'},({payload})=>coopToast('✕ '+(payload?.hostNick||'Хост')+' отклонил заявку'));
     _coopUserChan.subscribe();
   }
@@ -7678,7 +7794,9 @@ async function cloudLoad(){
   }
   function coopOnJoinRequest(payload){ if(!payload||!payload.fromPid) return; _coopPendingReq=payload; coopShowJoinPrompt(payload); }
   function coopAcceptJoin(){ const r=_coopPendingReq; _coopPendingReq=null; coopHideJoinPrompt(); if(!r) return;
-    coopSendTo(r.fromPid,'join_accept',{hostPid:coopMyId(),hostNick:coopMyNick()}); coopToast('Лобби создаётся…'); /* Phase 2 */ }
+    const lid='cw'+coopMyId().slice(-4)+Date.now().toString(36);
+    coopSendTo(r.fromPid,'join_accept',{hostPid:coopMyId(),hostNick:coopMyNick(),hostAvatar:coopMyAvatar(),lobbyId:lid});
+    coopCreateLobby(lid,r.fromPid,r.fromNick,r.fromAvatar); }
   function coopDeclineJoin(){ const r=_coopPendingReq; _coopPendingReq=null; coopHideJoinPrompt(); if(r) coopSendTo(r.fromPid,'join_decline',{hostPid:coopMyId(),hostNick:coopMyNick()}); }
 
   function coopRefreshStatuses(){ document.querySelectorAll('.player-row[data-pid]').forEach(row=>coopApplyRowStatus(row,row.dataset.pid)); }
@@ -7722,6 +7840,492 @@ async function cloudLoad(){
   // expose for cross-scope hooks
   window.coopPresenceStart=coopPresenceStart;
   window.coopSetStatus=coopSetStatus;
+
+  // ════════════════════════════════════════════════════════════
+  //  CO-OP — Phase 2+3: Lobby + Synchronized Battle
+  // ════════════════════════════════════════════════════════════
+  let _coopLobbyId=null,_coopLobbyChan=null,_coopRole=null,_coopPartner=null;
+  let _coopTurn=null,_coopActive=false,_coopPartnerHp=0,_coopPartnerMaxHp=30;
+
+  function coopIsActive(){return _coopActive;}
+  function coopIsHost(){return _coopRole==='host';}
+  function coopIsGuest(){return _coopRole==='guest';}
+  function coopIsMyTurn(){return _coopActive&&_coopTurn===_coopRole;}
+
+  function coopSendLobby(ev,payload){
+    if(!_coopLobbyChan)return;
+    try{_coopLobbyChan.send({type:'broadcast',event:ev,payload:payload||{}});}catch(e){}
+  }
+
+  // ── CREATE LOBBY (HOST) ──
+  function coopCreateLobby(lobbyId,guestPid,guestNick,guestAvatar){
+    _coopRole='host';
+    _coopLobbyId=lobbyId;
+    _coopPartner={pid:guestPid,nick:guestNick||'Гость',avatar:guestAvatar||null};
+    _coopLobbyChan=_supa.channel('cw-lobby-'+_coopLobbyId);
+    _coopLobbyChan
+      .on('broadcast',{event:'guest_atk'},({payload:p})=>coopOnGuestAtk(p))
+      .on('broadcast',{event:'guest_hp'},({payload:p})=>coopOnPartnerHpMsg(p))
+      .on('broadcast',{event:'chat'},({payload:p})=>coopOnChat(p))
+      .on('broadcast',{event:'guest_leave'},()=>coopOnGuestLeft())
+      .on('broadcast',{event:'game_end'},({payload:p})=>coopOnHostRecvGameEnd(p));
+    _coopLobbyChan.subscribe();
+    coopShowLobby();
+  }
+
+  // ── JOIN LOBBY (GUEST) ──
+  function coopJoinLobby(payload){
+    _coopRole='guest';
+    _coopLobbyId=payload.lobbyId;
+    _coopPartner={pid:payload.hostPid,nick:payload.hostNick||'Хост',avatar:payload.hostAvatar||null};
+    _coopLobbyChan=_supa.channel('cw-lobby-'+_coopLobbyId);
+    _coopLobbyChan
+      .on('broadcast',{event:'game_start'},({payload:p})=>coopOnGameStart(p))
+      .on('broadcast',{event:'atk_result'},({payload:p})=>coopOnAtkResult(p))
+      .on('broadcast',{event:'turn_switch'},({payload:p})=>coopOnTurnSwitch(p))
+      .on('broadcast',{event:'enemy_atk'},({payload:p})=>coopOnEnemyAtk(p))
+      .on('broadcast',{event:'host_hp'},({payload:p})=>coopOnPartnerHpMsg(p))
+      .on('broadcast',{event:'chat'},({payload:p})=>coopOnChat(p))
+      .on('broadcast',{event:'host_leave'},({payload:p})=>coopOnPartnerLeft(p))
+      .on('broadcast',{event:'new_wave'},({payload:p})=>coopOnNewWave(p))
+      .on('broadcast',{event:'shop_open'},({payload:p})=>coopOnShopOpen(p))
+      .on('broadcast',{event:'shop_close'},({payload:p})=>coopOnShopClose(p))
+      .on('broadcast',{event:'shop_buff'},({payload:p})=>coopOnShopBuff(p))
+      .on('broadcast',{event:'enemy_death'},({payload:p})=>coopOnEnemyDeath(p))
+      .on('broadcast',{event:'game_end'},({payload:p})=>coopOnGameEnd(p));
+    _coopLobbyChan.subscribe();
+    coopShowLobby();
+  }
+
+  // ── LOBBY UI ──
+  const _NOAV="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='46'%3E%3Crect width='46' height='46' fill='%230a1a3a'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='22' fill='%23335566'%3E👤%3C/text%3E%3C/svg%3E";
+  function _safeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+  function coopShowLobby(){
+    document.getElementById('coop-join-ov')?.classList.remove('on');
+    let ov=document.getElementById('coop-lobby-ov');
+    if(!ov){ov=document.createElement('div');ov.id='coop-lobby-ov';document.body.appendChild(ov);}
+    const isHost=coopIsHost();
+    const me={nick:coopMyNick(),av:coopMyAvatar()};
+    const pt=_coopPartner||{nick:'Ожидание…',av:null};
+    const h=isHost?me:pt, g=isHost?pt:me;
+    ov.innerHTML=`<div id="coop-lobby-box">
+<div class="cll-title">⚔ КО-ОП ЛОББИ</div>
+<div class="cll-players">
+  <div class="clp-slot"><div class="clp-crown">👑</div><div class="clp-avatar"><img src="${_safeHtml(h.av||_NOAV)}" alt=""></div><div class="clp-name">${_safeHtml(h.nick)}</div></div>
+  <div class="clp-vs">VS</div>
+  <div class="clp-slot"><div style="height:22px"></div><div class="clp-avatar"><img src="${_safeHtml(g.av||_NOAV)}" alt=""></div><div class="clp-name">${_safeHtml(g.nick)}</div></div>
+</div>
+<div class="cll-chat"><div class="cll-msgs" id="cll-msgs"></div><div class="cll-input-row"><input class="cll-input" id="cll-input" type="text" maxlength="80" placeholder="Сообщение…"><button class="cll-send" id="cll-send">→</button></div></div>
+<div class="cll-actions">${isHost?'<button id="coop-btn-start" onclick="coopHostStart()">🚀 НАЧАТЬ</button>':'<div class="cll-waiting">⏳ Ожидание хоста…</div>'}<button id="coop-btn-leave" onclick="coopLeaveLobby()">✕ ВЫЙТИ</button></div>
+</div>`;
+    ov.classList.add('on');
+    const inp=document.getElementById('cll-input');
+    const doSend=()=>{const t=inp.value.trim();if(!t)return;inp.value='';coopSendLobby('chat',{nick:coopMyNick(),msg:t});coopChatAdd(coopMyNick(),t,true);};
+    document.getElementById('cll-send').onclick=doSend;
+    inp.onkeydown=e=>{if(e.key==='Enter')doSend();};
+  }
+
+  function coopChatAdd(nick,msg,self){
+    const box=document.getElementById('cll-msgs');if(!box)return;
+    const d=document.createElement('div');d.className='cll-msg'+(self?' self-msg':'');
+    d.innerHTML='<span class="cll-msgnick">'+_safeHtml(nick)+':</span> '+_safeHtml(msg);
+    box.appendChild(d);box.scrollTop=box.scrollHeight;
+  }
+  function coopOnChat(p){
+    if(!p?.msg)return;
+    coopChatAdd(p.nick||'?',p.msg,false);
+    _coopBattleChatAdd(p.nick||'?',p.msg,false);
+  }
+
+  function coopLeaveLobby(){
+    if(_coopLobbyChan){coopSendLobby(coopIsHost()?'host_leave':'guest_leave',{});try{_coopLobbyChan.unsubscribe();}catch(e){}_coopLobbyChan=null;}
+    _coopActive=false;_coopRole=null;_coopLobbyId=null;_coopPartner=null;_coopTurn=null;
+    document.getElementById('coop-lobby-ov')?.classList.remove('on');
+    coopHideTurnBar();coopHidePartnerHud();
+    if(G)G.active=true;
+  }
+
+  // ── HOST STARTS BATTLE ──
+  function coopHostStart(){
+    document.getElementById('coop-lobby-ov')?.classList.remove('on');
+    // hide splash + mode-select (they sit at z-index:8000, covering the game)
+    const sp=document.getElementById('splash');if(sp)sp.style.display='none';
+    const ms=document.getElementById('mode-select');if(ms)ms.style.display='none';
+    const sw=document.getElementById('shake-wrapper');
+    if(sw){sw.style.display='';sw.classList.add('inf-mode');}
+    window._gameMode='infinite';window._gameEndShown=false;window._playerDeadPending=false;
+    initG();
+    _coopActive=true;_coopTurn='host';
+    // pre-fill partner HP bar with a matching starting guess (guest sends real HP right after)
+    _coopPartnerHp=G.maxPhp;_coopPartnerMaxHp=G.maxPhp;
+    coopSendLobby('game_start',{wave:G.wave,enemies:coopSerEnemies(),hostMaxHp:G.maxPhp});
+    if(window.coopSetStatus)coopSetStatus('infinite');
+    coopShowTurnBar();coopShowPartnerHud();coopShowBattleChat();
+    renderAll();
+  }
+
+  // ── GUEST RECEIVES GAME START ──
+  function coopOnGameStart(p){
+    document.getElementById('coop-lobby-ov')?.classList.remove('on');
+    // hide splash + mode-select (position:fixed z-index:8000 covers everything)
+    const sp=document.getElementById('splash');if(sp)sp.style.display='none';
+    const ms=document.getElementById('mode-select');if(ms)ms.style.display='none';
+    const sw=document.getElementById('shake-wrapper');
+    if(sw){sw.style.display='';sw.classList.add('inf-mode');}
+    window._gameMode='infinite';window._gameEndShown=false;window._playerDeadPending=false;
+    initG(); // sets up G, deals hand, starts random wave (we override below)
+    // override enemies with host's exact enemies
+    G.enemies=(p.enemies||[]).map(ed=>Object.assign({_atkT:null,_deathT:null,_dying:false,_resolved:false,_dlgDone:false},ed));
+    G.eIdx=0;G.wave=p.wave||0;G.active=false;
+    G._dlgBonuses=[];
+    _coopActive=true;_coopTurn='host';
+    _coopPartnerMaxHp=p.hostMaxHp||30;_coopPartnerHp=_coopPartnerMaxHp;
+    if(window.coopSetStatus)coopSetStatus('infinite');
+    coopShowTurnBar();coopShowPartnerHud();coopShowBattleChat();
+    // re-show dialogue for the actual host enemy (initG showed a random one)
+    showDlg(cE(),0);
+    renderAll();
+    // tell host our starting HP so their partner bar fills correctly
+    coopBroadcastMyHp();
+  }
+
+  // ── SERIALIZATION ──
+  function coopSerEnemies(){
+    if(!G)return[];
+    return G.enemies.map(e=>({
+      id:e.id,name:e.name,hp:e.hp,maxHp:e.maxHp,armor:e.armor,
+      enchants:e.enchants?[...e.enchants]:[],pat:[...e.pat],patIdx:e.patIdx||0,
+      sprId:e.sprId||null,infType:e.infType||null,dead:!!e.dead,
+      dlg:e.dlg?JSON.parse(JSON.stringify(e.dlg)):[]
+    }));
+  }
+  function coopApplyEnemies(arr){
+    if(!G||!arr)return;
+    arr.forEach((ed,i)=>{
+      if(i<G.enemies.length){
+        const e=G.enemies[i];
+        e.hp=ed.hp;e.maxHp=ed.maxHp;e.armor=ed.armor;
+        e.enchants=ed.enchants||[];e.dead=ed.dead;e.patIdx=ed.patIdx||0;
+      }
+    });
+  }
+
+  // ── TURN BAR IN-BATTLE ──
+  function coopShowTurnBar(){
+    let bar=document.getElementById('coop-turn-bar');
+    if(!bar){
+      bar=document.createElement('div');bar.id='coop-turn-bar';
+      const wi=document.getElementById('wave-info');
+      if(wi?.parentNode)wi.parentNode.insertBefore(bar,wi.nextSibling);
+    }
+    coopUpdateTurnBar();
+  }
+  function coopHideTurnBar(){const b=document.getElementById('coop-turn-bar');if(b){b.style.display='none';b.className='';}}
+  function coopUpdateTurnBar(){
+    const bar=document.getElementById('coop-turn-bar');if(!bar)return;
+    if(!_coopActive){bar.style.display='none';return;}
+    if(coopIsMyTurn()){bar.className='my-turn';bar.textContent='⚔ ВАШ ХОД';}
+    else{bar.className='their-turn';bar.textContent='⏳ ХОД ПАРТНЁРА';}
+  }
+
+  // ── PARTNER HP IN HUD ──
+  function coopShowPartnerHud(){
+    let w=document.getElementById('coop-php-wrap');
+    if(!w){
+      w=document.createElement('div');w.id='coop-php-wrap';w.className='coop-php-wrap';
+      w.innerHTML='<span class="coop-php-label">♟</span><div class="coop-php-bar-outer"><div class="coop-php-bar-inner" id="coop-php-bar" style="width:100%;background:#9b30ff;"></div></div><span class="coop-php-val" id="coop-php-val">?</span>';
+      document.getElementById('hud')?.appendChild(w);
+    }
+    coopUpdatePartnerHud();
+  }
+  function coopHidePartnerHud(){document.getElementById('coop-php-wrap')?.remove();}
+  function coopUpdatePartnerHud(){
+    const bar=document.getElementById('coop-php-bar'),val=document.getElementById('coop-php-val');
+    if(!bar||!val)return;
+    const pct=_coopPartnerMaxHp>0?Math.max(0,Math.min(100,_coopPartnerHp/_coopPartnerMaxHp*100)):0;
+    bar.style.width=pct+'%';
+    bar.style.background=pct>50?'#9b30ff':pct>25?'#cc7700':'#cc2244';
+    val.textContent=_coopPartnerHp+'/'+_coopPartnerMaxHp;
+  }
+  function coopOnPartnerHpMsg(p){
+    if(!p)return;
+    _coopPartnerHp=p.hp??_coopPartnerHp;
+    _coopPartnerMaxHp=p.maxHp??_coopPartnerMaxHp;
+    coopUpdatePartnerHud();
+  }
+
+  // ── STATE SYNC ──
+  function coopBroadcastState(){
+    if(!coopIsHost()||!_coopLobbyChan||!G)return;
+    coopSendLobby('atk_result',{enemies:coopSerEnemies(),eIdx:G.eIdx,wave:G.wave,coins:G.cur});
+  }
+  function coopBroadcastMyHp(){
+    if(!_coopLobbyChan||!G)return;
+    coopSendLobby(coopIsHost()?'host_hp':'guest_hp',{hp:G.php,maxHp:G.maxPhp});
+  }
+  function coopSetTurn(t){
+    _coopTurn=t;
+    if(G)G.active=(_coopActive?_coopTurn===_coopRole:true);
+    coopUpdateTurnBar();
+    if(_coopRole==='host')coopSendLobby('turn_switch',{turn:t}); // broadcast to guest
+    renderAll();
+  }
+
+  // ── RECEIVE ATK_RESULT (GUEST) ──
+  function coopOnAtkResult(p){
+    if(!G||!p||!coopIsGuest())return;
+    if(p.enemies)coopApplyEnemies(p.enemies);
+    if(p.eIdx!==undefined)G.eIdx=p.eIdx;
+    if(p.wave!==undefined)G.wave=p.wave;
+    if(p.coins!==undefined)G.cur=p.coins;
+    renderAll();
+  }
+
+  // ── TURN SWITCH (GUEST RECEIVES) ──
+  function coopOnTurnSwitch(p){
+    if(!p)return;
+    _coopTurn=p.turn;
+    if(G)G.active=coopIsMyTurn();
+    coopUpdateTurnBar();
+    if(coopIsMyTurn()&&G)dealHand();
+    renderAll();
+  }
+
+  // ── GUEST ATTACK → HOST RECEIVES ──
+  function coopOnGuestAtk(p){
+    if(!G||!p||!coopIsHost())return;
+    const e=cE();if(!e||e.dead)return;
+    const dmg=p.dmg||0,opsUsed=p.opsUsed||[];
+    if(dmg>0)hitEnemy(dmg,opsUsed);
+    if(opsUsed.includes('+'))G.eSts.burn=(G.eSts.burn||0)+1;
+    if(opsUsed.includes('-')&&Math.random()<.25)G.eSts.freeze=1;
+    coopSendLobby('host_hp',{hp:G.php,maxHp:G.maxPhp});
+    renderAll();
+    const cur=cE();
+    if(cur&&cur.hp<=0&&!cur.dead&&!cur._dying&&!cur._resolved){enemyDefeated();return;}
+    coopBroadcastState();
+    coopScheduleEnemyTurn();
+  }
+
+  // ── ENEMY ATK → GUEST RECEIVES ──
+  function coopOnEnemyAtk(p){
+    if(!G||!p||!coopIsGuest())return;
+    const dmg=p.dmg||0;if(dmg<=0)return;
+    if(G.pSts.shield){G.pSts.shield=0;addLog('Щит!');renderAll();coopSendLobby('guest_hp',{hp:G.php,maxHp:G.maxPhp});return;}
+    G.php=Math.max(0,G.php-dmg);
+    shake(7);flash('#FF0000',.26);spawnTxt('-'+dmg,'#FF2200',.3,.65);
+    addLog((p.enemyName||'Враг')+': −'+dmg+' HP');
+    renderAll();
+    if(G.php<=0){
+      coopSendLobby('game_end',{win:false,reason:'guest_dead'});
+      // host will respond with canonical coins/wave; just show death visual, no end screen yet
+      G.active=false;
+      defeatEffect(()=>{});
+      return;
+    }
+    coopSendLobby('guest_hp',{hp:G.php,maxHp:G.maxPhp});
+  }
+
+  // ── ENEMY TURN (HOST SIDE WITH CO-OP SYNC) ──
+  function coopScheduleEnemyTurn(){
+    if(!G||!coopIsHost())return;
+    G.active=false;
+    const alive=G.enemies.filter(e=>!e.dead);
+    if(!alive.length){coopAfterEnemyTurn();return;}
+    const gen=++G._turnGen;let delay=900;
+    alive.forEach((e,pos)=>{
+      const factor=GROUP_DMG_FACTORS[Math.min(pos,GROUP_DMG_FACTORS.length-1)];
+      setTimeout(()=>{
+        if(G._turnGen!==gen||e.dead)return;
+        const preIdx=e.patIdx;
+        enemyTurn(e,factor);
+        renderAll();
+        if(window._playerDeadPending){
+          setTimeout(()=>{coopSendLobby('game_end',{win:false,reason:'host_dead'});coopEndBattle();},500);
+          return;
+        }
+        const move=e.pat[preIdx%e.pat.length]||'';
+        if(move.startsWith('ATK')){
+          const base=parseInt(move.slice(3));
+          const isInf=/^(plus|minus)-/.test(e.sprId||'');
+          setTimeout(()=>{
+            const dmg=Math.max(1,Math.round(base*factor));
+            coopSendLobby('enemy_atk',{dmg,enemyName:e.name});
+          },isInf?300:0);
+        }
+      },delay);delay+=650;
+    });
+    setTimeout(()=>{if(G._turnGen!==gen)return;coopAfterEnemyTurn();},delay);
+  }
+  function coopAfterEnemyTurn(){
+    if(!G||!coopIsHost())return;
+    dealHand();G.active=true;
+    _coopTurn='host';
+    coopBroadcastMyHp();
+    coopBroadcastState();
+    coopSendLobby('turn_switch',{turn:'host'});
+    coopUpdateTurnBar();renderAll();
+  }
+
+  // ── NEW WAVE (GUEST) ──
+  function coopOnNewWave(p){
+    if(!G||!coopIsGuest())return;
+    G.wave=p.wave;
+    G.enemies=(p.enemies||[]).map(ed=>Object.assign({_atkT:null,_deathT:null,_dying:false,_resolved:false,_dlgDone:false},ed));
+    G.eIdx=0;G.eSts={};G.pSts={};G._dlgBonuses=[];
+    G.active=false;_coopTurn='host';
+    dealHand();renderAll();coopUpdateTurnBar();
+  }
+
+  // ── SHOP (GUEST SIDE) ──
+  function coopOnShopOpen(p){
+    if(!coopIsGuest())return;
+    // apply the between-wave heal that openShop() gives to the host
+    if(G&&(p?.heal||0)>0){G.php=Math.min(G.maxPhp,G.php+(p.heal));renderHud();}
+    let ov=document.getElementById('coop-shop-wait');
+    if(!ov){ov=document.createElement('div');ov.id='coop-shop-wait';ov.innerHTML='<div class="csw-title">🛒 ХОСТ В МАГАЗИНЕ</div><div class="csw-sub">Ожидание…<br>Следующая волна стартует<br>когда хост закроет магазин.</div>';document.body.appendChild(ov);}
+    ov.classList.add('on');
+  }
+  function coopOnShopBuff(p){
+    if(!G||!p||!coopIsGuest())return;
+    const it=SHOP.find(i=>i.id===p.id);
+    if(!it)return;
+    it.fn(G);
+    renderHud();
+    coopBroadcastMyHp();
+    coopToast('Партнёр купил: '+it.name);
+  }
+  function coopOnEnemyDeath(p){
+    if(!G||!p||!coopIsGuest())return;
+    const idx=p.eIdx!==undefined?p.eIdx:G.eIdx;
+    const e=G.enemies[idx];
+    if(!e||e.dead||e._dying)return;
+    shake(14);flash('#FFFF00',.45);spawnTxt('ПОБЕДА!','#44FF00',.45,.4);
+    if(e.sprId&&/^(plus|minus)-/.test(e.sprId)){
+      e._dying=true;e._deathT=performance.now();G.active=false;
+      if(p.isPlus){_wingCrumbleFx(e);setTimeout(()=>_bodyCrumbleFx(e),2420);}
+      setTimeout(()=>{e._dying=false;renderAll();},p.isPlus?2560:1250);
+    }
+    renderAll();
+  }
+  function coopOnShopClose(p){
+    if(!coopIsGuest())return;
+    document.getElementById('coop-shop-wait')?.classList.remove('on');
+    if(p?.enemies)coopOnNewWave(p);
+  }
+
+  // ── GAME END ──
+  function coopOnGameEnd(p){
+    coopEndBattle();
+    if(G&&p?.coins!==undefined)G.cur=p.coins;
+    if(G&&p?.wave!==undefined)G.wave=p.wave;
+    if(p?.reason==='host_dead'||p?.reason==='host_confirms_end')
+      showEnd('Матч окончен.',false);
+    else if(!p?.win)
+      showEnd('Партнёр погиб. Матч окончен.',false);
+    else
+      showEnd('🎉 Кооп-победа!',true);
+  }
+  function coopOnHostRecvGameEnd(p){
+    if(p?.reason==='guest_dead'){
+      coopToast('Партнёр погиб!');
+      // broadcast canonical coins/wave back so guest shows the same end screen
+      coopSendLobby('game_end',{win:false,reason:'host_confirms_end',coins:G.cur,wave:G.wave});
+      coopEndBattle();
+      showEnd('Партнёр погиб. Матч окончен.',false);
+    }
+  }
+
+  // ── PARTNER DISCONNECT ──
+  // called on HOST when guest disconnects — continue solo, no menu redirect
+  function coopOnGuestLeft(){
+    coopToast('Партнёр покинул игру. Продолжаешь соло.');
+    _coopActive=false;_coopRole=null;_coopLobbyId=null;_coopPartner=null;_coopTurn=null;
+    if(_coopLobbyChan){try{_coopLobbyChan.unsubscribe();}catch(e){}_coopLobbyChan=null;}
+    const bar=document.getElementById('coop-turn-bar');if(bar){bar.className='';bar.style.display='none';}
+    document.getElementById('coop-partner-hud')?.remove();
+    if(G){G.active=true;dealHand();renderAll();}
+  }
+  // called on GUEST when host disconnects — go back to menu
+  function coopOnPartnerLeft(p){
+    coopToast('⚠ Хост покинул игру.');
+    coopEndBattle();
+    if(G&&p?.coins!==undefined)G.cur=p.coins;
+    if(G&&p?.wave!==undefined)G.wave=p.wave;
+    if(G&&(G.infiniteMode||window._gameMode==='infinite'))
+      showEnd('Хост покинул игру.',false);
+    else
+      setTimeout(()=>{if(typeof goToMenu==='function')goToMenu();},2000);
+  }
+
+  // ── IN-BATTLE CHAT ──
+  function coopShowBattleChat(){
+    if(document.getElementById('coop-chat-fab'))return;
+    const fab=document.createElement('button');fab.id='coop-chat-fab';fab.textContent='💬';
+    fab.onclick=()=>{
+      const panel=document.getElementById('coop-battle-chat');
+      panel?.classList.toggle('on');
+      fab.classList.remove('has-new');
+      if(panel?.classList.contains('on'))document.getElementById('coop-battle-inp')?.focus();
+    };
+    document.body.appendChild(fab);
+    const panel=document.createElement('div');panel.id='coop-battle-chat';
+    const msgs=document.createElement('div');msgs.id='coop-battle-msgs';
+    const row=document.createElement('div');row.id='coop-battle-inp-row';
+    const inp=document.createElement('input');inp.id='coop-battle-inp';inp.type='text';inp.maxLength=80;inp.placeholder='Сообщение…';
+    const send=document.createElement('button');send.id='coop-battle-send';send.textContent='→';
+    const doSend=()=>{
+      const t=inp.value.trim();if(!t)return;inp.value='';
+      coopSendLobby('chat',{nick:coopMyNick(),msg:t});
+      _coopBattleChatAdd(coopMyNick(),t,true);
+      coopChatAdd(coopMyNick(),t,true);
+    };
+    send.onclick=doSend;
+    inp.onkeydown=e=>{if(e.key==='Enter')doSend();};
+    row.appendChild(inp);row.appendChild(send);
+    panel.appendChild(msgs);panel.appendChild(row);
+    document.body.appendChild(panel);
+  }
+  function _coopBattleChatAdd(nick,msg,self){
+    const box=document.getElementById('coop-battle-msgs');if(!box)return;
+    const d=document.createElement('div');d.className='cbc-msg'+(self?' self':'');
+    d.innerHTML='<span class="cbc-nick">'+_safeHtml(nick)+':</span> '+_safeHtml(msg);
+    box.appendChild(d);box.scrollTop=box.scrollHeight;
+    if(!self){
+      const fab=document.getElementById('coop-chat-fab');
+      const panel=document.getElementById('coop-battle-chat');
+      if(fab&&!panel?.classList.contains('on'))fab.classList.add('has-new');
+    }
+  }
+
+  // ── CLEANUP ──
+  function coopEndBattle(){
+    if(_coopLobbyChan){try{_coopLobbyChan.unsubscribe();}catch(e){}_coopLobbyChan=null;}
+    _coopActive=false;_coopRole=null;_coopLobbyId=null;_coopPartner=null;_coopTurn=null;
+    coopHideTurnBar();coopHidePartnerHud();
+    document.getElementById('coop-shop-wait')?.classList.remove('on');
+    document.getElementById('coop-chat-fab')?.remove();
+    document.getElementById('coop-battle-chat')?.remove();
+  }
+
+  // ── WINDOW EXPORTS ──
+  window.coopIsActive=coopIsActive;
+  window.coopIsHost=coopIsHost;
+  window.coopIsGuest=coopIsGuest;
+  window.coopIsMyTurn=coopIsMyTurn;
+  window.coopSendLobby=coopSendLobby;
+  window.coopBroadcastState=coopBroadcastState;
+  window.coopBroadcastMyHp=coopBroadcastMyHp;
+  window.coopSetTurn=coopSetTurn;
+  window.coopSerEnemies=coopSerEnemies;
+  window.coopScheduleEnemyTurn=coopScheduleEnemyTurn;
+  window.coopOnGuestAtk=coopOnGuestAtk;
+  window.coopUpdateTurnBar=coopUpdateTurnBar;
+  window.coopEndBattle=coopEndBattle;
+  window.coopHostStart=coopHostStart;
+  window.coopLeaveLobby=coopLeaveLobby;
+  window.coopJoinLobby=coopJoinLobby;
 
   // ── Build a player row ──
   // Pinned friends storage
@@ -9417,6 +10021,18 @@ const UPD_LOG=[
       {cls:'fix', text:'ХП и броня врагов в бесконечном режиме стали светлее и читаемее, текст брони — крупнее'},
     ]
   },
+  {
+    ver:'2.0', date:'16 Июня 2026', tag:'major', label:'Кооператив',
+    items:[
+      {cls:'rainbow', text:'КО-ОП — приглашай друга прямо из списка друзей и играйте Бесконечный режим вместе в реальном времени'},
+      {cls:'new', text:'Лобби: оба игрока видят друг друга (хост со 👑), есть чат лобби, хост запускает матч'},
+      {cls:'new', text:'Синхронизированные ходы: хост ходит первым, затем гость — урон партнёра виден в реальном времени'},
+      {cls:'new', text:'Враги атакуют обоих игроков по-отдельности, у каждого своё HP — HP партнёра видно в шапке'},
+      {cls:'new', text:'Статус «Играет в…» в списке друзей: кнопка ⚔ появляется рядом с другом в игре'},
+      {cls:'new', text:'Дисконнект — если партнёр ушёл, оба возвращаются в меню с уведомлением'},
+      {cls:'new', text:'Магазин после волны — хост выбирает улучшения, гость видит «ожидание»; после закрытия новая волна стартует у обоих'},
+    ]
+  },
 ];
 
 
@@ -9453,7 +10069,7 @@ function updClose(){
 
 // Auto-open update log only on fresh tab open (sessionStorage empty = new tab/file open)
 (function(){
-  const CURRENT_VER='1.9';
+  const CURRENT_VER='2.0';
   localStorage.setItem('cw_ver_upd',CURRENT_VER);
   if(sessionStorage.getItem('cw_tab_alive')) return;
   sessionStorage.setItem('cw_tab_alive','1');
