@@ -2029,6 +2029,9 @@ button, .menu-btn {
 @keyframes impRing{0%{transform:scale(.3);opacity:.9;}100%{transform:scale(3.6);opacity:0;}}
 .impact-dust{position:fixed;width:5px;height:5px;margin:-2px 0 0 -2px;background:#ffcf6a;border-radius:1px;pointer-events:none;z-index:60;animation:impDust .55s ease-out forwards;}
 @keyframes impDust{0%{transform:translate(0,0) scale(1);opacity:1;}100%{transform:translate(var(--dx),var(--dy)) scale(.3);opacity:0;}}
+/* plus death: pixel bits float up and vanish (wings, then the whole body) */
+.bit{position:fixed;margin:-2px 0 0 -2px;pointer-events:none;z-index:61;box-shadow:0 0 2px #0006;animation:bitFly .6s ease-out forwards;}
+@keyframes bitFly{0%{transform:translate(0,0) rotate(0deg);opacity:1;}18%{opacity:1;}100%{transform:translate(var(--drift),var(--rise)) rotate(var(--rot));opacity:0;}}
 /* infinite-mode shop skin */
 #shop-ov.inf #shop-box{background:linear-gradient(160deg,#0c0124,#15012e);border-color:#9b30ff;box-shadow:6px 6px 0 #1a0033,0 0 34px #6a18c244;}
 #shop-ov.inf #shop-box h2{color:#d8a6ff;text-shadow:0 0 10px #9b30ff66;}
@@ -3403,7 +3406,7 @@ function mkImgSpr(id,enemy){
       eyeP={x0:17,x1:22,y0:15,y1:18,lid:14};  // white "U" reaches y18
     }
     // draw one tapered wing rooted at canvas (px,py), extending dir (-1 left/+1 right), rotated phi
-    function drawWing(px,py,dir,phi){
+    function drawWing(px,py,dir,phi,crumble){
       const len=9, baseTh=4;
       const ux=dir*Math.cos(phi), uy=-Math.sin(phi);    // axis: outward, tip up when phi>0
       const vx=Math.sin(phi),     vy=dir*Math.cos(phi); // perpendicular (thickness)
@@ -3411,9 +3414,14 @@ function mkImgSpr(id,enemy){
         const ti=Math.round(baseTh*(1-Math.pow(s/len,1.6)));
         const axc=px+ux*s, ayc=py+uy*s;
         for(let k=-ti;k<=ti;k++){
+          let riseY=0;
+          if(crumble>0){                                 // pixels peel off upward, one after another, then gone
+            const h=((s*7+(k+5)*13+(dir>0?23:0))%19)/19; // stable per-pixel threshold
+            if(crumble>h){ if(crumble-h>0.16) continue; riseY=-(crumble-h)*46; }
+          }
           const edge=((k===ti&&ti>=2)||s>=len);
           const c=edge?edgeCol:bodyCol;
-          setPx(axc+vx*k, ayc+vy*k, c[0],c[1],c[2]);
+          setPx(axc+vx*k, ayc+vy*k+riseY, c[0],c[1],c[2]);
         }
       }
     }
@@ -3483,7 +3491,16 @@ function mkImgSpr(id,enemy){
         // ─── PLUS: wing flap; attack wing-thrust; death = wings droop & topple ───
         const C=13.0, tt=t%C;
         let flapF=1.6, flapA=0.2, lift=0, squash=1, wince=0;
-        if(death>0){ flapA=0; lift=-dEase*5; squash=1-dEase*0.12; }    // sag as it dies
+        let wingCrumble=0, eyeLook=0;
+        if(death>0){
+          flapA=0; lift=0; squash=1;
+          const dt=now-enemy._deathT;                  // ms into the death sequence
+          wingCrumble=clamp(dt/820);                   // P1: wings disintegrate upward
+          if(dt>=950 && dt<1380)       eyeLook= smooth((dt-950)/220)*3;        // glance right
+          else if(dt>=1380 && dt<1480) eyeLook= 3;                             // hold right
+          else if(dt>=1480 && dt<1960) eyeLook= 3 - smooth((dt-1480)/300)*6;   // sweep to the left (−3)
+          else if(dt>=1960)            eyeLook= -3 + smooth((dt-1960)/140)*3;  // back to centre
+        }
         else if(tt>=11.0){
           const bt=tt-11.0;                           // 0 .. 2.0
           if(bt<0.7){       flapF=8.5; flapA=0.78; lift=smooth(bt/0.7)*7; }
@@ -3492,15 +3509,20 @@ function mkImgSpr(id,enemy){
         }else{
           lift=0.7*Math.sin(t*flapF*TAU+Math.PI);     // gentle hover, in sync with the wing beat
         }
-        let phi = death>0 ? (-0.1-1.15*dEase) : (-0.1 + flapA*Math.sin(t*flapF*TAU)); // droop when dying
+        let phi = death>0 ? -0.1 : (-0.1 + flapA*Math.sin(t*flapF*TAU)); // hold pose; it crumbles, not droops
         if(aFastWing>0) phi = -0.1 + 0.6*Math.sin(t*15*TAU);   // beat hard while leaping up
-        drawWing(OX+6,  OY+18-lift, -1, phi);
-        drawWing(OX+32, OY+18-lift, +1, phi);
+        drawWing(OX+6,  OY+18-lift, -1, phi, wingCrumble);
+        drawWing(OX+32, OY+18-lift, +1, phi, wingCrumble);
         for(let Y=0;Y<CH;Y++){
           const sy=(Y-cBaseY)/squash + sBaseY + lift;
-          for(let X=0;X<CW;X++){ cp(sd, X-OX, sy, X, Y); }
+          const syR=Math.round(sy), eyeRow=eyeLook!==0 && syR>=15 && syR<=18;
+          for(let X=0;X<CW;X++){
+            let sxp=X-OX;
+            if(eyeRow && sxp>=17 && sxp<=22) sxp-=eyeLook;   // the eye glances right, then left
+            cp(sd, sxp, sy, X, Y);
+          }
         }
-        shutEye(eyeP, death>0?dEase:(tt<11.0 ? blink(t,3.8,0.15,0) : wince), -lift);
+        shutEye(eyeP, death>0?0:(tt<11.0 ? blink(t,3.8,0.15,0) : wince), -lift);
       }
       ctx.putImageData(out,0,0);
       // gross-motion layer (attack leap / slime rear-up / death topple) via CSS transform (origin: centre-bottom)
@@ -3515,8 +3537,14 @@ function mkImgSpr(id,enemy){
         }
       }
       if(death>0){
-        op=1-dEase;
-        if(!isMinus){ ty+=dEase*26; rot=dEase*40; sx*=(1-dEase*0.12); sy*=(1-dEase*0.12); } // plus topples & fades
+        if(isMinus){ op=1-dEase; }                                     // slime fades as it melts
+        else {
+          const dt=now-enemy._deathT;
+          if(dt>=2000 && dt<2280){ const u=smooth((dt-2000)/280); ty=-u*22; sy=1+0.16*u; sx=1-0.09*u; }   // reach up in anger (stretch)
+          else if(dt>=2280 && dt<2440){ const d=smooth((dt-2280)/160); ty=-22+d*30; sy=1-0.18*d; sx=1+0.13*d; } // slam down (squash)
+          else if(dt>=2440){ ty=8*(1-clamp((dt-2440)/120)); }          // settle at the impact
+          op = dt>=2440 ? (1-clamp((dt-2440)/130)) : 1;                 // body crumbles into pixels
+        }
       }
       cv.style.transform=`translate(${tx.toFixed(1)}px,${ty.toFixed(1)}px) scale(${sx.toFixed(3)},${sy.toFixed(3)}) rotate(${rot.toFixed(1)}deg)`;
       cv.style.opacity=op.toFixed(3);
@@ -4286,21 +4314,25 @@ function checkPhase(e){
 function enemyDefeated(){
   if(window._gameEndShown)return;
   const e=cE();
-  if(!e||e.dead||e._dying)return;   // already dead or playing its death animation → never resolve twice
-  // infinite enemies play a death animation (slime melts away / plus topples) before resolving
+  if(!e||e.dead||e._dying||e._resolved)return;   // already dead/dying/resolved → never trigger twice
+  // fatal blow: shake + "ПОБЕДА" happen NOW, then the death animation plays, then we resolve
+  shake(14);flash('#FFFF00',.45);spawnTxt('ПОБЕДА!','#44FF00',.45,.4);
   if(/^(plus|minus)-/.test(e.sprId||'')){
     e._dying=true; e._deathT=performance.now(); G.active=false;
-    shake(8); flash('#FFFF00',.3);
-    setTimeout(()=>_resolveDefeat(e), 920); // resolve once, after the animation
+    const isPlus=e.sprId.startsWith('plus-');
+    if(isPlus){
+      _wingCrumbleFx(e);                       // wings disintegrate — pixels fly up one by one
+      setTimeout(()=>_bodyCrumbleFx(e), 2420); // then the body bursts into pixels the same way
+    }
+    setTimeout(()=>_resolveDefeat(e), isPlus?2560:1250); // resolve (advance / shop) only after the animation
     return;
   }
-  _resolveDefeat(e);
+  _resolveDefeat(e); // casual: instant
 }
 function _resolveDefeat(e){
-  if(!e||e.dead)return;
+  if(!e||e.dead||e._resolved)return;   // hard guard: resolution runs once per enemy, ever (no double award)
+  e._resolved=true;
   e._dying=false;
-  shake(12);flash('#FFFF00',.5);
-  spawnTxt('ПОБЕДА!','#44FF00',.45,.4);
   addLog(`${e.name} побеждён! +5`);G.cur+=5;e.dead=true;
   // Check after marking dead — if all gone, lock out any concurrent timers immediately
   const allDead=G.enemies.every(en=>en.dead);
@@ -4316,10 +4348,10 @@ function _resolveDefeat(e){
     renderAll();showDlg(cE(),0);dealHand();renderAll();
   } else {
     G.active=false;renderAll();
-    setTimeout(()=>{
+    setTimeout(()=>{                              // already past the death animation → short beat, then shop
       if(!G.infiniteMode&&G.wave>=WAVE_DEFS.length-1)showEnd('🎉 ТЫ ПОБЕДИЛ!\nРичард доволен!',true);
       else openShop();
-    },1200);
+    },350);
   }
 }
 
@@ -4346,6 +4378,40 @@ function _impactFx(e){
     p.style.animationDelay=(Math.random()*45|0)+'ms';
     document.body.appendChild(p);setTimeout(()=>p.remove(),580);
   }
+}
+// plus death: pixels crumble upward (wings first, then the whole body) — like ash blown up and gone
+const _INF_FRAG_COL={red:['#ec2f58','#9c1530'],blu:['#3f72f2','#1c3a9c'],gre:['#46c84e','#1d7a2a'],cian:['#46d6d6','#1d8a8a'],yel:['#ecc23a','#9c7a10']};
+function _enemyRect(e){
+  const idx=G.enemies.indexOf(e);
+  const card=document.querySelectorAll('#enemy-cards .ec')[idx];
+  const sp=card&&card.querySelector('.ec-sprite');
+  if(!sp)return null;
+  return {r:sp.getBoundingClientRect(), col:_INF_FRAG_COL[(e.sprId.split('-')[1])]||['#ec2f58','#9c1530']};
+}
+function _spawnBits(x0,x1,y0,y1,count,col,stagger){
+  for(let i=0;i<count;i++){
+    const delay=Math.round((i/count)*stagger);   // one after another
+    setTimeout(()=>{
+      const px=x0+Math.random()*(x1-x0), py=y0+Math.random()*(y1-y0);
+      const sz=3+(Math.random()*3|0);
+      const f=document.createElement('div');f.className='bit';
+      f.style.cssText=`left:${px}px;top:${py}px;width:${sz}px;height:${sz}px;background:${Math.random()<0.5?col[0]:col[1]};`+
+        `--rise:${-(30+Math.random()*44)}px;--drift:${((Math.random()-0.5)*28)|0}px;--rot:${(Math.random()*240-120)|0}deg;`;
+      document.body.appendChild(f);setTimeout(()=>f.remove(),620);
+    },delay);
+  }
+}
+function _wingCrumbleFx(e){
+  const o=_enemyRect(e); if(!o)return; const r=o.r;
+  const y0=r.top+r.height*0.30, y1=r.top+r.height*0.62;
+  _spawnBits(r.left+r.width*0.00, r.left+r.width*0.26, y0, y1, 10, o.col, 700);  // left wing, pixel by pixel
+  _spawnBits(r.right-r.width*0.26, r.right,            y0, y1, 10, o.col, 700);  // right wing
+}
+function _bodyCrumbleFx(e){
+  if(e._bodyCrumbled)return; e._bodyCrumbled=true;
+  const o=_enemyRect(e); if(!o)return; const r=o.r;
+  shake(9);
+  _spawnBits(r.left+r.width*0.22, r.right-r.width*0.22, r.top+r.height*0.16, r.bottom-2, 30, o.col, 230);
 }
 function enemyTurn(e, dmgFactor){
   if(!e)e=cE();
