@@ -2032,6 +2032,24 @@ button, .menu-btn {
 /* plus death: pixel bits float up and vanish (wings, then the whole body) */
 .bit{position:fixed;margin:-2px 0 0 -2px;pointer-events:none;z-index:61;box-shadow:0 0 2px #0006;animation:bitFly .6s ease-out forwards;}
 @keyframes bitFly{0%{transform:translate(0,0) rotate(0deg);opacity:1;}18%{opacity:1;}100%{transform:translate(var(--drift),var(--rise)) rotate(var(--rot));opacity:0;}}
+/* ── co-op: join button, request prompt, toast ── */
+.coop-join-btn{font-family:'Press Start 2P',monospace;font-size:8px;line-height:1;padding:7px 9px;background:#1a0a3a;border:2px solid #9b30ff;color:#e7b3ff;cursor:pointer;border-radius:4px;flex-shrink:0;transition:background .15s,transform .1s;}
+.coop-join-btn:hover{background:#2a1050;}
+.coop-join-btn:active{transform:scale(.92);}
+#coop-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#0c0124;border:2px solid #6a18c2;color:#e7c2ff;font-family:'Press Start 2P',monospace;font-size:8px;line-height:1.6;padding:10px 16px;border-radius:6px;z-index:9700;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;max-width:90vw;text-align:center;box-shadow:0 0 18px #6a18c233;}
+#coop-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+#coop-join-ov{position:fixed;inset:0;z-index:9750;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,0);transition:background .25s;}
+#coop-join-ov.on{display:flex;background:rgba(0,0,0,.62);}
+#coop-join-box{background:linear-gradient(160deg,#0c0124,#15012e);border:3px solid #9b30ff;box-shadow:0 0 30px #6a18c244,5px 5px 0 #1a0033;padding:24px;max-width:360px;width:92%;display:flex;flex-direction:column;gap:18px;align-items:center;animation:exitBoxIn .3s cubic-bezier(.22,1,.36,1) both;}
+.cjb-title{font-family:'Press Start 2P',monospace;font-size:11px;color:#d8a6ff;text-shadow:0 0 10px #9b30ff66;}
+.cjb-who{font-family:'Press Start 2P',monospace;font-size:8px;color:#bb9aef;line-height:1.9;text-align:center;}
+.cjb-who b{color:#fff;}
+.cjb-btns{display:flex;gap:12px;width:100%;}
+.cjb-btns button{flex:1;font-family:'Press Start 2P',monospace;font-size:8px;padding:13px 8px;border:2px solid;cursor:pointer;border-radius:5px;transition:background .15s;}
+.cjb-yes{background:#14331c;border-color:#2f9b4f;color:#9af0b0;}
+.cjb-yes:hover{background:#1d4a2a;}
+.cjb-no{background:#33141c;border-color:#9b2f4f;color:#f09ab0;}
+.cjb-no:hover{background:#4a1d2a;}
 /* infinite-mode shop skin */
 #shop-ov.inf #shop-box{background:linear-gradient(160deg,#0c0124,#15012e);border-color:#9b30ff;box-shadow:6px 6px 0 #1a0033,0 0 34px #6a18c244;}
 #shop-ov.inf #shop-box h2{color:#d8a6ff;text-shadow:0 0 10px #9b30ff66;}
@@ -3452,23 +3470,26 @@ function mkImgSpr(id,enemy){
         }
       }
       if(isMinus){
-        // ─── SLIME: jelly idle; rare melt; attack lunge-stretch; death = spread to nothing ───
-        const C=16.0, tt=t%C;
+        // ─── SLIME: jelly idle / rare melt — both SUPPRESSED during attack & death ───
         let scV=1,scH=1,melt=0;
-        if(tt<13.0){                                  // idle: gentle jelly squish — smooth, never jittery
-          const j=Math.sin(t*1.7);
-          scV=1+0.05*j; scH=1-0.045*j;
-        }else{                                        // melt burst (rare)
-          const bt=tt-13.0;                           // 0 .. 3.0
-          if(bt<1.7)      { melt=smooth(bt/1.7);            scV=1-0.76*melt; scH=1+0.85*melt; } // slow spread
-          else if(bt<2.0) { melt=1;                         scV=0.24;        scH=1.85; }        // hold as a puddle
-          else if(bt<2.55){ melt=1-smooth((bt-2.0)/0.55);   scV=1-0.76*melt; scH=1+0.85*melt; } // gather back
-          else{                                       // soft "jello" settle wobble on reforming
-            const st=bt-2.55, damp=Math.exp(-st*5.5)*Math.sin(st*20);
-            scV=1+0.09*damp; scH=1-0.08*damp;
+        if(death>0){
+          melt=1;                                       // eyeless puddle
+          const p=dEase;                                // smooth death progress 0→1
+          if(p<0.18){ const u=smooth(p/0.18); scV=1+0.20*u; scH=1-0.13*u; }            // last puff-up (death throe)
+          else      { const m=smooth((p-0.18)/0.82); scV=1.20-1.05*m; scH=0.87+1.45*m; } // smooth collapse into a wide wavy puddle
+        }
+        else if(atk>0){ scV=1; scH=1; }                 // attack: neutral base (the rear-up/flatten is the CSS scale)
+        else{
+          const tt=t%16.0;
+          if(tt<13.0){ const j=Math.sin(t*1.7); scV=1+0.05*j; scH=1-0.045*j; } // idle jelly
+          else{                                         // rare melt burst
+            const bt=tt-13.0;
+            if(bt<1.7)      { melt=smooth(bt/1.7);            scV=1-0.76*melt; scH=1+0.85*melt; }
+            else if(bt<2.0) { melt=1;                         scV=0.24;        scH=1.85; }
+            else if(bt<2.55){ melt=1-smooth((bt-2.0)/0.55);   scV=1-0.76*melt; scH=1+0.85*melt; }
+            else{ const st=bt-2.55, damp=Math.exp(-st*5.5)*Math.sin(st*20); scV=1+0.09*damp; scH=1-0.08*damp; }
           }
         }
-        if(death>0){ melt=1; scV=0.22*(1-dEase)+0.05*dEase; scH=1.85+dEase*1.9; } // death: melt away
         const arr=melt>0.5?sdNoEye:sd;                // drop the eyes once it's a proper puddle
         const halfW=(SW-1)/2;
         for(let Y=0;Y<CH;Y++){
@@ -3495,12 +3516,13 @@ function mkImgSpr(id,enemy){
         if(death>0){
           flapA=0; lift=0; squash=1;
           const dt=now-enemy._deathT;                  // ms into the death sequence
-          wingCrumble=clamp(dt/820);                   // P1: wings disintegrate upward
+          wingCrumble=dt/680;                          // P1: wings disintegrate fully (grows past 1 → nothing left)
           if(dt>=950 && dt<1380)       eyeLook= smooth((dt-950)/220)*3;        // glance right
           else if(dt>=1380 && dt<1480) eyeLook= 3;                             // hold right
           else if(dt>=1480 && dt<1960) eyeLook= 3 - smooth((dt-1480)/300)*6;   // sweep to the left (−3)
           else if(dt>=1960)            eyeLook= -3 + smooth((dt-1960)/140)*3;  // back to centre
         }
+        else if(atk>0){ flapA=0; lift=0; squash=1; }   // attack: suppress the idle leap (CSS + aFastWing handle it)
         else if(tt>=11.0){
           const bt=tt-11.0;                           // 0 .. 2.0
           if(bt<0.7){       flapF=8.5; flapA=0.78; lift=smooth(bt/0.7)*7; }
@@ -3522,7 +3544,7 @@ function mkImgSpr(id,enemy){
             cp(sd, sxp, sy, X, Y);
           }
         }
-        shutEye(eyeP, death>0?0:(tt<11.0 ? blink(t,3.8,0.15,0) : wince), -lift);
+        shutEye(eyeP, death>0?0:(atk>0?0:(tt<11.0 ? blink(t,3.8,0.15,0) : wince)), -lift);
       }
       ctx.putImageData(out,0,0);
       // gross-motion layer (attack leap / slime rear-up / death topple) via CSS transform (origin: centre-bottom)
@@ -3537,7 +3559,7 @@ function mkImgSpr(id,enemy){
         }
       }
       if(death>0){
-        if(isMinus){ op=1-dEase; }                                     // slime fades as it melts
+        if(isMinus){ op = death<0.6 ? 1 : 1-smooth((death-0.6)/0.4); } // stays visible while it spreads, fades at the end
         else {
           const dt=now-enemy._deathT;
           if(dt>=2000 && dt<2280){ const u=smooth((dt-2000)/280); ty=-u*22; sy=1+0.16*u; sx=1-0.09*u; }   // reach up in anger (stretch)
@@ -3756,6 +3778,7 @@ function initG(){
   st.gamesPlayed=(st.gamesPlayed||0)+1;
   window._gameEndShown=false;
   saveStats(st);
+  if(window.coopSetStatus) window.coopSetStatus(window._gameMode==='infinite'?'infinite':'casual'); // co-op presence: «Играет в…»
   G={
     php:c.player_hp??30,maxPhp:c.player_hp??30,
     cur:0,wave:0,sessionMaxDmg:0,sessionTotalDmg:0,
@@ -6923,6 +6946,7 @@ _supaInitPromise=(async()=>{
       cloudSave();
       const nick=_supaUser.user_metadata?.nickname||_supaUser.email?.split('@')[0]||'?';
       hudShowUser(nick);
+      if(window.coopPresenceStart) window.coopPresenceStart();   // start real-time co-op presence
       // Sync to profiles table so admin can find this player
       const pid=_supaUser.user_metadata?.pid;
       const avatar=_supaUser.user_metadata?.avatar||null;
@@ -7078,6 +7102,7 @@ async function authSubmit(){
       }catch(e){console.warn('profiles sync:',e);}
     }
     hudShowUser(displayNick);
+    if(window.coopPresenceStart) window.coopPresenceStart();   // start real-time co-op presence
     authClose();
     addLog('👤 Аккаунт: '+displayNick);
     // If still on main menu — show greeting there, clicking it enters game
@@ -7611,6 +7636,93 @@ async function cloudLoad(){
     return d;
   }
 
+  // ════════════════════════════════════════════
+  //  CO-OP — real-time presence + join requests
+  //  (Supabase Realtime Presence + Broadcast, no DB tables)
+  // ════════════════════════════════════════════
+  let _coopPresence={};                                   // pid -> {pid,nick,avatar,status}
+  let _coopPresChan=null,_coopUserChan=null,_coopStatus='menu',_coopPendingReq=null;
+  function coopMyId(){ return _supaUser?.user_metadata?.pid||null; }
+  function coopMyNick(){ return _supaUser?.user_metadata?.nickname||'Игрок'; }
+  function coopMyAvatar(){ return _supaUser?.user_metadata?.avatar||null; }
+  function coopStatusLabel(s){ return s==='casual'?'Играет в Казуал':s==='infinite'?'Играет в Бесконечный':'онлайн'; }
+  function coopIsPlaying(s){ return s==='casual'||s==='infinite'; }
+  window.coopPresence=()=>_coopPresence;
+
+  function coopPresenceStart(){
+    if(!_supa||!_supaUser||_coopPresChan) return;
+    const pid=coopMyId(); if(!pid) return;
+    _coopPresChan=_supa.channel('cw-presence',{config:{presence:{key:pid}}});
+    _coopPresChan.on('presence',{event:'sync'},()=>{
+      const st=_coopPresChan.presenceState(), map={};
+      for(const k in st){ const m=st[k]&&st[k][0]; if(m&&m.pid) map[m.pid]=m; }
+      _coopPresence=map; coopRefreshStatuses();
+    });
+    _coopPresChan.subscribe(async(s)=>{ if(s==='SUBSCRIBED'){ try{ await _coopPresChan.track({pid,nick:coopMyNick(),avatar:coopMyAvatar(),status:_coopStatus}); }catch(e){} } });
+    _coopUserChan=_supa.channel('cw-user-'+pid);          // personal channel: receive requests/replies
+    _coopUserChan.on('broadcast',{event:'join_req'},({payload})=>coopOnJoinRequest(payload));
+    _coopUserChan.on('broadcast',{event:'join_accept'},({payload})=>coopToast('✓ '+(payload?.hostNick||'Хост')+' принял! Лобби скоро.'));
+    _coopUserChan.on('broadcast',{event:'join_decline'},({payload})=>coopToast('✕ '+(payload?.hostNick||'Хост')+' отклонил заявку'));
+    _coopUserChan.subscribe();
+  }
+  function coopSetStatus(s){ _coopStatus=s; if(_coopPresChan){ try{ _coopPresChan.track({pid:coopMyId(),nick:coopMyNick(),avatar:coopMyAvatar(),status:s}); }catch(e){} } }
+  function coopSendTo(pid,event,payload){
+    if(!_supa||!pid) return;
+    const ch=_supa.channel('cw-user-'+pid);
+    ch.subscribe((s)=>{ if(s==='SUBSCRIBED'){ ch.send({type:'broadcast',event,payload}); setTimeout(()=>{try{_supa.removeChannel(ch);}catch(e){}},1500); } });
+  }
+  function coopRequestJoin(hostPid,hostNick){
+    if(!coopMyId()){ coopToast('Сначала войди в аккаунт'); return; }
+    coopSendTo(hostPid,'join_req',{fromPid:coopMyId(),fromNick:coopMyNick(),fromAvatar:coopMyAvatar()});
+    coopToast('Заявка отправлена: '+(hostNick||''));
+  }
+  function coopOnJoinRequest(payload){ if(!payload||!payload.fromPid) return; _coopPendingReq=payload; coopShowJoinPrompt(payload); }
+  function coopAcceptJoin(){ const r=_coopPendingReq; _coopPendingReq=null; coopHideJoinPrompt(); if(!r) return;
+    coopSendTo(r.fromPid,'join_accept',{hostPid:coopMyId(),hostNick:coopMyNick()}); coopToast('Лобби создаётся…'); /* Phase 2 */ }
+  function coopDeclineJoin(){ const r=_coopPendingReq; _coopPendingReq=null; coopHideJoinPrompt(); if(r) coopSendTo(r.fromPid,'join_decline',{hostPid:coopMyId(),hostNick:coopMyNick()}); }
+
+  function coopRefreshStatuses(){ document.querySelectorAll('.player-row[data-pid]').forEach(row=>coopApplyRowStatus(row,row.dataset.pid)); }
+  function coopApplyRowStatus(row,pid){
+    if(!row||!pid) return;
+    const pres=_coopPresence[pid];
+    const dot=row.querySelector('.player-status-dot'), stxt=row.querySelector('.player-status-txt');
+    let joinBtn=row.querySelector('.coop-join-btn');
+    if(pres){
+      if(dot) dot.className='player-status-dot online';
+      if(stxt){ stxt.className='player-status-txt online'; stxt.textContent=coopStatusLabel(pres.status); }
+      if(coopIsPlaying(pres.status)&&pid!==coopMyId()){
+        const acts=row.querySelector('.player-actions');
+        if(acts){
+          if(!joinBtn){ joinBtn=document.createElement('button'); joinBtn.className='coop-join-btn'; joinBtn.innerHTML='⚔'; acts.insertBefore(joinBtn,acts.firstChild); }
+          joinBtn.title='Присоединиться к игре';
+          joinBtn.onclick=(e)=>{e.stopPropagation();coopRequestJoin(pid,pres.nick||'');};
+          joinBtn.ontouchend=(e)=>{e.preventDefault();e.stopPropagation();coopRequestJoin(pid,pres.nick||'');};
+        }
+      } else if(joinBtn){ joinBtn.remove(); }
+    } else if(joinBtn){ joinBtn.remove(); }
+  }
+  function coopToast(msg){
+    let t=document.getElementById('coop-toast');
+    if(!t){ t=document.createElement('div'); t.id='coop-toast'; document.body.appendChild(t); }
+    t.textContent=msg; t.classList.add('show');
+    clearTimeout(t._tm); t._tm=setTimeout(()=>t.classList.remove('show'),3200);
+  }
+  function coopShowJoinPrompt(req){
+    let ov=document.getElementById('coop-join-ov');
+    if(!ov){ ov=document.createElement('div'); ov.id='coop-join-ov'; document.body.appendChild(ov); }
+    ov.innerHTML='<div id="coop-join-box"><div class="cjb-title">⚔ ЗАЯВКА В КООП</div>'+
+      '<div class="cjb-who"><b>'+(req.fromNick||'Игрок')+'</b><br>хочет присоединиться к твоей игре</div>'+
+      '<div class="cjb-btns"><button class="cjb-yes">ПРИНЯТЬ</button><button class="cjb-no">ОТКЛОНИТЬ</button></div></div>';
+    ov.querySelector('.cjb-yes').onclick=coopAcceptJoin;
+    ov.querySelector('.cjb-no').onclick=coopDeclineJoin;
+    ov.classList.add('on');
+    clearTimeout(ov._tm); ov._tm=setTimeout(()=>{ if(_coopPendingReq) coopDeclineJoin(); },25000);
+  }
+  function coopHideJoinPrompt(){ const ov=document.getElementById('coop-join-ov'); if(ov){ ov.classList.remove('on'); clearTimeout(ov._tm); } }
+  // expose for cross-scope hooks
+  window.coopPresenceStart=coopPresenceStart;
+  window.coopSetStatus=coopSetStatus;
+
   // ── Build a player row ──
   // Pinned friends storage
   function _getPinned(){try{return JSON.parse(localStorage.getItem('cw_pinned')||'[]');}catch{return[];}}
@@ -7726,6 +7838,7 @@ async function cloudLoad(){
       }
       row.appendChild(actions);
     }
+    coopApplyRowStatus(row, p.pid);   // live co-op presence (онлайн / Играет в… + кнопка)
     return row;
   }
 
