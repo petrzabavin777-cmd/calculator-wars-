@@ -2260,7 +2260,8 @@ button, .menu-btn {
 #coop-lobby-ov{position:fixed;inset:0;z-index:9800;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.76);padding:8px;}
 #coop-lobby-ov.on{display:flex;}
 #coop-lobby-box{background:linear-gradient(160deg,#080118,#12012a);border:3px solid #9b30ff;box-shadow:0 0 40px #6a18c255,8px 8px 0 #1a0033;padding:20px;max-width:420px;width:100%;display:flex;flex-direction:column;gap:12px;max-height:90vh;overflow:hidden;animation:exitBoxIn .3s cubic-bezier(.22,1,.36,1) both;}
-.cll-title{font-family:'Press Start 2P',monospace;font-size:10px;color:#d97cff;text-align:center;letter-spacing:1px;text-shadow:0 0 10px #9b30ff66;}
+.cll-title{font-family:'Press Start 2P',monospace;font-size:10px;color:#d97cff;text-align:center;letter-spacing:1px;text-shadow:0 0 10px #9b30ff66;display:flex;align-items:center;justify-content:center;gap:8px;}
+#cll-badge{background:#cc2244;color:#fff;font-family:'Press Start 2P',monospace;font-size:7px;padding:2px 6px;border-radius:10px;display:none;}
 .cll-players{display:flex;align-items:center;justify-content:center;gap:10px;}
 .clp-slot{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1;min-width:0;}
 .clp-crown{font-size:18px;line-height:1;text-align:center;}
@@ -4340,12 +4341,17 @@ function doAttack(){
   })();
   renderAll();
 
-  if(cE()&&cE().hp<=0){enemyDefeated();return;}
+  // broadcast updated enemy HP BEFORE death check so guest sees 0
+  if(window.coopIsActive?.()&&window.coopIsHost?.())window.coopBroadcastState?.();
+  if(cE()&&cE().hp<=0){
+    window._coopLastAttacker='host';
+    enemyDefeated();return;
+  }
   if(window.coopIsActive?.()){
-    // co-op host: sync state, hand off to guest
-    window.coopBroadcastState?.();
+    // host didn't kill → enemy attacks → guest gets transition turn
+    window._coopLastAttacker='host';
     window.coopBroadcastMyHp?.();
-    window.coopSetTurn?.('guest');
+    window.coopScheduleEnemyTurn?.();
   } else {
     scheduleEnemyTurn();
   }
@@ -4457,7 +4463,11 @@ function _resolveDefeat(e){
     renderAll();showDlg(cE(),0);dealHand();renderAll();
     if(window.coopIsActive?.()&&window.coopIsHost?.()){
       window.coopBroadcastState?.();
-      window.coopSetTurn?.('host');
+      const _atk=window._coopLastAttacker||'host';
+      const _wasTrans=!!window._coopIsTransition;
+      window._coopIsTransition=false;
+      // transition kill → same player goes again; normal kill → other player
+      window.coopSetTurn?.(_wasTrans?_atk:(_atk==='host'?'guest':'host'));
     }
   } else {
     G.active=false;renderAll();
@@ -4838,11 +4848,11 @@ function renderDlgBonus(){
 //  SHOP
 // ══════════════════════════════════
 const SHOP=[
-  {id:'eraser',   icon:'🧹', name:'Стёрка',         desc:'Разовый Backspace в бою — удаляет последний токен из выражения.',          price:8,  fn:g=>{g.inv.eraser=(g.inv.eraser||0)+1;renderEraserBtn();}},
+  {id:'eraser',   icon:'🧹', name:'Стёрка',         desc:'Разовый Backspace в бою — удаляет последний токен из выражения.',          price:8,  coopSync:true, fn:g=>{g.inv.eraser=(g.inv.eraser||0)+1;renderEraserBtn();}},
   {id:'charge',   icon:'⚡', name:'Зарядка',         desc:'+8 HP прямо сейчас.',               price:10, coopSync:true, fn:g=>{g.php=Math.min(g.maxPhp,g.php+8);renderHud();}},
   {id:'dblheal',  icon:'💉', name:'Двойной хил',     desc:'Дополнительные +10 HP сверх обычного восстановления. Итого +20 HP.',price:14, coopSync:true, fn:g=>{g.php=Math.min(g.maxPhp,g.php+10);renderHud();}},
-  {id:'medkit',   icon:'💊', name:'Аптечка',         desc:'Кнопка рядом с калькулятором. Жми в бою без потери хода — восстанавливает 5+5+5 HP за 3 тика.',price:12, fn:g=>{g.inv.medkit=(g.inv.medkit||0)+1;renderMedkit();}},
-  {id:'nullprot', icon:'0️⃣', name:'Нуль-протектор',  desc:'Один раз: следующий ноль в выражении не снижает бонус оператора.',price:6, fn:g=>{g.inv.nullprot=(g.inv.nullprot||0)+1;renderNullprot();}},
+  {id:'medkit',   icon:'💊', name:'Аптечка',         desc:'Кнопка рядом с калькулятором. Жми в бою без потери хода — восстанавливает 5+5+5 HP за 3 тика.',price:12, coopSync:true, fn:g=>{g.inv.medkit=(g.inv.medkit||0)+1;renderMedkit();}},
+  {id:'nullprot', icon:'0️⃣', name:'Нуль-протектор',  desc:'Один раз: следующий ноль в выражении не снижает бонус оператора.',price:6, coopSync:true, fn:g=>{g.inv.nullprot=(g.inv.nullprot||0)+1;renderNullprot();}},
   {id:'shield',   icon:'🛡️', name:'Калькулятор-щит', desc:'Поглотить следующий удар врага целиком. Активен до конца боя.',   price:15, coopSync:true, fn:g=>{g.pSts.shield=1;renderShield();}},
   {id:'reroll',   icon:'🔀', name:'Перетасовка',     desc:'Перебросить текущую руку — новые цифры и знаки прямо сейчас.',          price:10, fn:g=>{dealHand();renderCalc();}},
   {id:'maxhp',    icon:'❤️', name:'Апгрейд батареи', desc:'Навсегда увеличивает максимальный запас HP на 10. Сохраняется до конца игры.',price:25, coopSync:true, fn:g=>{g.maxPhp+=10;g.php=Math.min(g.php+10,g.maxPhp);renderHud();}},
@@ -7040,8 +7050,8 @@ async function profUploadAvatar(e){
 //  1. Зайди на supabase.com → твой проект → Settings → API
 //  2. Скопируй Project URL и anon public key сюда:
 // ══════════════════════════════════
-const SUPA_URL='https://mpgyohhxconorhuvtmgy.supabase.co';
-const SUPA_KEY='sb_publishable_7-xPhFwRjkrPrNOkqi22jg_h-SBT5KY';
+const SUPA_URL='';
+const SUPA_KEY='';
 let _supa=null;
 let _supaUser=null;
 let _supaInitPromise=null;
@@ -7846,6 +7856,9 @@ async function cloudLoad(){
   // ════════════════════════════════════════════════════════════
   let _coopLobbyId=null,_coopLobbyChan=null,_coopRole=null,_coopPartner=null;
   let _coopTurn=null,_coopActive=false,_coopPartnerHp=0,_coopPartnerMaxHp=30;
+  // turn-logic state (shared with outside-IIFE via window)
+  window._coopLastAttacker='host';  // 'host' | 'guest'
+  window._coopIsTransition=false;   // did current player get turn after an enemy attack?
 
   function coopIsActive(){return _coopActive;}
   function coopIsHost(){return _coopRole==='host';}
@@ -7910,7 +7923,7 @@ async function cloudLoad(){
     const pt=_coopPartner||{nick:'Ожидание…',av:null};
     const h=isHost?me:pt, g=isHost?pt:me;
     ov.innerHTML=`<div id="coop-lobby-box">
-<div class="cll-title">⚔ КО-ОП ЛОББИ</div>
+<div class="cll-title">⚔ КО-ОП ЛОББИ<span id="cll-badge"></span></div>
 <div class="cll-players">
   <div class="clp-slot"><div class="clp-crown">👑</div><div class="clp-avatar"><img src="${_safeHtml(h.av||_NOAV)}" alt=""></div><div class="clp-name">${_safeHtml(h.nick)}</div></div>
   <div class="clp-vs">VS</div>
@@ -7924,6 +7937,8 @@ async function cloudLoad(){
     const doSend=()=>{const t=inp.value.trim();if(!t)return;inp.value='';coopSendLobby('chat',{nick:coopMyNick(),msg:t});coopChatAdd(coopMyNick(),t,true);};
     document.getElementById('cll-send').onclick=doSend;
     inp.onkeydown=e=>{if(e.key==='Enter')doSend();};
+    inp.onfocus=_coopResetChatBadge;
+    document.getElementById('cll-msgs').onclick=_coopResetChatBadge;
   }
 
   function coopChatAdd(nick,msg,self){
@@ -7931,7 +7946,9 @@ async function cloudLoad(){
     const d=document.createElement('div');d.className='cll-msg'+(self?' self-msg':'');
     d.innerHTML='<span class="cll-msgnick">'+_safeHtml(nick)+':</span> '+_safeHtml(msg);
     box.appendChild(d);box.scrollTop=box.scrollHeight;
+    if(!self){const b=document.getElementById('cll-badge');if(b){const n=(parseInt(b.textContent)||0)+1;b.textContent=n;b.style.display='inline';}}
   }
+  function _coopResetChatBadge(){const b=document.getElementById('cll-badge');if(b){b.textContent='';b.style.display='none';}}
   function coopOnChat(p){
     if(!p?.msg)return;
     coopChatAdd(p.nick||'?',p.msg,false);
@@ -8097,14 +8114,21 @@ async function cloudLoad(){
     if(!G||!p||!coopIsHost())return;
     const e=cE();if(!e||e.dead)return;
     const dmg=p.dmg||0,opsUsed=p.opsUsed||[];
+    window._coopLastAttacker='guest';
+    const wasTransition=!!window._coopIsTransition;
+    window._coopIsTransition=false;
     if(dmg>0)hitEnemy(dmg,opsUsed);
     if(opsUsed.includes('+'))G.eSts.burn=(G.eSts.burn||0)+1;
     if(opsUsed.includes('-')&&Math.random()<.25)G.eSts.freeze=1;
     coopSendLobby('host_hp',{hp:G.php,maxHp:G.maxPhp});
+    coopBroadcastState(); // broadcast updated HP BEFORE death check so guest sees 0
     renderAll();
     const cur=cE();
-    if(cur&&cur.hp<=0&&!cur.dead&&!cur._dying&&!cur._resolved){enemyDefeated();return;}
-    coopBroadcastState();
+    if(cur&&cur.hp<=0&&!cur.dead&&!cur._dying&&!cur._resolved){
+      window._coopIsTransition=wasTransition; // pass to _resolveDefeat for bonus-turn logic
+      enemyDefeated();return;
+    }
+    // guest didn't kill → enemy attacks → host gets transition turn
     coopScheduleEnemyTurn();
   }
 
@@ -8161,10 +8185,11 @@ async function cloudLoad(){
   function coopAfterEnemyTurn(){
     if(!G||!coopIsHost())return;
     dealHand();G.active=true;
-    _coopTurn='host';
-    coopBroadcastMyHp();
-    coopBroadcastState();
-    coopSendLobby('turn_switch',{turn:'host'});
+    window._coopIsTransition=true; // enemy just attacked → next player is on transition
+    const next=window._coopLastAttacker==='host'?'guest':'host';
+    _coopTurn=next;
+    coopBroadcastMyHp();coopBroadcastState();
+    coopSendLobby('turn_switch',{turn:next});
     coopUpdateTurnBar();renderAll();
   }
 
@@ -8182,7 +8207,7 @@ async function cloudLoad(){
   function coopOnShopOpen(p){
     if(!coopIsGuest())return;
     // apply the between-wave heal that openShop() gives to the host
-    if(G&&(p?.heal||0)>0){G.php=Math.min(G.maxPhp,G.php+(p.heal));renderHud();}
+    if(G){G.php=Math.min(G.maxPhp,G.php+10);renderHud();}
     let ov=document.getElementById('coop-shop-wait');
     if(!ov){ov=document.createElement('div');ov.id='coop-shop-wait';ov.innerHTML='<div class="csw-title">🛒 ХОСТ В МАГАЗИНЕ</div><div class="csw-sub">Ожидание…<br>Следующая волна стартует<br>когда хост закроет магазин.</div>';document.body.appendChild(ov);}
     ov.classList.add('on');
